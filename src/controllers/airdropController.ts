@@ -12,9 +12,15 @@ export class AirdropController {
   async claimAirdrop(req: Request, res: Response): Promise<void> {
     try {
       const { hash, recipientAddress }: AirdropRequest = req.body;
+      
+      console.log(`🎯 AIRDROP CLAIM REQUEST:`);
+      console.log(`   📍 Recipient: ${recipientAddress}`);
+      console.log(`   🔑 Hash: ${hash}`);
+      console.log(`   🕐 Time: ${new Date().toISOString()}`);
 
       // Validate request body
       if (!hash || !recipientAddress) {
+        console.log(`❌ VALIDATION FAILED: Missing required fields`);
         res.status(400).json({
           success: false,
           message: 'Both hash and recipientAddress are required'
@@ -22,6 +28,8 @@ export class AirdropController {
         return;
       }
 
+      console.log(`🔍 Processing airdrop request...`);
+      
       // Process the airdrop
       const result = await this.airdropService.processAirdrop({
         hash,
@@ -29,9 +37,21 @@ export class AirdropController {
       });
 
       const statusCode = result.success ? 200 : 400;
+      
+      if (result.success) {
+        console.log(`✅ AIRDROP SUCCESS:`);
+        console.log(`   💰 Amount: ${result.amount} wei`);
+        console.log(`   📝 Transaction: ${result.transactionHash}`);
+        console.log(`   🎉 Message: ${result.message}`);
+      } else {
+        console.log(`❌ AIRDROP FAILED:`);
+        console.log(`   📝 Reason: ${result.message}`);
+      }
+      
       res.status(statusCode).json(result);
 
     } catch (error) {
+      console.log(`💥 AIRDROP ERROR: ${error}`);
       res.status(500).json({
         success: false,
         message: `Internal server error: ${error}`
@@ -57,8 +77,13 @@ export class AirdropController {
   async generateTestHash(req: Request, res: Response): Promise<void> {
     try {
       const { preimage } = req.body;
+      
+      console.log(`🔧 HASH GENERATION REQUEST:`);
+      console.log(`   📝 Preimage: "${preimage}"`);
+      console.log(`   🕐 Time: ${new Date().toISOString()}`);
 
       if (!preimage || typeof preimage !== 'string') {
+        console.log(`❌ HASH GENERATION FAILED: Invalid preimage`);
         res.status(400).json({
           success: false,
           message: 'Preimage is required and must be a string'
@@ -67,6 +92,11 @@ export class AirdropController {
       }
 
       const hash = this.airdropService.generateTestHash(preimage);
+      
+      console.log(`✅ HASH GENERATED:`);
+      console.log(`   📝 Preimage: "${preimage}"`);
+      console.log(`   🔑 Hash: ${hash}`);
+      
       res.status(200).json({
         success: true,
         data: {
@@ -76,6 +106,7 @@ export class AirdropController {
       });
 
     } catch (error) {
+      console.log(`💥 HASH GENERATION ERROR: ${error}`);
       res.status(500).json({
         success: false,
         message: `Failed to generate test hash: ${error}`

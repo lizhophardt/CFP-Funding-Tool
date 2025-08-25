@@ -22,10 +22,18 @@ export class Web3Service {
 
   async sendTransaction(recipientAddress: string, amountWei: string): Promise<string> {
     try {
+      console.log(`🔍 WEB3 ADDRESS VALIDATION:`);
+      console.log(`   📍 Address: "${recipientAddress}"`);
+      console.log(`   📏 Length: ${recipientAddress.length}`);
+      console.log(`   🔍 isAddress result: ${this.web3.utils.isAddress(recipientAddress)}`);
+      
       // Validate recipient address
       if (!this.web3.utils.isAddress(recipientAddress)) {
+        console.log(`❌ Address validation failed!`);
         throw new Error('Invalid recipient address');
       }
+      
+      console.log(`✅ Address validation passed!`);
 
       // Check if we have enough balance
       const balance = await this.web3.eth.getBalance(this.account.address);

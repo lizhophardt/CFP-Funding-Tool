@@ -14,6 +14,7 @@ export interface Config {
   chiadoRpcUrl: string;
   privateKey: string;
   secretPreimage: string;
+  secretPreimages: string[];
   airdropAmountWei: string;
   port: number;
   nodeEnv: string;

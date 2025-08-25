@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiado xDai Airdrop Claim</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .result p {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .result .tx-hash {
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .status-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .status-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .status-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .test-hash-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .test-hash-section h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .test-hash-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .test-hash-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .test-hash-form button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .test-hash-form button:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .test-hash-form {
+                flex-direction: column;
+            }
+
+            .test-hash-form button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-coins"></i> Chiado xDai Airdrop</h1>
+            <p>Enter your recipient address and hash to claim your airdrop</p>
+        </div>
+
+        <form id="airdropForm">
+            <div class="form-group">
+                <label for="recipientAddress">
+                    <i class="fas fa-wallet"></i> Recipient Address
+                </label>
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        id="recipientAddress" 
+                        name="recipientAddress"
+                        placeholder="0x..." 
+                        required
+                    >
+                    <div class="error-message" id="addressError"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="hash">
+                    <i class="fas fa-key"></i> Hash
+                </label>
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        id="hash" 
+                        name="hash"
+                        placeholder="Enter your hash..." 
+                        required
+                    >
+                    <div class="error-message" id="hashError"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn" id="claimBtn">
+                <div class="spinner" id="spinner"></div>
+                <span id="btnText"><i class="fas fa-gift"></i> Claim Airdrop</span>
+            </button>
+        </form>
+
+        <div class="result" id="result">
+            <h3 id="resultTitle"></h3>
+            <p id="resultMessage"></p>
+            <div id="resultDetails"></div>
+        </div>
+
+        <div class="status-section">
+            <button class="status-btn" id="statusBtn" onclick="checkStatus()">
+                <i class="fas fa-info-circle"></i> Check Service Status
+            </button>
+        </div>
+
+        <div class="test-hash-section">
+            <h4><i class="fas fa-flask"></i> Generate Test Hash</h4>
+            <div class="test-hash-form">
+                <input 
+                    type="text" 
+                    id="preimage" 
+                    placeholder="Enter preimage..."
+                >
+                <button type="button" onclick="generateTestHash()">
+                    <i class="fas fa-cog"></i> Generate
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL - adjust this to match your server
+        const API_BASE = 'http://localhost:3000/api/airdrop';
+
+        // Form elements
+        const form = document.getElementById('airdropForm');
+        const recipientAddressInput = document.getElementById('recipientAddress');
+        const hashInput = document.getElementById('hash');
+        const claimBtn = document.getElementById('claimBtn');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        const result = document.getElementById('result');
+
+        // Validation functions
+        function isValidEthereumAddress(address) {
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+
+        function isValidHash(hash) {
+            return hash && hash.length > 0;
+        }
+
+        function showError(inputId, message) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(inputId + 'Error');
+            
+            if (input) {
+                input.classList.add('error');
+            }
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function clearError(inputId) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(inputId + 'Error');
+            
+            if (input) {
+                input.classList.remove('error');
+            }
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function clearAllErrors() {
+            clearError('address');
+            clearError('hash');
+        }
+
+        function validateForm() {
+            clearAllErrors();
+            let isValid = true;
+
+            const address = recipientAddressInput.value.trim();
+            const hash = hashInput.value.trim();
+
+            if (!address) {
+                showError('address', 'Recipient address is required');
+                isValid = false;
+            } else if (!isValidEthereumAddress(address)) {
+                showError('address', 'Please enter a valid Ethereum address (0x...)');
+                isValid = false;
+            }
+
+            if (!hash) {
+                showError('hash', 'Hash is required');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showResult(success, title, message, details = null) {
+            const resultDiv = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+            const resultDetails = document.getElementById('resultDetails');
+
+            resultTitle.textContent = title;
+            resultMessage.textContent = message;
+            
+            if (details) {
+                resultDetails.innerHTML = details;
+            } else {
+                resultDetails.innerHTML = '';
+            }
+
+            resultDiv.className = `result ${success ? 'success' : 'error'}`;
+            resultDiv.style.display = 'block';
+
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function setLoading(loading) {
+            if (claimBtn) {
+                claimBtn.disabled = loading;
+            }
+            if (spinner) {
+                spinner.style.display = loading ? 'inline-block' : 'none';
+            }
+            if (btnText) {
+                btnText.innerHTML = loading ? 
+                    '<i class="fas fa-spinner fa-spin"></i> Processing...' : 
+                    '<i class="fas fa-gift"></i> Claim Airdrop';
+            }
+        }
+
+        // Form submission handler
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!validateForm()) {
+                    return;
+                }
+
+                setLoading(true);
+                if (result) {
+                    result.style.display = 'none';
+                }
+
+            try {
+                const response = await fetch(`${API_BASE}/claim`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recipientAddress: recipientAddressInput.value.trim(),
+                        hash: hashInput.value.trim()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let details = '';
+                    if (data.transactionHash) {
+                        details += `<p><strong>Transaction Hash:</strong></p>`;
+                        details += `<div class="tx-hash">${data.transactionHash}</div>`;
+                    }
+                    if (data.amount) {
+                        details += `<p><strong>Amount:</strong> ${data.amount} xDai</p>`;
+                    }
+
+                    showResult(true, '🎉 Airdrop Claimed Successfully!', data.message, details);
+                    
+                    // Clear form on success
+                    form.reset();
+                } else {
+                    showResult(false, '❌ Claim Failed', data.message);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showResult(false, '❌ Network Error', 'Failed to connect to the server. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+            });
+        }
+
+        // Status check function
+        async function checkStatus() {
+            const statusBtn = document.getElementById('statusBtn');
+            if (!statusBtn) return;
+            
+            const originalText = statusBtn.innerHTML;
+            
+            statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            statusBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+
+                if (data.success) {
+                    let details = '<div style="margin-top: 10px;">';
+                    if (data.data) {
+                        Object.entries(data.data).forEach(([key, value]) => {
+                            details += `<p><strong>${key}:</strong> ${value}</p>`;
+                        });
+                    }
+                    details += '</div>';
+
+                    showResult(true, '✅ Service Status', 'Service is running normally', details);
+                } else {
+                    showResult(false, '⚠️ Service Status', data.message || 'Unknown status');
+                }
+
+            } catch (error) {
+                console.error('Status check error:', error);
+                showResult(false, '❌ Status Check Failed', 'Failed to check service status');
+            } finally {
+                statusBtn.innerHTML = originalText;
+                statusBtn.disabled = false;
+            }
+        }
+
+        // Generate test hash function
+        async function generateTestHash() {
+            const preimageInput = document.getElementById('preimage');
+            const preimage = preimageInput.value.trim();
+
+            if (!preimage) {
+                alert('Please enter a preimage');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/generate-test-hash`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ preimage })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    // Fill the hash input with the generated hash
+                    hashInput.value = data.data.hash;
+                    
+                    showResult(true, '🔑 Test Hash Generated', 
+                        `Hash generated for preimage: "${data.data.preimage}"`,
+                        `<div class="tx-hash">${data.data.hash}</div>`
+                    );
+                } else {
+                    showResult(false, '❌ Hash Generation Failed', data.message || 'Unknown error');
+                }
+
+            } catch (error) {
+                console.error('Hash generation error:', error);
+                showResult(false, '❌ Network Error', 'Failed to generate test hash');
+            }
+        }
+
+        // Clear errors when user starts typing
+        if (recipientAddressInput) {
+            recipientAddressInput.addEventListener('input', () => clearError('address'));
+            // Auto-focus first input
+            recipientAddressInput.focus();
+        }
+        if (hashInput) {
+            hashInput.addEventListener('input', () => clearError('hash'));
+        }
+    </script>
+</body>
+</html>

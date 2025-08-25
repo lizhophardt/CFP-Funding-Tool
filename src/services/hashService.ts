@@ -4,7 +4,7 @@ import { ValidationResult } from '../types';
 
 export class HashService {
   /**
-   * Validates a hash against the configured preimage
+   * Validates a hash against any of the configured preimages
    * @param hash - The hash to validate (should be SHA-256 hex string)
    * @returns ValidationResult indicating if the hash is valid
    */
@@ -28,15 +28,22 @@ export class HashService {
         };
       }
 
-      // Generate hash from the configured preimage
-      const expectedHash = this.generateHashFromPreimage(config.secretPreimage);
-
-      // Compare hashes (case-insensitive)
-      const isValid = cleanHash.toLowerCase() === expectedHash.toLowerCase();
+      // Check hash against all configured preimages
+      for (const preimage of config.secretPreimages) {
+        if (preimage) { // Skip empty preimages
+          const expectedHash = this.generateHashFromPreimage(preimage);
+          if (cleanHash.toLowerCase() === expectedHash.toLowerCase()) {
+            return {
+              isValid: true,
+              message: 'Hash validation successful'
+            };
+          }
+        }
+      }
 
       return {
-        isValid,
-        message: isValid ? 'Hash validation successful' : 'Hash does not match the expected value'
+        isValid: false,
+        message: 'Hash does not match any of the expected values'
       };
     } catch (error) {
       return {

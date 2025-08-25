@@ -202,69 +202,7 @@
             font-size: 0.9em;
         }
 
-        .status-section {
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px solid #e1e5e9;
-        }
 
-        .status-btn {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s ease;
-        }
-
-        .status-btn:hover {
-            background: #5a6268;
-            transform: translateY(-1px);
-        }
-
-        .test-hash-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-        }
-
-        .test-hash-section h4 {
-            color: #495057;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-
-        .test-hash-form {
-            display: flex;
-            gap: 10px;
-        }
-
-        .test-hash-form input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 0.9em;
-        }
-
-        .test-hash-form button {
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            white-space: nowrap;
-        }
-
-        .test-hash-form button:hover {
-            background: #218838;
-        }
 
         @media (max-width: 480px) {
             .container {
@@ -276,13 +214,7 @@
                 font-size: 1.8em;
             }
 
-            .test-hash-form {
-                flex-direction: column;
-            }
 
-            .test-hash-form button {
-                width: 100%;
-            }
         }
     </style>
 </head>
@@ -338,25 +270,7 @@
             <div id="resultDetails"></div>
         </div>
 
-        <div class="status-section">
-            <button class="status-btn" id="statusBtn" onclick="checkStatus()">
-                <i class="fas fa-info-circle"></i> Check Service Status
-            </button>
-        </div>
 
-        <div class="test-hash-section">
-            <h4><i class="fas fa-flask"></i> Generate Test Hash</h4>
-            <div class="test-hash-form">
-                <input 
-                    type="text" 
-                    id="preimage" 
-                    placeholder="Enter preimage..."
-                >
-                <button type="button" onclick="generateTestHash()">
-                    <i class="fas fa-cog"></i> Generate
-                </button>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -525,81 +439,7 @@
             });
         }
 
-        // Status check function
-        async function checkStatus() {
-            const statusBtn = document.getElementById('statusBtn');
-            if (!statusBtn) return;
-            
-            const originalText = statusBtn.innerHTML;
-            
-            statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            statusBtn.disabled = true;
 
-            try {
-                const response = await fetch(`${API_BASE}/status`);
-                const data = await response.json();
-
-                if (data.success) {
-                    let details = '<div style="margin-top: 10px;">';
-                    if (data.data) {
-                        Object.entries(data.data).forEach(([key, value]) => {
-                            details += `<p><strong>${key}:</strong> ${value}</p>`;
-                        });
-                    }
-                    details += '</div>';
-
-                    showResult(true, '✅ Service Status', 'Service is running normally', details);
-                } else {
-                    showResult(false, '⚠️ Service Status', data.message || 'Unknown status');
-                }
-
-            } catch (error) {
-                console.error('Status check error:', error);
-                showResult(false, '❌ Status Check Failed', 'Failed to check service status');
-            } finally {
-                statusBtn.innerHTML = originalText;
-                statusBtn.disabled = false;
-            }
-        }
-
-        // Generate test hash function
-        async function generateTestHash() {
-            const preimageInput = document.getElementById('preimage');
-            const preimage = preimageInput.value.trim();
-
-            if (!preimage) {
-                alert('Please enter a preimage');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/generate-test-hash`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ preimage })
-                });
-
-                const data = await response.json();
-
-                if (data.success && data.data) {
-                    // Fill the hash input with the generated hash
-                    hashInput.value = data.data.hash;
-                    
-                    showResult(true, '🔑 Test Hash Generated', 
-                        `Hash generated for preimage: "${data.data.preimage}"`,
-                        `<div class="tx-hash">${data.data.hash}</div>`
-                    );
-                } else {
-                    showResult(false, '❌ Hash Generation Failed', data.message || 'Unknown error');
-                }
-
-            } catch (error) {
-                console.error('Hash generation error:', error);
-                showResult(false, '❌ Network Error', 'Failed to generate test hash');
-            }
-        }
 
         // Clear errors when user starts typing
         if (recipientAddressInput) {

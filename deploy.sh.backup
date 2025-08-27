@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Quick deployment script for Gnosis Chain xDai Airdrop Service
+# Quick deployment script for Chiado xDai Airdrop Service
 set -e
 
-echo "🚀 Starting Gnosis Chain xDai Airdrop Service deployment..."
+echo "🚀 Starting Chiado xDai Airdrop Service deployment..."
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
@@ -24,21 +24,14 @@ fi
 source .env
 
 # Validate required environment variables
-if [ -z "$PRIVATE_KEY" ]; then
-    echo "❌ PRIVATE_KEY is empty in .env file"
+if [ -z "$PRIVATE_KEY" ] || [ "$PRIVATE_KEY" = "your_private_key_here" ]; then
+    echo "❌ PRIVATE_KEY not configured in .env file"
     exit 1
 fi
 
-if [ -z "$SECRET_PREIMAGE" ] && [ -z "$SECRET_PREIMAGES" ]; then
-    echo "❌ Neither SECRET_PREIMAGE nor SECRET_PREIMAGES is configured in .env file"
+if [ -z "$SECRET_PREIMAGE" ] || [ "$SECRET_PREIMAGE" = "your_secret_preimage_here" ]; then
+    echo "❌ SECRET_PREIMAGE not configured in .env file"
     exit 1
-fi
-
-echo "✅ Found PRIVATE_KEY (length: ${#PRIVATE_KEY})"
-if [ -n "$SECRET_PREIMAGES" ]; then
-    echo "✅ Found SECRET_PREIMAGES (length: ${#SECRET_PREIMAGES})"
-else
-    echo "✅ Found SECRET_PREIMAGE (length: ${#SECRET_PREIMAGE})"
 fi
 
 echo "✅ Environment configuration validated"

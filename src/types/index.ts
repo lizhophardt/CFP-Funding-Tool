@@ -11,7 +11,7 @@ export interface AirdropResponse {
 }
 
 export interface Config {
-  chiadoRpcUrl: string;
+  gnosisRpcUrl: string;
   privateKey: string;
   secretPreimage: string;
   secretPreimages: string[];

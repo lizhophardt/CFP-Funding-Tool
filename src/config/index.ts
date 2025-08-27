@@ -4,7 +4,7 @@ import { Config } from '../types';
 dotenv.config();
 
 export const config: Config = {
-  chiadoRpcUrl: process.env.CHIADO_RPC_URL || 'https://rpc.chiadochain.net',
+  gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
   privateKey: process.env.PRIVATE_KEY || '',
   secretPreimage: process.env.SECRET_PREIMAGE || '',
   secretPreimages: process.env.SECRET_PREIMAGES 

@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Quick Deploy - Chiado xDai Airdrop Service');
+console.log('🚀 Quick Deploy - Gnosis Chain xDai Airdrop Service');
 console.log('===============================================\n');
 
 // Check if .env file exists

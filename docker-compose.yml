@@ -8,7 +8,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - CHIADO_RPC_URL=${CHIADO_RPC_URL:-https://rpc.chiadochain.net}
+      - GNOSIS_RPC_URL=${GNOSIS_RPC_URL:-https://rpc.gnosischain.com}
       - PRIVATE_KEY=${PRIVATE_KEY}
       - SECRET_PREIMAGE=${SECRET_PREIMAGE}
       - SECRET_PREIMAGES=${SECRET_PREIMAGES}

@@ -1,7 +1,7 @@
 {
-  "name": "chiado-airdrop-service",
-  "version": "1.0.0",
-  "description": "TypeScript-based airdrop distribution service for Chiado xDai",
+  "name": "gnosis-airdrop-service",
+  "version": "2.0.0",
+  "description": "TypeScript-based airdrop distribution service for Gnosis Chain xDai",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -11,7 +11,7 @@
     "deploy": "./deploy.sh",
     "quick-deploy": "node scripts/quick-deploy.js"
   },
-  "keywords": ["airdrop", "chiado", "xdai", "typescript", "web3"],
+  "keywords": ["airdrop", "gnosis", "xdai", "typescript", "web3", "gnosis-chain"],
   "author": "",
   "license": "MIT",
   "dependencies": {

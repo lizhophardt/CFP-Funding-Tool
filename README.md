@@ -1,11 +1,11 @@
-# Chiado xDai Airdrop Service
+# Gnosis Chain xDai Airdrop Service
 
-A TypeScript-based REST API service for distributing Chiado xDai tokens through hash validation. The service validates a secret hash against a preimage and sends xDai to the recipient address if the validation succeeds.
+A TypeScript-based REST API service for distributing xDai tokens on Gnosis Chain through hash validation. The service validates a secret hash against a preimage and sends xDai to the recipient address if the validation succeeds.
 
 ## Features
 
 - 🔐 **Hash Validation**: Validates SHA-256 hashes against a configured preimage
-- 💰 **Automated Airdrops**: Sends Chiado xDai to valid recipients
+- 💰 **Automated Airdrops**: Sends xDai on Gnosis Chain to valid recipients
 - 🚫 **Duplicate Prevention**: Prevents multiple claims with the same hash
 - 🛡️ **Security**: Built-in validation, rate limiting, and error handling
 - 📊 **Status Monitoring**: Real-time service status and balance monitoring
@@ -30,16 +30,16 @@ cp env.example .env
 Edit `.env` with your configuration:
 
 ```env
-# Chiado RPC URL
-CHIADO_RPC_URL=https://rpc.chiadochain.net
+# Gnosis Chain RPC URL
+GNOSIS_RPC_URL=https://rpc.gnosischain.com
 
-# Private key for the wallet that will send xDai (without 0x prefix)
+# Private key for the wallet that will send xDai on Gnosis Chain (without 0x prefix)
 PRIVATE_KEY=your_private_key_here
 
 # Secret preimage for hash validation
 SECRET_PREIMAGE=your_secret_preimage_here
 
-# Amount of xDai to send per successful claim (in wei)
+# Amount of xDai to send per successful claim (in wei) on Gnosis Chain
 AIRDROP_AMOUNT_WEI=1000000000000000000
 
 # Server configuration
@@ -203,8 +203,8 @@ curl -X POST http://localhost:3000/api/airdrop/claim \
 ## Requirements
 
 - Node.js 18+
-- A Chiado testnet wallet with xDai for airdrops
-- Access to Chiado RPC endpoint
+- A Gnosis Chain wallet with xDai for airdrops
+- Access to Gnosis Chain RPC endpoint
 
 ## License
 

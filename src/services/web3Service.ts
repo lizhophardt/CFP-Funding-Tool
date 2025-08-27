@@ -6,7 +6,7 @@ export class Web3Service {
   private account: any;
 
   constructor() {
-    this.web3 = new Web3(config.chiadoRpcUrl);
+    this.web3 = new Web3(config.gnosisRpcUrl);
     this.account = this.web3.eth.accounts.privateKeyToAccount('0x' + config.privateKey);
     this.web3.eth.accounts.wallet.add(this.account);
   }

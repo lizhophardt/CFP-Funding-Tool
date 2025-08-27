@@ -1,12 +1,12 @@
 # Quick Deployment Guide
 
-This guide provides quick and dirty deployment options for the Chiado xDai Airdrop Service.
+This guide provides quick and dirty deployment options for the Gnosis Chain xDai Airdrop Service.
 
 ## Prerequisites
 
 - Node.js 18+ installed
 - Docker installed (for containerized deployment)
-- A Chiado testnet wallet with xDai for airdrops
+- A Gnosis Chain wallet with xDai for airdrops
 - Your wallet private key (without 0x prefix)
 - A secret preimage for hash validation
 
@@ -148,7 +148,7 @@ Key environment variables to configure:
 | `AIRDROP_AMOUNT_WEI` | Amount per claim in wei | 1000000000000000000 (1 xDai) |
 | `PORT` | Server port | 3000 |
 | `NODE_ENV` | Environment mode | development |
-| `CHIADO_RPC_URL` | Chiado RPC endpoint | https://rpc.chiadochain.net |
+| `GNOSIS_RPC_URL` | Gnosis Chain RPC endpoint | https://rpc.gnosischain.com |
 
 ## Troubleshooting
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Quick deployment script for Gnosis Chain xDai Airdrop Service
+# Quick deployment script for Gnosis Chain wxHOPR Airdrop Service
 set -e
 
-echo "🚀 Starting Gnosis Chain xDai Airdrop Service deployment..."
+echo "🚀 Starting Gnosis Chain wxHOPR Airdrop Service deployment..."
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
@@ -14,7 +14,7 @@ if [ ! -f ".env" ]; then
     echo "Required configuration:"
     echo "  - PRIVATE_KEY: Your wallet private key (without 0x prefix)"
     echo "  - SECRET_PREIMAGE: Your secret preimage for hash validation"
-    echo "  - AIRDROP_AMOUNT_WEI: Amount to send per claim (default: 1 xDai)"
+    echo "  - AIRDROP_AMOUNT_WEI: Amount to send per claim (default: 1 wxHOPR)"
     echo ""
     echo "Run this script again after configuring your .env file."
     exit 1

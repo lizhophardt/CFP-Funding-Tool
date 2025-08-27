@@ -1,11 +1,11 @@
-# Gnosis Chain xDai Airdrop Service
+# Gnosis Chain wxHOPR Airdrop Service
 
-A TypeScript-based REST API service for distributing xDai tokens on Gnosis Chain through hash validation. The service validates a secret hash against a preimage and sends xDai to the recipient address if the validation succeeds.
+A TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through hash validation. The service validates a secret hash against a preimage and sends wxHOPR tokens to the recipient address if the validation succeeds.
 
 ## Features
 
 - 🔐 **Hash Validation**: Validates SHA-256 hashes against a configured preimage
-- 💰 **Automated Airdrops**: Sends xDai on Gnosis Chain to valid recipients
+- 💰 **Automated Airdrops**: Sends wxHOPR tokens on Gnosis Chain to valid recipients
 - 🚫 **Duplicate Prevention**: Prevents multiple claims with the same hash
 - 🛡️ **Security**: Built-in validation, rate limiting, and error handling
 - 📊 **Status Monitoring**: Real-time service status and balance monitoring
@@ -33,13 +33,13 @@ Edit `.env` with your configuration:
 # Gnosis Chain RPC URL
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
 
-# Private key for the wallet that will send xDai on Gnosis Chain (without 0x prefix)
+# Private key for the wallet that will send wxHOPR tokens (without 0x prefix)
 PRIVATE_KEY=your_private_key_here
 
 # Secret preimage for hash validation
 SECRET_PREIMAGE=your_secret_preimage_here
 
-# Amount of xDai to send per successful claim (in wei) on Gnosis Chain
+# Amount of wxHOPR tokens to send per successful claim (in wei, 18 decimals)
 AIRDROP_AMOUNT_WEI=1000000000000000000
 
 # Server configuration
@@ -95,7 +95,7 @@ Get service status, balance, and statistics.
   "data": {
     "isConnected": true,
     "accountAddress": "0x...",
-    "balance": "10.5 xDai",
+    "balance": "10.5 wxHOPR",
     "processedCount": 42
   }
 }
@@ -143,7 +143,7 @@ The service uses SHA-256 for hash validation:
 1. You configure a secret preimage in the environment variables
 2. Users generate a SHA-256 hash of this preimage
 3. The service validates the provided hash against the expected hash
-4. If valid, the service sends xDai to the recipient address
+4. If valid, the service sends wxHOPR tokens to the recipient address
 
 ### Example Hash Generation
 
@@ -203,7 +203,7 @@ curl -X POST http://localhost:3000/api/airdrop/claim \
 ## Requirements
 
 - Node.js 18+
-- A Gnosis Chain wallet with xDai for airdrops
+- A Gnosis Chain wallet with wxHOPR tokens for airdrops and xDai for gas fees
 - Access to Gnosis Chain RPC endpoint
 
 ## License

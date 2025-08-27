@@ -48,7 +48,7 @@ app.use('/api/airdrop', airdropRoutes);
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'Chiado xDai Airdrop Service',
+    message: 'Chiado wxHOPR Airdrop Service',
     version: '1.0.0',
     endpoints: {
       'POST /api/airdrop/claim': 'Claim an airdrop with hash and recipient address',

@@ -15,6 +15,7 @@ export interface Config {
   privateKey: string;
   secretPreimage: string;
   secretPreimages: string[];
+  wxHoprTokenAddress: string;
   airdropAmountWei: string;
   port: number;
   nodeEnv: string;

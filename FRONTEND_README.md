@@ -1,6 +1,6 @@
-# Chiado xDai Airdrop Frontend
+# Chiado wxHOPR Airdrop Frontend
 
-A modern, responsive web frontend for claiming Chiado xDai airdrops.
+A modern, responsive web frontend for claiming Chiado wxHOPR airdrops.
 
 ## Features
 

@@ -1,12 +1,12 @@
 # Quick Deployment Guide
 
-This guide provides quick and dirty deployment options for the Gnosis Chain xDai Airdrop Service.
+This guide provides quick and dirty deployment options for the Gnosis Chain wxHOPR Airdrop Service.
 
 ## Prerequisites
 
 - Node.js 18+ installed
 - Docker installed (for containerized deployment)
-- A Gnosis Chain wallet with xDai for airdrops
+- A Gnosis Chain wallet with wxHOPR tokens for airdrops and xDai for gas fees
 - Your wallet private key (without 0x prefix)
 - A secret preimage for hash validation
 
@@ -27,7 +27,7 @@ nano .env
 Required configuration:
 - `PRIVATE_KEY`: Your wallet private key (without 0x prefix)
 - `SECRET_PREIMAGE`: Your secret preimage for hash validation
-- `AIRDROP_AMOUNT_WEI`: Amount to send per claim (default: 1 xDai)
+- `AIRDROP_AMOUNT_WEI`: Amount to send per claim (default: 1 wxHOPR)
 
 ### 2. Deploy with Script
 
@@ -145,7 +145,7 @@ Key environment variables to configure:
 |----------|-------------|---------|
 | `PRIVATE_KEY` | Wallet private key (without 0x) | Required |
 | `SECRET_PREIMAGE` | Secret for hash validation | Required |
-| `AIRDROP_AMOUNT_WEI` | Amount per claim in wei | 1000000000000000000 (1 xDai) |
+| `AIRDROP_AMOUNT_WEI` | Amount per claim in wei | 1000000000000000000 (1 wxHOPR) |
 | `PORT` | Server port | 3000 |
 | `NODE_ENV` | Environment mode | development |
 | `GNOSIS_RPC_URL` | Gnosis Chain RPC endpoint | https://rpc.gnosischain.com |
@@ -168,7 +168,7 @@ Key environment variables to configure:
 ## Security Notes
 
 - Keep your `PRIVATE_KEY` secure and never commit it to version control
-- Use a dedicated wallet for production with appropriate xDai balance
+- Use a dedicated wallet for production with appropriate wxHOPR token balance and xDai for gas fees
 - Consider using multiple preimages for better security
 - Monitor your wallet balance regularly
 

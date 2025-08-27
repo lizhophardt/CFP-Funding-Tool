@@ -91,14 +91,14 @@ export class AirdropService {
       return {
         isConnected,
         accountAddress,
-        balance: `${balance} xDai`,
+        balance: `${balance} wxHOPR`,
         processedCount: this.processedHashes.size
       };
     } catch (error) {
       return {
         isConnected: false,
         accountAddress: '',
-        balance: '0 xDai',
+        balance: '0 wxHOPR',
         processedCount: this.processedHashes.size
       };
     }

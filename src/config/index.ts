@@ -10,7 +10,8 @@ export const config: Config = {
   secretPreimages: process.env.SECRET_PREIMAGES 
     ? process.env.SECRET_PREIMAGES.split(',').map(s => s.trim())
     : [process.env.SECRET_PREIMAGE || ''],
-  airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '1000000000000000000', // 1 xDai by default
+  wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
+  airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '1000000000000000000', // 1 wxHOPR by default (18 decimals)
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development'
 };

@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Quick Deploy - Gnosis Chain xDai Airdrop Service');
+console.log('🚀 Quick Deploy - Gnosis Chain wxHOPR Airdrop Service');
 console.log('===============================================\n');
 
 // Check if .env file exists
@@ -22,7 +22,7 @@ if (!fs.existsSync(envPath)) {
     console.log('\n❗ Please edit .env with your configuration:');
     console.log('  - PRIVATE_KEY: Your wallet private key (without 0x prefix)');
     console.log('  - SECRET_PREIMAGE: Your secret preimage for hash validation');
-    console.log('  - AIRDROP_AMOUNT_WEI: Amount to send per claim (default: 1 xDai)');
+    console.log('  - AIRDROP_AMOUNT_WEI: Amount to send per claim (default: 1 wxHOPR)');
     console.log('\nRun this script again after configuring your .env file.');
     process.exit(1);
 }

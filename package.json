@@ -1,7 +1,7 @@
 {
   "name": "gnosis-airdrop-service",
   "version": "2.0.0",
-  "description": "TypeScript-based airdrop distribution service for Gnosis Chain xDai",
+  "description": "TypeScript-based airdrop distribution service for Gnosis Chain wxHOPR tokens",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

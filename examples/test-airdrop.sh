@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Test script for the Gnosis Chain xDai Airdrop Service
+# Test script for the Gnosis Chain wxHOPR Airdrop Service
 # Make sure the service is running on localhost:3000
 
 BASE_URL="http://localhost:3000/api/airdrop"
 
-echo "🧪 Testing Gnosis Chain xDai Airdrop Service"
+echo "🧪 Testing Gnosis Chain wxHOPR Airdrop Service"
 echo "======================================"
 
 # Test 1: Health check
@@ -45,5 +45,5 @@ echo "✅ Test completed!"
 echo ""
 echo "Note: The airdrop claim will only succeed if:"
 echo "- The generated hash matches your configured SECRET_PREIMAGE"
-echo "- You have sufficient xDai balance in your wallet"
+echo "- You have sufficient wxHOPR token balance and xDai for gas fees in your wallet"
 echo "- The recipient address is valid"

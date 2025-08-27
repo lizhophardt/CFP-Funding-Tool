@@ -10,11 +10,11 @@ async function startServer(): Promise<void> {
 
     // Start the server
     const server = app.listen(config.port, () => {
-      console.log(`🚀 Chiado xDai Airdrop Service started successfully`);
+      console.log(`🚀 Chiado wxHOPR Airdrop Service started successfully`);
       console.log(`📡 Server running on port ${config.port}`);
       console.log(`🌍 Environment: ${config.nodeEnv}`);
       console.log(`💰 Airdrop amount: ${config.airdropAmountWei} wei`);
-      console.log(`🔗 Chiado RPC: ${config.chiadoRpcUrl}`);
+      console.log(`🔗 Gnosis RPC: ${config.gnosisRpcUrl}`);
       console.log('');
       console.log('Available endpoints:');
       console.log(`  POST http://localhost:${config.port}/api/airdrop/claim`);

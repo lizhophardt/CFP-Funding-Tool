@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "dev:watch": "nodemon --exec ts-node src/index.ts"
+    "dev:watch": "nodemon --exec ts-node src/index.ts",
+    "deploy": "./deploy.sh",
+    "quick-deploy": "node scripts/quick-deploy.js"
   },
   "keywords": ["airdrop", "chiado", "xdai", "typescript", "web3"],
   "author": "",

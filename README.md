@@ -209,3 +209,4 @@ curl -X POST http://localhost:3000/api/airdrop/claim \
 ## License
 
 MIT
+# Force Railway redeploy - Thu Aug 28 17:03:01 WIB 2025

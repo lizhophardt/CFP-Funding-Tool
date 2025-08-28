@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chiado wxHOPR Airdrop Claim</title>
+    <title>wxHOPR Airdrop Claim</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,8 +14,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Source Code Pro', monospace;
+            background: #ffffa0;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -24,13 +25,14 @@
 
         .container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 80, 0.2);
             padding: 40px;
             width: 100%;
             max-width: 500px;
             position: relative;
             overflow: hidden;
+            border: 2px solid #3c64a5;
         }
 
         .container::before {
@@ -40,37 +42,40 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #000050 0%, #0000b4 50%, #3c64a5 100%);
+            border-radius: 16px 16px 0 0;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 48px;
         }
 
         .header h1 {
-            color: #333;
+            color: #000050;
             font-size: 2.2em;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
+            letter-spacing: 0.02em;
         }
 
         .header p {
-            color: #666;
-            font-size: 1.1em;
+            color: #0000b4;
+            font-size: 1em;
             line-height: 1.5;
+            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 32px;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: #000050;
             font-weight: 600;
-            font-size: 0.95em;
+            font-size: 0.9em;
         }
 
         .input-container {
@@ -80,60 +85,69 @@
         .form-group input {
             width: 100%;
             padding: 15px 20px;
-            border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
+            border: 2px solid #3c64a5;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-family: 'Source Code Pro', monospace;
+            transition: all 0.2s ease;
+            background: white;
+            color: #000050;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #0000b4;
             background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 0, 180, 0.2);
         }
 
         .form-group input.error {
-            border-color: #e74c3c;
-            background: #fdf2f2;
+            border-color: #cc0000;
+            background: #ffe6e6;
         }
 
         .error-message {
-            color: #e74c3c;
-            font-size: 0.85em;
-            margin-top: 5px;
+            color: #E53E3E;
+            font-size: 0.875em;
+            margin-top: 8px;
             display: none;
+            font-weight: 500;
         }
 
         .btn {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #0000b4 0%, #3c64a5 100%);
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
+            border-radius: 8px;
+            font-size: 1em;
             font-weight: 600;
+            font-family: 'Source Code Pro', monospace;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 80, 0.3);
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(0, 0, 80, 0.4);
+            background: linear-gradient(135deg, #000050 0%, #0000b4 100%);
         }
 
         .btn:active {
             transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 80, 0.3);
         }
 
         .btn:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            background: #999;
+            box-shadow: none;
         }
 
         .btn .spinner {
@@ -153,11 +167,12 @@
         }
 
         .result {
-            margin-top: 25px;
+            margin-top: 24px;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 8px;
             display: none;
             animation: slideIn 0.3s ease;
+            font-family: 'Source Code Pro', monospace;
         }
 
         @keyframes slideIn {
@@ -172,34 +187,40 @@
         }
 
         .result.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+            background: #b4f0ff;
+            border: 2px solid #3c64a5;
+            color: #000050;
+            box-shadow: 0 4px 12px rgba(60, 100, 165, 0.2);
         }
 
         .result.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background: #ffe6e6;
+            border: 2px solid #cc0000;
+            color: #800000;
+            box-shadow: 0 4px 12px rgba(204, 0, 0, 0.2);
         }
 
         .result h3 {
-            margin-bottom: 10px;
-            font-size: 1.2em;
+            margin-bottom: 12px;
+            font-size: 1.25em;
+            font-weight: 700;
         }
 
         .result p {
-            margin-bottom: 8px;
-            line-height: 1.4;
+            margin-bottom: 10px;
+            line-height: 1.5;
+            font-weight: 500;
         }
 
         .result .tx-hash {
             word-break: break-all;
-            font-family: 'Courier New', monospace;
-            background: rgba(0, 0, 0, 0.1);
-            padding: 8px;
+            font-family: 'Source Code Pro', monospace;
+            background: rgba(0, 0, 80, 0.1);
+            padding: 10px;
             border-radius: 6px;
-            font-size: 0.9em;
+            font-size: 0.8em;
+            border: 1px solid #3c64a5;
+            color: #000050;
         }
 
 
@@ -221,8 +242,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-coins"></i> Chiado wxHOPR Airdrop</h1>
-            <p>Enter your recipient address and hash to claim your airdrop</p>
+            <h1><i class="fas fa-coins"></i> wxHOPR Airdrop</h1>
+            <p>Claim your wxHOPR tokens on Gnosis Chain to run Gnosis VPN</p>
         </div>
 
         <form id="airdropForm">
@@ -251,7 +272,7 @@
                         type="text" 
                         id="hash" 
                         name="hash"
-                        placeholder="Enter your hash..." 
+                        placeholder="d443093833fa3dbfb0c12286eea32797a855e00b3da9960cd8802fe54a46feea" 
                         required
                     >
                     <div class="error-message" id="hashError"></div>
@@ -416,13 +437,15 @@
                     let details = '';
                     if (data.transactionHash) {
                         details += `<p><strong>Transaction Hash:</strong></p>`;
-                        details += `<div class="tx-hash">${data.transactionHash}</div>`;
+                        details += `<div class="tx-hash"><a href="https://gnosis.blockscout.com/tx/${data.transactionHash}" target="_blank" style="color: inherit; text-decoration: underline;">${data.transactionHash}</a></div>`;
                     }
                     if (data.amount) {
-                        details += `<p><strong>Amount:</strong> ${data.amount} wxHOPR</p>`;
+                        // Convert wei to decimal (assuming 18 decimals)
+                        const amountInDecimals = parseFloat(data.amount) / Math.pow(10, 18);
+                        details += `<p><strong>Amount:</strong> ${amountInDecimals} wxHOPR</p>`;
                     }
 
-                    showResult(true, '🎉 Airdrop Claimed Successfully!', data.message, details);
+                    showResult(true, '🎉 Airdrop Claimed Successfully!', '', details);
                     
                     // Clear form on success
                     form.reset();

@@ -27,7 +27,7 @@ nano .env
 Required configuration:
 - `PRIVATE_KEY`: Your wallet private key (without 0x prefix)
 - `SECRET_PREIMAGE`: Your secret preimage for hash validation
-- `AIRDROP_AMOUNT_WEI`: Amount to send per claim (default: 1 wxHOPR)
+- `AIRDROP_AMOUNT_WEI`: Amount to send per claim (default: 0.01 wxHOPR)
 
 ### 2. Deploy with Script
 
@@ -145,7 +145,7 @@ Key environment variables to configure:
 |----------|-------------|---------|
 | `PRIVATE_KEY` | Wallet private key (without 0x) | Required |
 | `SECRET_PREIMAGE` | Secret for hash validation | Required |
-| `AIRDROP_AMOUNT_WEI` | Amount per claim in wei | 1000000000000000000 (1 wxHOPR) |
+| `AIRDROP_AMOUNT_WEI` | Amount per claim in wei | 10000000000000000 (0.01 wxHOPR) |
 | `PORT` | Server port | 3000 |
 | `NODE_ENV` | Environment mode | development |
 | `GNOSIS_RPC_URL` | Gnosis Chain RPC endpoint | https://rpc.gnosischain.com |

@@ -14,7 +14,7 @@ if [ ! -f ".env" ]; then
     echo "Required configuration:"
     echo "  - PRIVATE_KEY: Your wallet private key (without 0x prefix)"
     echo "  - SECRET_PREIMAGE: Your secret preimage for hash validation"
-    echo "  - AIRDROP_AMOUNT_WEI: Amount to send per claim (default: 1 wxHOPR)"
+    echo "  - AIRDROP_AMOUNT_WEI: Amount to send per claim (default: 0.01 wxHOPR)"
     echo ""
     echo "Run this script again after configuring your .env file."
     exit 1

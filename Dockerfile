@@ -10,8 +10,9 @@ COPY package*.json ./
 # Install all dependencies (including dev deps for building)
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code (excluding frontend files)
+COPY src/ ./src/
+COPY tsconfig.json ./
 
 # Build the application
 RUN npm run build

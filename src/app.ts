@@ -22,7 +22,9 @@ app.use(helmet({
   },
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : true, // Configure as needed
+  origin: process.env.NODE_ENV === 'production' ? 
+    ['https://funding.lizhophart.eth', 'https://funding.lizhophardt.eth'] : 
+    true, // Allow your ENS frontend domain in production
   credentials: true
 }));
 
@@ -30,8 +32,8 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files from public directory
-app.use(express.static('public'));
+// Static file serving removed for API-only deployment
+// Frontend will be served from funding.lizhophart.eth
 
 // Request logging in development
 if (config.nodeEnv === 'development') {

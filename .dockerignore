@@ -2,11 +2,27 @@
 node_modules
 npm-debug.log*
 
+# Frontend files (will be served separately)
+public/
+public/**
+FRONTEND_README.md
+
+# Development and deployment files
+.git
+.gitignore
+*.md
+README.md
+DEPLOYMENT.md
+railway-env-vars.md
+deploy.sh
+deploy.sh.backup
+examples/
+scripts/
+
 # Environment files
 .env
 .env.local
 .env.production
-.env.test
 
 # Logs
 logs
@@ -21,10 +37,8 @@ pids
 # Coverage directory used by tools like istanbul
 coverage
 
-# nyc test coverage
-.nyc_output
-
 # Dependency directories
+node_modules/
 jspm_packages/
 
 # Optional npm cache directory
@@ -42,32 +56,7 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
-# IDE files
-.vscode
-.idea
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Git
-.git
-.gitignore
-
 # Docker
 Dockerfile
 docker-compose.yml
 .dockerignore
-
-# Development files
-README.md
-FRONTEND_README.md
-examples/
-scripts/generate-hash.js

@@ -46,17 +46,23 @@ if (config.nodeEnv === 'development') {
 // Routes
 app.use('/api/airdrop', airdropRoutes);
 
-// Root route
+// API root route - explicitly return JSON only
 app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
   res.json({
     success: true,
-    message: 'Chiado wxHOPR Airdrop Service',
-    version: '1.0.0',
+    message: 'Chiado wxHOPR Airdrop API Service',
+    version: '2.0.0',
+    type: 'API_ONLY',
     endpoints: {
       'POST /api/airdrop/claim': 'Claim an airdrop with hash and recipient address',
       'GET /api/airdrop/status': 'Get service status and balance',
       'POST /api/airdrop/generate-test-hash': 'Generate a test hash for development',
       'GET /api/airdrop/health': 'Health check endpoint'
+    },
+    frontend: {
+      url: 'https://funding.lizhophart.eth',
+      note: 'Frontend is served separately from ENS domain'
     }
   });
 });

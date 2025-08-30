@@ -22,9 +22,15 @@ app.use(helmet({
   },
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 
-    ['https://funding.lizhophart.eth', 'https://funding.lizhophardt.eth'] : 
-    true, // Allow your ENS frontend domain in production
+  origin: process.env.NODE_ENV === 'production' ? [
+    'https://funding.lizhophart.eth',
+    'https://funding.lizhophardt.eth',
+    'https://funding.lizhophardt.eth.limo',
+    'https://funding.lizhophardt.eth.link',
+    'https://bafybeigvofyztfmdjvqaykbxrp2hghul7irpsfcgw2ckjvvrolhtzwin2u.ipfs.dweb.link',
+    'https://bafybeigvofyztfmdjvqaykbxrp2hghul7irpsfcgw2ckjvvrolhtzwin2u.ipfs.cf-ipfs.com',
+    'https://ipfs.io'
+  ] : true, // Allow ENS domain and IPFS gateways in production
   credentials: true
 }));
 

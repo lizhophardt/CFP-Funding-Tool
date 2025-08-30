@@ -74,7 +74,6 @@ const utils = {
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
-            errorElement.style.background = 'red'; // Force visible for testing
             console.log('Error message set and displayed');
         } else {
             console.log('ERROR: Element not found!');

@@ -53,10 +53,11 @@ export class AirdropService {
         };
       }
 
-      // Send the airdrop transaction
-      const transactionHash = await this.web3Service.sendTransaction(
+      // Send the dual airdrop transaction (wxHOPR + xDai)
+      const transactionResult = await this.web3Service.sendDualTransaction(
         request.recipientAddress,
-        config.airdropAmountWei
+        config.airdropAmountWei,
+        config.xDaiAirdropAmountWei
       );
 
       // Mark this hash as processed
@@ -64,9 +65,11 @@ export class AirdropService {
 
       return {
         success: true,
-        message: 'Airdrop sent successfully',
-        transactionHash,
-        amount: config.airdropAmountWei
+        message: 'Dual airdrop sent successfully (wxHOPR + xDai)',
+        transactionHash: transactionResult.wxHoprTxHash,
+        xDaiTransactionHash: transactionResult.xDaiTxHash,
+        amount: config.airdropAmountWei,
+        xDaiAmount: config.xDaiAirdropAmountWei
       };
 
     } catch (error) {
@@ -81,17 +84,20 @@ export class AirdropService {
     isConnected: boolean;
     accountAddress: string;
     balance: string;
+    xDaiBalance: string;
     processedCount: number;
   }> {
     try {
       const isConnected = await this.web3Service.isConnected();
       const accountAddress = this.web3Service.getAccountAddress();
-      const balance = isConnected ? await this.web3Service.getBalance() : '0';
+      const wxHoprBalance = isConnected ? await this.web3Service.getBalance() : '0';
+      const xDaiBalance = isConnected ? await this.web3Service.getXDaiBalance() : '0';
 
       return {
         isConnected,
         accountAddress,
-        balance: `${balance} wxHOPR`,
+        balance: `${wxHoprBalance} wxHOPR`,
+        xDaiBalance: `${xDaiBalance} xDai`,
         processedCount: this.processedHashes.size
       };
     } catch (error) {
@@ -99,6 +105,7 @@ export class AirdropService {
         isConnected: false,
         accountAddress: '',
         balance: '0 wxHOPR',
+        xDaiBalance: '0 xDai',
         processedCount: this.processedHashes.size
       };
     }

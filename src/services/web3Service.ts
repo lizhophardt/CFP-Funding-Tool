@@ -58,7 +58,16 @@ export class Web3Service {
     }
   }
 
-  async sendTransaction(recipientAddress: string, amountWei: string): Promise<string> {
+  async getXDaiBalance(): Promise<string> {
+    try {
+      const balance = await this.web3.eth.getBalance(this.account.address);
+      return this.web3.utils.fromWei(balance, 'ether');
+    } catch (error) {
+      throw new Error(`Failed to get xDai balance: ${error}`);
+    }
+  }
+
+  async sendDualTransaction(recipientAddress: string, wxHoprAmountWei: string, xDaiAmountWei: string): Promise<{wxHoprTxHash: string, xDaiTxHash: string}> {
     try {
       console.log(`🔍 WEB3 ADDRESS VALIDATION:`);
       console.log(`   📍 Address: "${recipientAddress}"`);
@@ -75,54 +84,98 @@ export class Web3Service {
 
       // Check if we have enough wxHOPR token balance
       const tokenBalance = await this.tokenContract.methods.balanceOf(this.account.address).call();
-      const amountBigInt = BigInt(amountWei);
+      const wxHoprAmountBigInt = BigInt(wxHoprAmountWei);
       const tokenBalanceBigInt = BigInt(tokenBalance);
 
-      if (tokenBalanceBigInt < amountBigInt) {
+      if (tokenBalanceBigInt < wxHoprAmountBigInt) {
         throw new Error('Insufficient wxHOPR balance for airdrop');
       }
 
-      // Check native xDai balance for gas fees
+      // Check native xDai balance
       const nativeBalance = await this.web3.eth.getBalance(this.account.address);
       const gasPrice = await this.web3.eth.getGasPrice();
       
       // Estimate gas for token transfer
-      const transferData = this.tokenContract.methods.transfer(recipientAddress, amountWei).encodeABI();
-      const gasEstimate = await this.web3.eth.estimateGas({
+      const transferData = this.tokenContract.methods.transfer(recipientAddress, wxHoprAmountWei).encodeABI();
+      const tokenGasEstimate = await this.web3.eth.estimateGas({
         from: this.account.address,
         to: config.wxHoprTokenAddress,
         data: transferData
       });
 
-      // Check if we have enough native balance for gas fees
-      const gasCost = BigInt(gasPrice) * BigInt(gasEstimate);
-      if (BigInt(nativeBalance) < gasCost) {
-        throw new Error('Insufficient xDai balance for gas fees');
+      // Estimate gas for native xDai transfer
+      const xDaiGasEstimate = await this.web3.eth.estimateGas({
+        from: this.account.address,
+        to: recipientAddress,
+        value: xDaiAmountWei
+      });
+
+      // Calculate total gas costs
+      const tokenGasCost = BigInt(gasPrice) * BigInt(tokenGasEstimate);
+      const xDaiGasCost = BigInt(gasPrice) * BigInt(xDaiGasEstimate);
+      const totalGasCost = tokenGasCost + xDaiGasCost;
+      const xDaiAmountBigInt = BigInt(xDaiAmountWei);
+      const totalXDaiNeeded = totalGasCost + xDaiAmountBigInt;
+
+      if (BigInt(nativeBalance) < totalXDaiNeeded) {
+        throw new Error(`Insufficient xDai balance. Need ${this.web3.utils.fromWei(totalXDaiNeeded.toString(), 'ether')} xDai but only have ${this.web3.utils.fromWei(nativeBalance, 'ether')}`);
       }
 
-      // Send token transfer transaction
-      const transaction = {
+      // Send wxHOPR token transfer transaction first
+      const tokenTransaction = {
         from: this.account.address,
         to: config.wxHoprTokenAddress,
         data: transferData,
-        gas: gasEstimate,
+        gas: tokenGasEstimate,
         gasPrice: gasPrice
       };
 
-      const signedTransaction = await this.web3.eth.accounts.signTransaction(
-        transaction,
+      const signedTokenTransaction = await this.web3.eth.accounts.signTransaction(
+        tokenTransaction,
         '0x' + config.privateKey
       );
 
-      if (!signedTransaction.rawTransaction) {
-        throw new Error('Failed to sign transaction');
+      if (!signedTokenTransaction.rawTransaction) {
+        throw new Error('Failed to sign wxHOPR token transaction');
       }
 
-      const receipt = await this.web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
-      return receipt.transactionHash.toString();
+      const tokenReceipt = await this.web3.eth.sendSignedTransaction(signedTokenTransaction.rawTransaction);
+      console.log(`✅ wxHOPR token transfer successful: ${tokenReceipt.transactionHash}`);
+
+      // Send native xDai transfer transaction
+      const xDaiTransaction = {
+        from: this.account.address,
+        to: recipientAddress,
+        value: xDaiAmountWei,
+        gas: xDaiGasEstimate,
+        gasPrice: gasPrice
+      };
+
+      const signedXDaiTransaction = await this.web3.eth.accounts.signTransaction(
+        xDaiTransaction,
+        '0x' + config.privateKey
+      );
+
+      if (!signedXDaiTransaction.rawTransaction) {
+        throw new Error('Failed to sign xDai transaction');
+      }
+
+      const xDaiReceipt = await this.web3.eth.sendSignedTransaction(signedXDaiTransaction.rawTransaction);
+      console.log(`✅ xDai transfer successful: ${xDaiReceipt.transactionHash}`);
+
+      return {
+        wxHoprTxHash: tokenReceipt.transactionHash.toString(),
+        xDaiTxHash: xDaiReceipt.transactionHash.toString()
+      };
     } catch (error) {
-      throw new Error(`Failed to send wxHOPR transaction: ${error}`);
+      throw new Error(`Failed to send dual transaction: ${error}`);
     }
+  }
+
+  // Keep the old method for backward compatibility, but mark as deprecated
+  async sendTransaction(recipientAddress: string, amountWei: string): Promise<string> {
+    const result = await this.sendDualTransaction(recipientAddress, amountWei, config.xDaiAirdropAmountWei);
+    return result.wxHoprTxHash;
   }
 
   async isConnected(): Promise<boolean> {

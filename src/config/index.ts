@@ -12,6 +12,7 @@ export const config: Config = {
     : [process.env.SECRET_PREIMAGE || ''],
   wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
   airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000', // 0.01 wxHOPR by default (18 decimals)
+  xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000', // 0.01 xDai by default (18 decimals)
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development'
 };
@@ -36,8 +37,12 @@ export function validateConfig(): void {
     throw new Error('Private key must be a 64-character hexadecimal string');
   }
 
-  // Validate airdrop amount is a valid number
+  // Validate airdrop amounts are valid numbers
   if (isNaN(Number(config.airdropAmountWei)) || Number(config.airdropAmountWei) <= 0) {
-    throw new Error('Airdrop amount must be a positive number');
+    throw new Error('wxHOPR airdrop amount must be a positive number');
+  }
+  
+  if (isNaN(Number(config.xDaiAirdropAmountWei)) || Number(config.xDaiAirdropAmountWei) <= 0) {
+    throw new Error('xDai airdrop amount must be a positive number');
   }
 }

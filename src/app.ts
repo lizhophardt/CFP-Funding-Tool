@@ -57,12 +57,17 @@ app.get('/', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.json({
     success: true,
-    message: 'Chiado wxHOPR Airdrop API Service',
-    version: '2.0.0',
+    message: 'Chiado wxHOPR + xDai Dual Airdrop API Service',
+    version: '2.1.0',
     type: 'API_ONLY',
+    airdropInfo: {
+      wxHoprAmount: '0.01 wxHOPR',
+      xDaiAmount: '0.01 xDai',
+      description: 'Recipients get both wxHOPR tokens and native xDai'
+    },
     endpoints: {
-      'POST /api/airdrop/claim': 'Claim an airdrop with hash and recipient address',
-      'GET /api/airdrop/status': 'Get service status and balance',
+      'POST /api/airdrop/claim': 'Claim dual airdrop (wxHOPR + xDai) with hash and recipient address',
+      'GET /api/airdrop/status': 'Get service status and both wxHOPR/xDai balances',
       'POST /api/airdrop/generate-test-hash': 'Generate a test hash for development',
       'GET /api/airdrop/health': 'Health check endpoint'
     },

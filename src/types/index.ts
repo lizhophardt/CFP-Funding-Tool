@@ -7,7 +7,9 @@ export interface AirdropResponse {
   success: boolean;
   message: string;
   transactionHash?: string;
+  xDaiTransactionHash?: string;
   amount?: string;
+  xDaiAmount?: string;
 }
 
 export interface Config {
@@ -17,6 +19,7 @@ export interface Config {
   secretPreimages: string[];
   wxHoprTokenAddress: string;
   airdropAmountWei: string;
+  xDaiAirdropAmountWei: string;
   port: number;
   nodeEnv: string;
 }

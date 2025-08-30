@@ -31,7 +31,7 @@ const elements = {
     resultTitle: document.getElementById('resultTitle'),
     resultMessage: document.getElementById('resultMessage'),
     resultDetails: document.getElementById('resultDetails'),
-    networkStatus: document.getElementById('networkStatus')
+
 };
 
 // State management
@@ -63,20 +63,12 @@ const utils = {
         const input = elements[fieldName];
         const errorElement = document.getElementById(fieldName + 'Error');
         
-        console.log('showError called:', fieldName, message);
-        console.log('Looking for element ID:', fieldName + 'Error');
-        console.log('Error element found:', errorElement);
-        
         if (input) {
             input.classList.add('error');
-            console.log('Added error class to input');
         }
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
-            console.log('Error message set and displayed');
-        } else {
-            console.log('ERROR: Element not found!');
         }
     },
 
@@ -202,17 +194,7 @@ const ui = {
         }
     },
 
-    /**
-     * Update network status indicator
-     */
-    updateNetworkStatus(connected = true) {
-        if (elements.networkStatus) {
-            const statusDot = elements.networkStatus.querySelector('.status-dot');
-            if (statusDot) {
-                statusDot.style.color = connected ? '#10b981' : '#ef4444';
-            }
-        }
-    }
+
 };
 
 // API Service
@@ -253,10 +235,8 @@ const api = {
         const result = await this.request('/health');
         if (result.success) {
             state.apiStatus = 'healthy';
-            ui.updateNetworkStatus(true);
         } else {
             state.apiStatus = 'unhealthy';
-            ui.updateNetworkStatus(false);
         }
         return result;
     },

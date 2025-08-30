@@ -31,7 +31,7 @@ const elements = {
     resultTitle: document.getElementById('resultTitle'),
     resultMessage: document.getElementById('resultMessage'),
     resultDetails: document.getElementById('resultDetails'),
-    networkStatus: document.getElementById('networkStatus')
+
 };
 
 // State management
@@ -194,17 +194,7 @@ const ui = {
         }
     },
 
-    /**
-     * Update network status indicator
-     */
-    updateNetworkStatus(connected = true) {
-        if (elements.networkStatus) {
-            const statusDot = elements.networkStatus.querySelector('.status-dot');
-            if (statusDot) {
-                statusDot.style.color = connected ? '#10b981' : '#ef4444';
-            }
-        }
-    }
+
 };
 
 // API Service
@@ -245,10 +235,8 @@ const api = {
         const result = await this.request('/health');
         if (result.success) {
             state.apiStatus = 'healthy';
-            ui.updateNetworkStatus(true);
         } else {
             state.apiStatus = 'unhealthy';
-            ui.updateNetworkStatus(false);
         }
         return result;
     },

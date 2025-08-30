@@ -6,9 +6,9 @@ export interface AirdropRequest {
 export interface AirdropResponse {
   success: boolean;
   message: string;
-  transactionHash?: string;
+  wxHOPRTransactionHash?: string;
   xDaiTransactionHash?: string;
-  amount?: string;
+  wxHOPRAmount?: string;
   xDaiAmount?: string;
 }
 

@@ -66,9 +66,9 @@ export class AirdropService {
       return {
         success: true,
         message: 'Dual airdrop sent successfully (wxHOPR + xDai)',
-        transactionHash: transactionResult.wxHoprTxHash,
+        wxHOPRTransactionHash: transactionResult.wxHoprTxHash,
         xDaiTransactionHash: transactionResult.xDaiTxHash,
-        amount: config.airdropAmountWei,
+        wxHOPRAmount: config.airdropAmountWei,
         xDaiAmount: config.xDaiAirdropAmountWei
       };
 

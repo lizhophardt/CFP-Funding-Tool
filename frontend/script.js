@@ -376,7 +376,7 @@ const handlers = {
 
                 ui.showResult(
                     true, 
-                    '🎉 Dual Airdrop Claimed Successfully!', 
+                    '🎉 Airdrop Claimed Successfully!', 
                     'Both wxHOPR tokens and xDai have been sent to your wallet!',
                     details
                 );

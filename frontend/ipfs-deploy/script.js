@@ -409,11 +409,19 @@ const handlers = {
     },
 
     /**
-     * Handle input changes to clear errors
+     * Handle input changes to clear errors and validate in real-time
      */
     handleInputChange(fieldName) {
         return function() {
             utils.clearError(fieldName);
+            
+            // Real-time validation for recipient address
+            if (fieldName === 'recipientAddress') {
+                const address = this.value.trim();
+                if (address && !utils.isValidEthereumAddress(address)) {
+                    utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
+                }
+            }
         };
     }
 };

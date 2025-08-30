@@ -63,12 +63,18 @@ const utils = {
         const input = elements[fieldName];
         const errorElement = document.getElementById(fieldName + 'Error');
         
+        console.log('showError called:', fieldName, message); // Debug
+        console.log('Error element found:', errorElement); // Debug
+        
         if (input) {
             input.classList.add('error');
         }
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
+            console.log('Error message displayed:', message); // Debug
+        } else {
+            console.log('Error element not found for:', fieldName + 'Error'); // Debug
         }
     },
 

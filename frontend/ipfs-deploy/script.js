@@ -297,10 +297,10 @@ const validation = {
 
         // Validate hash
         if (!hash) {
-            utils.showError('hash', 'Claim hash is required');
+            utils.showError('hash', 'Secret code is required');
             isValid = false;
         } else if (!utils.isValidHash(hash)) {
-            utils.showError('hash', 'Please enter a valid claim hash');
+            utils.showError('hash', 'Please enter a valid secret code');
             isValid = false;
         }
 

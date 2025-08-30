@@ -412,13 +412,15 @@ const handlers = {
      * Handle input changes to clear errors and validate in real-time
      */
     handleInputChange(fieldName) {
-        return function() {
+        return function(event) {
             utils.clearError(fieldName);
             
             // Real-time validation for recipient address
             if (fieldName === 'recipientAddress') {
                 const address = this.value.trim();
-                if (address && !utils.isValidEthereumAddress(address)) {
+                console.log('Address validation triggered:', address); // Debug log
+                if (address && address.length > 0 && !utils.isValidEthereumAddress(address)) {
+                    console.log('Showing address error'); // Debug log
                     utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
                 }
             }
@@ -462,9 +464,10 @@ const app = {
             elements.form.addEventListener('submit', handlers.handleFormSubmit);
         }
 
-        // Input change handlers to clear errors
+        // Input change handlers to clear errors and validate in real-time
         if (elements.recipientAddress) {
             elements.recipientAddress.addEventListener('input', handlers.handleInputChange('recipientAddress'));
+            elements.recipientAddress.addEventListener('blur', handlers.handleInputChange('recipientAddress'));
         }
         
         if (elements.hash) {

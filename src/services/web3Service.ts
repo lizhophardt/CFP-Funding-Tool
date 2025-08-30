@@ -51,8 +51,8 @@ export class Web3Service {
   async getBalance(): Promise<string> {
     try {
       const balance = await this.tokenContract.methods.balanceOf(this.account.address).call();
-      const decimals = await this.tokenContract.methods.decimals().call();
-      return (BigInt(balance) / BigInt(10 ** Number(decimals))).toString();
+      // Use Web3's fromWei to properly handle decimals (wxHOPR has 18 decimals like ETH)
+      return this.web3.utils.fromWei(balance, 'ether');
     } catch (error) {
       throw new Error(`Failed to get wxHOPR balance: ${error}`);
     }

@@ -419,9 +419,15 @@ const handlers = {
             if (fieldName === 'recipientAddress') {
                 const address = this.value.trim();
                 console.log('Address validation triggered:', address); // Debug log
-                if (address && address.length > 0 && !utils.isValidEthereumAddress(address)) {
-                    console.log('Showing address error'); // Debug log
-                    utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
+                
+                // Show error for any non-empty input that's not a valid Ethereum address
+                if (address.length > 0) {
+                    if (!utils.isValidEthereumAddress(address)) {
+                        console.log('Showing address error for:', address); // Debug log
+                        utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
+                    } else {
+                        console.log('Address is valid:', address); // Debug log
+                    }
                 }
             }
         };

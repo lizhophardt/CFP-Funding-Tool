@@ -63,18 +63,12 @@ const utils = {
         const input = elements[fieldName];
         const errorElement = document.getElementById(fieldName + 'Error');
         
-        console.log('showError called:', fieldName, message); // Debug
-        console.log('Error element found:', errorElement); // Debug
-        
         if (input) {
             input.classList.add('error');
         }
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.style.display = 'block';
-            console.log('Error message displayed:', message); // Debug
-        } else {
-            console.log('Error element not found for:', fieldName + 'Error'); // Debug
         }
     },
 
@@ -424,15 +418,11 @@ const handlers = {
             // Real-time validation for recipient address
             if (fieldName === 'recipientAddress') {
                 const address = this.value.trim();
-                console.log('Address validation triggered:', address); // Debug log
                 
                 // Show error for any non-empty input that's not a valid Ethereum address
                 if (address.length > 0) {
                     if (!utils.isValidEthereumAddress(address)) {
-                        console.log('Showing address error for:', address); // Debug log
                         utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
-                    } else {
-                        console.log('Address is valid:', address); // Debug log
                     }
                 }
             }

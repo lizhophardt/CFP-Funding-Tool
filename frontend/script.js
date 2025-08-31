@@ -22,7 +22,7 @@ const CONFIG = {
 const elements = {
     form: document.getElementById('airdropForm'),
     recipientAddress: document.getElementById('recipientAddress'),
-    hash: document.getElementById('hash'),
+    secretCode: document.getElementById('secretCode'),
     claimBtn: document.getElementById('claimBtn'),
     spinner: document.getElementById('spinner'),
     btnText: document.getElementById('btnText'),
@@ -50,10 +50,10 @@ const utils = {
     },
 
     /**
-     * Validate hash format (non-empty string)
+     * Validate secret code format (non-empty string)
      */
-    isValidHash(hash) {
-        return hash && hash.trim().length > 0;
+    isValidSecretCode(secretCode) {
+        return secretCode && secretCode.trim().length > 0;
     },
 
     /**
@@ -92,7 +92,7 @@ const utils = {
      */
     clearAllErrors() {
         this.clearError('recipientAddress');
-        this.clearError('hash');
+        this.clearError('secretCode');
     },
 
     /**
@@ -251,12 +251,12 @@ const api = {
     /**
      * Claim airdrop
      */
-    async claimAirdrop(recipientAddress, hash) {
+    async claimAirdrop(recipientAddress, secretCode) {
         return await this.request('/claim', {
             method: 'POST',
             body: JSON.stringify({
                 recipientAddress: recipientAddress.trim(),
-                hash: hash.trim()
+                secretCode: secretCode.trim()
             })
         });
     }
@@ -272,7 +272,7 @@ const validation = {
         let isValid = true;
 
         const address = elements.recipientAddress?.value?.trim() || '';
-        const hash = elements.hash?.value?.trim() || '';
+        const secretCode = elements.secretCode?.value?.trim() || '';
 
         // Validate recipient address
         if (!address) {
@@ -283,12 +283,12 @@ const validation = {
             isValid = false;
         }
 
-        // Validate hash
-        if (!hash) {
-            utils.showError('hash', 'Secret code is required');
+        // Validate secret code
+        if (!secretCode) {
+            utils.showError('secretCode', 'Secret code is required');
             isValid = false;
-        } else if (!utils.isValidHash(hash)) {
-            utils.showError('hash', 'Please enter a valid secret code');
+        } else if (!utils.isValidSecretCode(secretCode)) {
+            utils.showError('secretCode', 'Please enter a valid secret code');
             isValid = false;
         }
 
@@ -313,7 +313,7 @@ const handlers = {
 
         // Get form data
         const recipientAddress = elements.recipientAddress.value.trim();
-        const hash = elements.hash.value.trim();
+        const secretCode = elements.secretCode.value.trim();
 
         // Start loading state
         ui.setLoading(true);
@@ -321,7 +321,7 @@ const handlers = {
 
         try {
             // Make API request
-            const result = await api.claimAirdrop(recipientAddress, hash);
+            const result = await api.claimAirdrop(recipientAddress, secretCode);
 
             if (result.success && result.data.success) {
                 // Success case
@@ -460,8 +460,8 @@ const app = {
             elements.recipientAddress.addEventListener('blur', handlers.handleInputChange('recipientAddress'));
         }
         
-        if (elements.hash) {
-            elements.hash.addEventListener('input', handlers.handleInputChange('hash'));
+        if (elements.secretCode) {
+            elements.secretCode.addEventListener('input', handlers.handleInputChange('secretCode'));
         }
 
         // Periodic health checks (every 30 seconds)

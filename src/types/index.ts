@@ -1,5 +1,5 @@
 export interface AirdropRequest {
-  hash: string;
+  secretCode: string;
   recipientAddress: string;
 }
 
@@ -15,8 +15,7 @@ export interface AirdropResponse {
 export interface Config {
   gnosisRpcUrl: string;
   privateKey: string;
-  secretPreimage: string;
-  secretPreimages: string[];
+  secretCodes: string[];
   wxHoprTokenAddress: string;
   airdropAmountWei: string;
   xDaiAirdropAmountWei: string;

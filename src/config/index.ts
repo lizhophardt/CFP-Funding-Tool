@@ -6,10 +6,9 @@ dotenv.config();
 export const config: Config = {
   gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
   privateKey: process.env.PRIVATE_KEY || '',
-  secretPreimage: process.env.SECRET_PREIMAGE || '',
-  secretPreimages: process.env.SECRET_PREIMAGES 
-    ? process.env.SECRET_PREIMAGES.split(',').map(s => s.trim())
-    : [process.env.SECRET_PREIMAGE || ''],
+  secretCodes: process.env.SECRET_CODES 
+    ? process.env.SECRET_CODES.split(',').map(s => s.trim())
+    : ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure'],
   wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
   airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000', // 0.01 wxHOPR by default (18 decimals)
   xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000', // 0.01 xDai by default (18 decimals)
@@ -26,10 +25,10 @@ export function validateConfig(): void {
     }
   }
 
-  // Validate that we have at least one preimage
-  if (!config.secretPreimages || config.secretPreimages.length === 0 || 
-      (config.secretPreimages.length === 1 && !config.secretPreimages[0])) {
-    throw new Error('Missing required environment variable: SECRET_PREIMAGE or SECRET_PREIMAGES');
+  // Validate that we have at least one secret code
+  if (!config.secretCodes || config.secretCodes.length === 0 || 
+      (config.secretCodes.length === 1 && !config.secretCodes[0])) {
+    throw new Error('Missing required environment variable: SECRET_CODES');
   }
 
   // Validate private key format

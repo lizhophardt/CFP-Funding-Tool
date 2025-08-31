@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AirdropController } from '../controllers/airdropController';
-import { validateAirdropRequest, validateTestHashRequest } from '../middleware/validation';
+import { validateAirdropRequest } from '../middleware/validation';
 
 const router = Router();
 const airdropController = new AirdropController();
@@ -11,8 +11,8 @@ router.post('/claim', validateAirdropRequest, (req, res) => airdropController.cl
 // GET /api/airdrop/status - Get service status
 router.get('/status', (req, res) => airdropController.getStatus(req, res));
 
-// POST /api/airdrop/generate-test-hash - Generate a test hash for development
-router.post('/generate-test-hash', validateTestHashRequest, (req, res) => airdropController.generateTestHash(req, res));
+// POST /api/airdrop/generate-test-code - Generate a test secret code for development
+router.post('/generate-test-code', (req, res) => airdropController.generateTestCode(req, res));
 
 // GET /api/airdrop/health - Health check
 router.get('/health', (req, res) => airdropController.healthCheck(req, res));

@@ -1,22 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 
 export const validateAirdropRequest = (req: Request, res: Response, next: NextFunction): void => {
-  const { hash, recipientAddress } = req.body;
+  const { secretCode, recipientAddress } = req.body;
 
   // Check if required fields are present
-  if (!hash || !recipientAddress) {
+  if (!secretCode || !recipientAddress) {
     res.status(400).json({
       success: false,
-      message: 'Both hash and recipientAddress are required'
+      message: 'Both secretCode and recipientAddress are required'
     });
     return;
   }
 
-  // Validate hash format (should be hex string)
-  if (typeof hash !== 'string' || !hash.match(/^(0x)?[a-fA-F0-9]{64}$/)) {
+  // Validate secret code format (should be non-empty string)
+  if (typeof secretCode !== 'string' || secretCode.trim().length === 0) {
     res.status(400).json({
       success: false,
-      message: 'Hash must be a 64-character hexadecimal string (with or without 0x prefix)'
+      message: 'Secret code must be a non-empty string'
     });
     return;
   }

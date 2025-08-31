@@ -11,19 +11,19 @@ export class AirdropController {
 
   async claimAirdrop(req: Request, res: Response): Promise<void> {
     try {
-      const { hash, recipientAddress }: AirdropRequest = req.body;
+      const { secretCode, recipientAddress }: AirdropRequest = req.body;
       
       console.log(`🎯 AIRDROP CLAIM REQUEST:`);
       console.log(`   📍 Recipient: ${recipientAddress}`);
-      console.log(`   🔑 Hash: ${hash}`);
+      console.log(`   🔐 Secret Code: ${secretCode}`);
       console.log(`   🕐 Time: ${new Date().toISOString()}`);
 
       // Validate request body
-      if (!hash || !recipientAddress) {
+      if (!secretCode || !recipientAddress) {
         console.log(`❌ VALIDATION FAILED: Missing required fields`);
         res.status(400).json({
           success: false,
-          message: 'Both hash and recipientAddress are required'
+          message: 'Both secretCode and recipientAddress are required'
         });
         return;
       }
@@ -32,7 +32,7 @@ export class AirdropController {
       
       // Process the airdrop
       const result = await this.airdropService.processAirdrop({
-        hash,
+        secretCode,
         recipientAddress
       });
 
@@ -40,8 +40,10 @@ export class AirdropController {
       
       if (result.success) {
         console.log(`✅ AIRDROP SUCCESS:`);
-        console.log(`   💰 Amount: ${result.amount} wei`);
-        console.log(`   📝 Transaction: ${result.transactionHash}`);
+        console.log(`   💰 wxHOPR Amount: ${result.wxHOPRAmount} wei`);
+        console.log(`   💰 xDai Amount: ${result.xDaiAmount} wei`);
+        console.log(`   📝 wxHOPR Transaction: ${result.wxHOPRTransactionHash}`);
+        console.log(`   📝 xDai Transaction: ${result.xDaiTransactionHash}`);
         console.log(`   🎉 Message: ${result.message}`);
       } else {
         console.log(`❌ AIRDROP FAILED:`);
@@ -74,42 +76,32 @@ export class AirdropController {
     }
   }
 
-  async generateTestHash(req: Request, res: Response): Promise<void> {
+  async generateTestCode(req: Request, res: Response): Promise<void> {
     try {
-      const { preimage } = req.body;
+      const { prefix } = req.body;
       
-      console.log(`🔧 HASH GENERATION REQUEST:`);
-      console.log(`   📝 Preimage: "${preimage}"`);
+      console.log(`🔧 SECRET CODE GENERATION REQUEST:`);
+      console.log(`   📝 Prefix: "${prefix || 'TestCode'}"`);
       console.log(`   🕐 Time: ${new Date().toISOString()}`);
 
-      if (!preimage || typeof preimage !== 'string') {
-        console.log(`❌ HASH GENERATION FAILED: Invalid preimage`);
-        res.status(400).json({
-          success: false,
-          message: 'Preimage is required and must be a string'
-        });
-        return;
-      }
-
-      const hash = this.airdropService.generateTestHash(preimage);
+      const secretCode = this.airdropService.generateTestCode(prefix);
       
-      console.log(`✅ HASH GENERATED:`);
-      console.log(`   📝 Preimage: "${preimage}"`);
-      console.log(`   🔑 Hash: ${hash}`);
+      console.log(`✅ SECRET CODE GENERATED:`);
+      console.log(`   🔐 Secret Code: ${secretCode}`);
       
       res.status(200).json({
         success: true,
         data: {
-          preimage,
-          hash
+          secretCode,
+          configuredCodes: this.airdropService.getConfiguredCodes()
         }
       });
 
     } catch (error) {
-      console.log(`💥 HASH GENERATION ERROR: ${error}`);
+      console.log(`💥 SECRET CODE GENERATION ERROR: ${error}`);
       res.status(500).json({
         success: false,
-        message: `Failed to generate test hash: ${error}`
+        message: `Failed to generate test secret code: ${error}`
       });
     }
   }

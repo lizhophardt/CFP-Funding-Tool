@@ -1,38 +1,36 @@
 import { Web3Service } from './web3Service';
-import { HashService } from './hashService';
+import { SecretCodeService } from './secretCodeService';
 import { config } from '../config';
 import { AirdropRequest, AirdropResponse } from '../types';
 
 export class AirdropService {
   private web3Service: Web3Service;
-  private hashService: HashService;
-  private processedHashes: Set<string> = new Set();
+  private secretCodeService: SecretCodeService;
+  private processedCodes: Set<string> = new Set();
 
   constructor() {
     this.web3Service = new Web3Service();
-    this.hashService = new HashService();
+    this.secretCodeService = new SecretCodeService();
   }
 
   async processAirdrop(request: AirdropRequest): Promise<AirdropResponse> {
     try {
-      // Validate hash format and check if it matches the preimage
-      const hashValidation = this.hashService.validateHash(request.hash);
-      if (!hashValidation.isValid) {
+      // Validate secret code
+      const codeValidation = this.secretCodeService.validateSecretCode(request.secretCode);
+      if (!codeValidation.isValid) {
         return {
           success: false,
-          message: hashValidation.message
+          message: codeValidation.message
         };
       }
 
-      // Check if this hash has already been used
-      const normalizedHash = request.hash.startsWith('0x') 
-        ? request.hash.slice(2).toLowerCase() 
-        : request.hash.toLowerCase();
+      // Check if this secret code has already been used
+      const normalizedCode = request.secretCode.trim();
       
-      if (this.processedHashes.has(normalizedHash)) {
+      if (this.processedCodes.has(normalizedCode)) {
         return {
           success: false,
-          message: 'This hash has already been used for an airdrop'
+          message: 'This secret code has already been used for an airdrop'
         };
       }
 
@@ -60,8 +58,8 @@ export class AirdropService {
         config.xDaiAirdropAmountWei
       );
 
-      // Mark this hash as processed
-      this.processedHashes.add(normalizedHash);
+      // Mark this secret code as processed
+      this.processedCodes.add(normalizedCode);
 
       return {
         success: true,
@@ -98,7 +96,7 @@ export class AirdropService {
         accountAddress,
         balance: `${wxHoprBalance} wxHOPR`,
         xDaiBalance: `${xDaiBalance} xDai`,
-        processedCount: this.processedHashes.size
+        processedCount: this.processedCodes.size
       };
     } catch (error) {
       return {
@@ -106,13 +104,18 @@ export class AirdropService {
         accountAddress: '',
         balance: '0 wxHOPR',
         xDaiBalance: '0 xDai',
-        processedCount: this.processedHashes.size
+        processedCount: this.processedCodes.size
       };
     }
   }
 
-  // Method to generate a test hash for development purposes
-  generateTestHash(preimage: string): string {
-    return this.hashService.generateHashFromPreimage(preimage);
+  // Method to generate a test secret code for development purposes
+  generateTestCode(prefix?: string): string {
+    return this.secretCodeService.generateTestCode(prefix);
+  }
+
+  // Method to get configured secret codes for development purposes
+  getConfiguredCodes(): string[] {
+    return this.secretCodeService.getConfiguredCodes();
   }
 }

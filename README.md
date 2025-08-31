@@ -1,15 +1,15 @@
 # Gnosis Chain wxHOPR Airdrop Service
 
-A TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through hash validation. The service validates a secret hash against a preimage and sends wxHOPR tokens to the recipient address if the validation succeeds.
+A TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation. The service validates a secret code against configured valid codes and sends wxHOPR tokens to the recipient address if the validation succeeds.
 
 ## Features
 
-- 🔐 **Hash Validation**: Validates SHA-256 hashes against a configured preimage
+- 🔐 **Secret Code Validation**: Validates secret codes against configured valid codes
 - 💰 **Automated Airdrops**: Sends wxHOPR tokens on Gnosis Chain to valid recipients
-- 🚫 **Duplicate Prevention**: Prevents multiple claims with the same hash
+- 🚫 **Duplicate Prevention**: Prevents multiple claims with the same secret code
 - 🛡️ **Security**: Built-in validation, rate limiting, and error handling
 - 📊 **Status Monitoring**: Real-time service status and balance monitoring
-- 🧪 **Development Tools**: Test hash generation for development
+- 🧪 **Development Tools**: Test secret code generation for development
 
 ## Quick Start
 
@@ -36,8 +36,8 @@ GNOSIS_RPC_URL=https://rpc.gnosischain.com
 # Private key for the wallet that will send wxHOPR tokens (without 0x prefix)
 PRIVATE_KEY=your_private_key_here
 
-# Secret preimage for hash validation
-SECRET_PREIMAGE=your_secret_preimage_here
+# Secret codes for airdrop validation (comma-separated)
+SECRET_CODES=DontTellUncleSam,SecretCode123,HiddenTreasure
 
 # Amount of wxHOPR tokens to send per successful claim (in wei, 18 decimals)
 AIRDROP_AMOUNT_WEI=1000000000000000000
@@ -64,12 +64,12 @@ npm start
 
 ### POST `/api/airdrop/claim`
 
-Claim an airdrop by providing a valid hash and recipient address.
+Claim an airdrop by providing a valid secret code and recipient address.
 
 **Request Body:**
 ```json
 {
-  "hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+  "secretCode": "DontTellUncleSam",
   "recipientAddress": "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
 }
 ```
@@ -101,14 +101,14 @@ Get service status, balance, and statistics.
 }
 ```
 
-### POST `/api/airdrop/generate-test-hash`
+### POST `/api/airdrop/generate-test-code`
 
-Generate a test hash for development purposes.
+Generate a test secret code for development purposes.
 
 **Request Body:**
 ```json
 {
-  "preimage": "hello world"
+  "prefix": "TestCode"
 }
 ```
 
@@ -117,8 +117,8 @@ Generate a test hash for development purposes.
 {
   "success": true,
   "data": {
-    "preimage": "hello world",
-    "hash": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+    "secretCode": "TestCodeabc123",
+    "configuredCodes": ["DontTellUncleSam", "SecretCode123", "HiddenTreasure"]
   }
 }
 ```
@@ -136,28 +136,27 @@ Health check endpoint.
 }
 ```
 
-## Hash Validation
+## Secret Code Validation
 
-The service uses SHA-256 for hash validation:
+The service uses simple string matching for secret code validation:
 
-1. You configure a secret preimage in the environment variables
-2. Users generate a SHA-256 hash of this preimage
-3. The service validates the provided hash against the expected hash
-4. If valid, the service sends wxHOPR tokens to the recipient address
+1. You configure a list of valid secret codes in the environment variables
+2. Users provide one of these secret codes when claiming
+3. The service validates the provided code against the configured valid codes
+4. If valid and not already used, the service sends wxHOPR tokens to the recipient address
+5. Each secret code can only be used once, regardless of the recipient address
 
-### Example Hash Generation
+### Example Secret Codes
 
-```javascript
-const crypto = require('crypto');
-const preimage = "your_secret_preimage";
-const hash = crypto.createHash('sha256').update(preimage, 'utf8').digest('hex');
-console.log(hash); // Use this hash in your airdrop claim
+```bash
+# In your .env file
+SECRET_CODES=DontTellUncleSam,SecretCode123,HiddenTreasure,MySpecialCode2024
 ```
 
 ## Security Features
 
 - **Input Validation**: All inputs are validated for format and security
-- **Duplicate Prevention**: Each hash can only be used once
+- **Duplicate Prevention**: Each secret code can only be used once
 - **Address Validation**: Ethereum addresses are validated before transactions
 - **Balance Checks**: Ensures sufficient balance before sending transactions
 - **Error Handling**: Comprehensive error handling and logging
@@ -181,21 +180,21 @@ src/
 
 ### Testing
 
-Generate a test hash for your configured preimage:
+Generate a test secret code:
 
 ```bash
-curl -X POST http://localhost:3000/api/airdrop/generate-test-hash \
+curl -X POST http://localhost:3000/api/airdrop/generate-test-code \
   -H "Content-Type: application/json" \
-  -d '{"preimage": "your_secret_preimage"}'
+  -d '{"prefix": "MyTestCode"}'
 ```
 
-Then use the returned hash to test the claim endpoint:
+Then use one of your configured secret codes to test the claim endpoint:
 
 ```bash
 curl -X POST http://localhost:3000/api/airdrop/claim \
   -H "Content-Type: application/json" \
   -d '{
-    "hash": "generated_hash_from_above",
+    "secretCode": "DontTellUncleSam",
     "recipientAddress": "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
   }'
 ```

@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wxHOPR Airdrop - Claim Your wxHOPR and xDai</title>
+    <meta name="description" content="Claim your wxHOPR and xDai to use Gnosis VPN">
+    
+    <!-- Fonts and Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colors */
+            --primary-color: #000050;
+            --secondary-color: #0000b4;
+            --accent-color: #3c64a5;
+            --background-color: #ffffa0;
+            --white: #ffffff;
+            --text-dark: #000050;
+            --text-light: #666;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            
+            /* Spacing */
+            --container-padding: 2rem;
+            --section-spacing: 4rem;
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 80, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 80, 0.15);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 80, 0.2);
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            font-family: 'Source Code Pro', monospace;
+            background: var(--background-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--container-padding);
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            border-bottom: 2px solid var(--accent-color);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo i {
+            color: var(--accent-color);
+        }
+
+        /* Main Content */
+        .main {
+            padding: var(--section-spacing) 0;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: var(--section-spacing);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+
+        /* Claim Section */
+        .claim-section {
+            margin-bottom: var(--section-spacing);
+        }
+
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--accent-color);
+            position: relative;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .claim-form {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1rem;
+            border: 2px solid var(--accent-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: 'Source Code Pro', monospace;
+            background: var(--white);
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(0, 0, 180, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-color);
+            background: #fef2f2;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+            pointer-events: none;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* Claim Button */
+        .claim-btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Source Code Pro', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .claim-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .claim-btn:active {
+            transform: translateY(0);
+        }
+
+        .claim-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            background: #999;
+        }
+
+        .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Result Display */
+        .result {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-content {
+            text-align: center;
+            padding: 2rem;
+            border-radius: var(--radius-md);
+            border: 2px solid;
+        }
+
+        .result.success .result-content {
+            background: #f0fdf4;
+            border-color: var(--success-color);
+            color: #15803d;
+        }
+
+        .result.error .result-content {
+            background: #fef2f2;
+            border-color: var(--error-color);
+            color: #dc2626;
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .result h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .result p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .tx-hash {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.875rem;
+            word-break: break-all;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            margin-top: 1rem;
+        }
+
+        .tx-hash a {
+            color: inherit;
+            text-decoration: underline;
+        }
+
+        .tx-hash a:hover {
+            text-decoration: none;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--background-color);
+        }
+
+        .footer-text p {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            :root {
+                --container-padding: 1rem;
+                --section-spacing: 2rem;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+                margin: 0 1rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+            
+            .hero-description {
+                font-size: 1rem;
+            }
+            
+            .form-container {
+                margin: 0 0.5rem;
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Loading States */
+        .loading .spinner {
+            display: inline-block;
+        }
+
+        .loading #btnText {
+            opacity: 0.7;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .visible {
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-coins"></i>
+                    <span>Gnosis VPN Airdrop</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1>Claim Your wxHOPR and xDai</h1>
+                <p class="hero-description">
+                    Get your wxHOPR and xDai to use Gnosis VPN.
+                    Enter your wallet address and secret code to claim your airdrop.
+                </p>
+            </section>
+
+            <!-- Claim Form -->
+            <section class="claim-section">
+                <div class="form-container">
+                    <form id="airdropForm" class="claim-form">
+                        <div class="form-group">
+                            <label for="recipientAddress">
+                                <i class="fas fa-wallet"></i>
+                                Recipient Address
+                            </label>
+                            <div class="input-container">
+                                <input 
+                                    type="text" 
+                                    id="recipientAddress" 
+                                    name="recipientAddress"
+                                    placeholder="0x..." 
+                                    required
+                                    autocomplete="off"
+                                >
+                                <div class="input-icon">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                            </div>
+                            <div class="error-message" id="recipientAddressError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hash">
+                                <i class="fas fa-key"></i>
+                                Secret Code
+                            </label>
+                            <div class="input-container">
+                                <input 
+                                    type="text" 
+                                    id="hash" 
+                                    name="hash"
+                                    placeholder="Enter your secret code..." 
+                                    required
+                                    autocomplete="off"
+                                >
+                                <div class="input-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                            </div>
+                            <div class="error-message" id="hashError"></div>
+                        </div>
+
+                        <button type="submit" class="claim-btn" id="claimBtn">
+                            <div class="btn-content">
+                                <div class="spinner" id="spinner"></div>
+                                <span id="btnText">
+                                    <i class="fas fa-gift"></i>
+                                    Claim Airdrop
+                                </span>
+                            </div>
+                        </button>
+                    </form>
+
+                    <!-- Result Display -->
+                    <div class="result" id="result">
+                        <div class="result-content">
+                            <div class="result-icon" id="resultIcon"></div>
+                            <h3 id="resultTitle"></h3>
+                            <p id="resultMessage"></p>
+                            <div id="resultDetails"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About wxHOPR</a>
+                    <a href="#" class="footer-link">Gnosis VPN</a>
+                    <a href="#" class="footer-link">Support</a>
+                </div>
+                <div class="footer-text">
+                    <p>&copy; 2024 wxHOPR Airdrop. Powered by Gnosis Chain.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            // Your Railway API URL
+            API_BASE_URL: 'https://airdrop-api-only-production.up.railway.app/api/airdrop',
+            
+            // Network configuration
+            NETWORK: {
+                name: 'Gnosis Chain',
+                chainId: 100,
+                blockExplorer: 'https://gnosis.blockscout.com'
+            },
+            
+            // Token configuration
+            TOKEN: {
+                symbol: 'wxHOPR',
+                decimals: 18,
+                amount: '0.01'
+            }
+        };
+
+        // DOM Elements
+        const elements = {
+            form: document.getElementById('airdropForm'),
+            recipientAddress: document.getElementById('recipientAddress'),
+            hash: document.getElementById('hash'),
+            claimBtn: document.getElementById('claimBtn'),
+            spinner: document.getElementById('spinner'),
+            btnText: document.getElementById('btnText'),
+            result: document.getElementById('result'),
+            resultIcon: document.getElementById('resultIcon'),
+            resultTitle: document.getElementById('resultTitle'),
+            resultMessage: document.getElementById('resultMessage'),
+            resultDetails: document.getElementById('resultDetails'),
+        };
+
+        // State management
+        const state = {
+            isLoading: false,
+            apiStatus: null
+        };
+
+        // Utility Functions
+        const utils = {
+            /**
+             * Validate Ethereum address format
+             */
+            isValidEthereumAddress(address) {
+                return /^0x[a-fA-F0-9]{40}$/.test(address);
+            },
+
+            /**
+             * Validate hash format (non-empty string)
+             */
+            isValidHash(hash) {
+                return hash && hash.trim().length > 0;
+            },
+
+            /**
+             * Show error message for input field
+             */
+            showError(fieldName, message) {
+                const input = elements[fieldName];
+                const errorElement = document.getElementById(fieldName + 'Error');
+                
+                if (input) {
+                    input.classList.add('error');
+                }
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                }
+            },
+
+            /**
+             * Clear error message for input field
+             */
+            clearError(fieldName) {
+                const input = elements[fieldName];
+                const errorElement = document.getElementById(fieldName + 'Error');
+                
+                if (input) {
+                    input.classList.remove('error');
+                }
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            },
+
+            /**
+             * Clear all error messages
+             */
+            clearAllErrors() {
+                this.clearError('recipientAddress');
+                this.clearError('hash');
+            },
+
+            /**
+             * Format wei amount to decimal
+             */
+            formatTokenAmount(amountWei) {
+                try {
+                    const amount = parseFloat(amountWei) / Math.pow(10, CONFIG.TOKEN.decimals);
+                    return amount.toFixed(4);
+                } catch (error) {
+                    return CONFIG.TOKEN.amount;
+                }
+            },
+
+            /**
+             * Create transaction link
+             */
+            createTxLink(txHash) {
+                return `${CONFIG.NETWORK.blockExplorer}/tx/${txHash}`;
+            },
+
+            /**
+             * Scroll element into view smoothly
+             */
+            scrollToElement(element) {
+                if (element) {
+                    element.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest',
+                        inline: 'start'
+                    });
+                }
+            }
+        };
+
+        // UI Management
+        const ui = {
+            /**
+             * Set loading state
+             */
+            setLoading(loading) {
+                state.isLoading = loading;
+                
+                if (elements.claimBtn) {
+                    elements.claimBtn.disabled = loading;
+                    elements.claimBtn.classList.toggle('loading', loading);
+                }
+                
+                if (elements.spinner) {
+                    elements.spinner.style.display = loading ? 'inline-block' : 'none';
+                }
+                
+                if (elements.btnText) {
+                    elements.btnText.innerHTML = loading ? 
+                        '<i class="fas fa-spinner fa-spin"></i> Processing...' : 
+                        '<i class="fas fa-gift"></i> Claim Airdrop';
+                }
+            },
+
+            /**
+             * Show result message
+             */
+            showResult(success, title, message, details = null) {
+                if (!elements.result) return;
+
+                // Update content
+                if (elements.resultIcon) {
+                    elements.resultIcon.innerHTML = success ? 
+                        '<i class="fas fa-check-circle"></i>' : 
+                        '<i class="fas fa-exclamation-circle"></i>';
+                }
+                
+                if (elements.resultTitle) {
+                    elements.resultTitle.textContent = title;
+                }
+                
+                if (elements.resultMessage) {
+                    elements.resultMessage.textContent = message;
+                }
+                
+                if (elements.resultDetails) {
+                    elements.resultDetails.innerHTML = details || '';
+                }
+
+                // Update styling
+                elements.result.className = `result ${success ? 'success' : 'error'}`;
+                elements.result.style.display = 'block';
+
+                // Scroll to result
+                utils.scrollToElement(elements.result);
+            },
+
+            /**
+             * Hide result message
+             */
+            hideResult() {
+                if (elements.result) {
+                    elements.result.style.display = 'none';
+                }
+            }
+        };
+
+        // API Service
+        const api = {
+            /**
+             * Make API request with error handling
+             */
+            async request(endpoint, options = {}) {
+                try {
+                    const url = `${CONFIG.API_BASE_URL}${endpoint}`;
+                    const response = await fetch(url, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        ...options
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    return { success: true, data };
+                } catch (error) {
+                    console.error('API Request failed:', error);
+                    return { 
+                        success: false, 
+                        error: error.message || 'Network request failed' 
+                    };
+                }
+            },
+
+            /**
+             * Check API health status
+             */
+            async checkHealth() {
+                const result = await this.request('/health');
+                if (result.success) {
+                    state.apiStatus = 'healthy';
+                } else {
+                    state.apiStatus = 'unhealthy';
+                }
+                return result;
+            },
+
+            /**
+             * Get API status
+             */
+            async getStatus() {
+                return await this.request('/status');
+            },
+
+            /**
+             * Claim airdrop
+             */
+            async claimAirdrop(recipientAddress, hash) {
+                return await this.request('/claim', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        recipientAddress: recipientAddress.trim(),
+                        hash: hash.trim()
+                    })
+                });
+            }
+        };
+
+        // Form Validation
+        const validation = {
+            /**
+             * Validate form inputs
+             */
+            validateForm() {
+                utils.clearAllErrors();
+                let isValid = true;
+
+                const address = elements.recipientAddress?.value?.trim() || '';
+                const hash = elements.hash?.value?.trim() || '';
+
+                // Validate recipient address
+                if (!address) {
+                    utils.showError('recipientAddress', 'Recipient address is required');
+                    isValid = false;
+                } else if (!utils.isValidEthereumAddress(address)) {
+                    utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
+                    isValid = false;
+                }
+
+                // Validate hash
+                if (!hash) {
+                    utils.showError('hash', 'Secret code is required');
+                    isValid = false;
+                } else if (!utils.isValidHash(hash)) {
+                    utils.showError('hash', 'Please enter a valid secret code');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+        };
+
+        // Event Handlers
+        const handlers = {
+            /**
+             * Handle form submission
+             */
+            async handleFormSubmit(event) {
+                event.preventDefault();
+                
+                if (state.isLoading) return;
+                
+                // Validate form
+                if (!validation.validateForm()) {
+                    return;
+                }
+
+                // Get form data
+                const recipientAddress = elements.recipientAddress.value.trim();
+                const hash = elements.hash.value.trim();
+
+                // Start loading state
+                ui.setLoading(true);
+                ui.hideResult();
+
+                try {
+                    // Make API request
+                    const result = await api.claimAirdrop(recipientAddress, hash);
+
+                    if (result.success && result.data.success) {
+                        // Success case
+                        let details = '';
+                        
+                        // Handle wxHOPR transaction (support both old and new field names)
+                        const wxHOPRTxHash = result.data.wxHOPRTransactionHash || result.data.transactionHash;
+                        if (wxHOPRTxHash) {
+                            const txLink = utils.createTxLink(wxHOPRTxHash);
+                            details += `<p><strong>wxHOPR Transaction:</strong></p>`;
+                            details += `<div class="tx-hash">
+                                <a href="${txLink}" target="_blank" rel="noopener noreferrer">
+                                    ${wxHOPRTxHash}
+                                </a>
+                            </div>`;
+                        }
+                        
+                        // Handle xDai transaction
+                        if (result.data.xDaiTransactionHash) {
+                            const xDaiTxLink = utils.createTxLink(result.data.xDaiTransactionHash);
+                            details += `<p><strong>xDai Transaction:</strong></p>`;
+                            details += `<div class="tx-hash">
+                                <a href="${xDaiTxLink}" target="_blank" rel="noopener noreferrer">
+                                    ${result.data.xDaiTransactionHash}
+                                </a>
+                            </div>`;
+                        }
+                        
+                        // Handle amounts
+                        const wxHOPRAmount = result.data.wxHOPRAmount || result.data.amount;
+                        if (wxHOPRAmount) {
+                            const formattedAmount = utils.formatTokenAmount(wxHOPRAmount);
+                            details += `<p><strong>wxHOPR Amount:</strong> ${formattedAmount} wxHOPR</p>`;
+                        }
+                        
+                        if (result.data.xDaiAmount) {
+                            const formattedXDaiAmount = utils.formatTokenAmount(result.data.xDaiAmount);
+                            details += `<p><strong>xDai Amount:</strong> ${formattedXDaiAmount} xDai</p>`;
+                        }
+
+                        ui.showResult(
+                            true, 
+                            '🎉 Airdrop Claimed Successfully!', 
+                            'Both wxHOPR tokens and xDai have been sent to your wallet!',
+                            details
+                        );
+                        
+                        // Clear form on success
+                        if (elements.form) {
+                            elements.form.reset();
+                        }
+                        
+                    } else {
+                        // API returned error
+                        const errorMessage = result.data?.message || result.error || 'Unknown error occurred';
+                        ui.showResult(
+                            false, 
+                            '❌ Claim Failed', 
+                            errorMessage
+                        );
+                    }
+
+                } catch (error) {
+                    console.error('Claim error:', error);
+                    ui.showResult(
+                        false, 
+                        '❌ Network Error', 
+                        'Failed to connect to the server. Please try again later.'
+                    );
+                } finally {
+                    ui.setLoading(false);
+                }
+            },
+
+            /**
+             * Handle input changes to clear errors and validate in real-time
+             */
+            handleInputChange(fieldName) {
+                return function(event) {
+                    utils.clearError(fieldName);
+                    
+                    // Real-time validation for recipient address
+                    if (fieldName === 'recipientAddress') {
+                        const address = this.value.trim();
+                        
+                        // Show error for any non-empty input that's not a valid Ethereum address
+                        if (address.length > 0) {
+                            if (!utils.isValidEthereumAddress(address)) {
+                                utils.showError('recipientAddress', 'Please enter a valid Ethereum address (0x...)');
+                            }
+                        }
+                    }
+                };
+            }
+        };
+
+        // Initialization
+        const app = {
+            /**
+             * Initialize the application
+             */
+            async init() {
+                console.log('🚀 Initializing wxHOPR Airdrop Frontend...');
+                
+                // Check API health
+                const healthCheck = await api.checkHealth();
+                if (!healthCheck.success) {
+                    console.warn('⚠️ API health check failed:', healthCheck.error);
+                } else {
+                    console.log('✅ API is healthy');
+                }
+
+                // Set up event listeners
+                this.setupEventListeners();
+                
+                // Focus first input
+                if (elements.recipientAddress) {
+                    elements.recipientAddress.focus();
+                }
+                
+                console.log('✅ Application initialized successfully');
+            },
+
+            /**
+             * Set up all event listeners
+             */
+            setupEventListeners() {
+                // Form submission
+                if (elements.form) {
+                    elements.form.addEventListener('submit', handlers.handleFormSubmit);
+                }
+
+                // Input change handlers to clear errors and validate in real-time
+                if (elements.recipientAddress) {
+                    elements.recipientAddress.addEventListener('input', handlers.handleInputChange('recipientAddress'));
+                    elements.recipientAddress.addEventListener('blur', handlers.handleInputChange('recipientAddress'));
+                }
+                
+                if (elements.hash) {
+                    elements.hash.addEventListener('input', handlers.handleInputChange('hash'));
+                }
+
+                // Periodic health checks (every 30 seconds)
+                setInterval(() => {
+                    api.checkHealth();
+                }, 30000);
+            }
+        };
+
+        // Start the application when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => app.init());
+        } else {
+            app.init();
+        }
+
+        // Export for debugging (optional)
+        if (typeof window !== 'undefined') {
+            window.AirdropApp = {
+                config: CONFIG,
+                state,
+                utils,
+                ui,
+                api,
+                validation,
+                handlers
+            };
+        }
+    </script>
+</body>
+</html>

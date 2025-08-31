@@ -29,7 +29,9 @@ app.use(cors({
     'https://funding.lizhophardt.eth.link',
     'https://bafybeigcvasvqsodkijgat5s2zxgaf32n37qtf2j3syr6ljraphmsqiusy.ipfs.dweb.link',
     'https://bafybeigcvasvqsodkijgat5s2zxgaf32n37qtf2j3syr6ljraphmsqiusy.ipfs.cf-ipfs.com',
-    'https://ipfs.io'
+    'https://ipfs.io',
+    'http://localhost:8000',
+    'http://localhost:3000'
   ] : true, // Allow ENS domain and IPFS gateways in production
   credentials: true
 }));

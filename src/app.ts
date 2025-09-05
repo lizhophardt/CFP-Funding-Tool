@@ -5,6 +5,7 @@ import airdropRoutes from './routes/airdropRoutes';
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config } from './config';
+import { globalRateLimit, getRateLimitSummary } from './middleware/rateLimiting';
 
 const app = express();
 
@@ -47,6 +48,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'] // Restrict headers
 }));
 
+// Rate limiting middleware (applied globally)
+app.use(globalRateLimit);
+
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -83,6 +87,12 @@ app.get('/', (req, res) => {
       'GET /api/airdrop/status': 'Get service status and both wxHOPR/xDai balances',
       'POST /api/airdrop/generate-test-hash': 'Generate a test hash for development',
       'GET /api/airdrop/health': 'Health check endpoint'
+    },
+    security: {
+      rateLimiting: getRateLimitSummary(),
+      cors: 'Restricted to trusted origins',
+      headers: 'Security headers enabled',
+      errors: 'Sanitized error messages'
     },
     frontend: {
       url: 'https://funding.lizhophart.eth',

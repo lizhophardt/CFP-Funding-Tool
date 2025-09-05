@@ -1,0 +1,129 @@
+# Production Docker Compose with enhanced security
+version: '3.8'
+
+services:
+  airdrop-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3000:3000"  # Bind to localhost only
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - GNOSIS_RPC_URL=${GNOSIS_RPC_URL:-https://rpc.gnosischain.com}
+      - AIRDROP_AMOUNT_WEI=${AIRDROP_AMOUNT_WEI:-1000000000000000000}
+    
+    # Docker Secrets (preferred over environment variables)
+    secrets:
+      - encrypted_private_key
+      - encryption_password
+      - secret_preimage
+      - secret_preimages
+    
+    restart: unless-stopped
+    
+    # Enhanced Security Options
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined
+      - apparmor:docker-default
+    
+    # Strict Resource Limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+          pids: 100  # Limit number of processes
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    
+    # Read-only root filesystem
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,nodev,size=100m
+      - /var/tmp:noexec,nosuid,nodev,size=50m
+      - /var/run:noexec,nosuid,nodev,size=10m
+    
+    # Drop ALL capabilities
+    cap_drop:
+      - ALL
+    # Only add specific capabilities if needed
+    # cap_add:
+    #   - NET_BIND_SERVICE  # Only if binding to ports < 1024
+    
+    # User namespace remapping
+    user: "1001:1001"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/airdrop/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Secure volume mounts
+    volumes:
+      - type: bind
+        source: ./logs
+        target: /app/logs
+        bind:
+          create_host_path: true
+        read_only: false
+      - type: bind
+        source: ./data
+        target: /app/data
+        bind:
+          create_host_path: true
+        read_only: false
+    
+    networks:
+      - airdrop-network
+    
+    # Logging with rotation
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        compress: "true"
+    
+    # Container labels for security monitoring
+    labels:
+      - "security.scan=enabled"
+      - "security.level=high"
+      - "app.name=airdrop-service"
+      - "app.version=1.0"
+
+# Docker Secrets Configuration
+secrets:
+  encrypted_private_key:
+    external: true
+    name: airdrop_encrypted_private_key
+  encryption_password:
+    external: true
+    name: airdrop_encryption_password
+  secret_preimage:
+    external: true
+    name: airdrop_secret_preimage
+  secret_preimages:
+    external: true
+    name: airdrop_secret_preimages
+
+networks:
+  airdrop-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: airdrop-br0
+      com.docker.network.bridge.enable_icc: "false"
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
+    labels:
+      - "security.isolated=true"

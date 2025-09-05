@@ -1,62 +1,56 @@
-# Dependencies
-node_modules
-npm-debug.log*
-
-# Frontend files (will be served separately)
-public/
-public/**
-FRONTEND_README.md
-
-# Development and deployment files
-.git
-.gitignore
-*.md
-README.md
-DEPLOYMENT.md
-railway-env-vars.md
-deploy.sh
-deploy.sh.backup
-examples/
-scripts/
-
-# Environment files
+# Security: Exclude sensitive files
 .env
 .env.local
 .env.production
+*.key
+*.pem
+*.p12
+
+# Development files
+node_modules/
+npm-debug.log*
+.nyc_output
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
 
 # Logs
-logs
+logs/
 *.log
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
-*.pid.lock
 
-# Coverage directory used by tools like istanbul
-coverage
+# Documentation
+*.md
+!README.md
 
-# Dependency directories
-node_modules/
-jspm_packages/
+# Frontend files (not needed in backend container)
+frontend/
 
-# Optional npm cache directory
-.npm
+# Test files
+test/
+*.test.js
+*.spec.js
 
-# Optional REPL history
-.node_repl_history
+# Build artifacts
+dist/
+build/
 
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Temporary files
+tmp/
+temp/

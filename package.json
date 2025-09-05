@@ -9,7 +9,10 @@
     "dev": "ts-node src/index.ts",
     "dev:watch": "nodemon --exec ts-node src/index.ts",
     "deploy": "./deploy.sh",
-    "quick-deploy": "node scripts/quick-deploy.js"
+    "quick-deploy": "node scripts/quick-deploy.js",
+    "security-check": "ts-node scripts/security-check.ts",
+    "encrypt-key": "node scripts/encrypt-private-key.js",
+    "validate-security": "ts-node scripts/validate-security.ts"
   },
   "keywords": ["airdrop", "gnosis", "xdai", "typescript", "web3", "gnosis-chain"],
   "author": "",

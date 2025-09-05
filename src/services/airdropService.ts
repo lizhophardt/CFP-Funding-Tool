@@ -2,15 +2,48 @@ import { Web3Service } from './web3Service';
 import { SecretCodeService } from './secretCodeService';
 import { config } from '../config';
 import { AirdropRequest, AirdropResponse } from '../types';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class AirdropService {
   private web3Service: Web3Service;
   private secretCodeService: SecretCodeService;
   private processedCodes: Set<string> = new Set();
+  private readonly PROCESSED_CODES_FILE = path.join(process.cwd(), 'data', 'processed-codes.json');
 
   constructor() {
     this.web3Service = new Web3Service();
     this.secretCodeService = new SecretCodeService();
+    this.loadProcessedCodes();
+  }
+
+  private loadProcessedCodes(): void {
+    try {
+      // Ensure data directory exists
+      const dataDir = path.dirname(this.PROCESSED_CODES_FILE);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      // Load processed codes from file if it exists
+      if (fs.existsSync(this.PROCESSED_CODES_FILE)) {
+        const data = fs.readFileSync(this.PROCESSED_CODES_FILE, 'utf8');
+        const codes = JSON.parse(data);
+        this.processedCodes = new Set(codes);
+        console.log(`✅ Loaded ${this.processedCodes.size} processed codes from storage`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Failed to load processed codes: ${error}`);
+    }
+  }
+
+  private saveProcessedCodes(): void {
+    try {
+      const codes = Array.from(this.processedCodes);
+      fs.writeFileSync(this.PROCESSED_CODES_FILE, JSON.stringify(codes, null, 2));
+    } catch (error) {
+      console.error(`❌ Failed to save processed codes: ${error}`);
+    }
   }
 
   async processAirdrop(request: AirdropRequest): Promise<AirdropResponse> {
@@ -58,8 +91,9 @@ export class AirdropService {
         config.xDaiAirdropAmountWei
       );
 
-      // Mark this secret code as processed
+      // Mark this secret code as processed and save to persistent storage
       this.processedCodes.add(normalizedCode);
+      this.saveProcessedCodes();
 
       return {
         success: true,

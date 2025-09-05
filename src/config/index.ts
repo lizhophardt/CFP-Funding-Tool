@@ -1,20 +1,117 @@
 import dotenv from 'dotenv';
 import { Config } from '../types';
+import { SecurityConfig } from './securityConfig';
 
 dotenv.config();
 
-export const config: Config = {
+// Initialize security configuration
+const securityConfig = new SecurityConfig();
+
+// Helper function to get private key using the configured security strategy
+async function getPrivateKey(): Promise<string> {
+  return await securityConfig.getPrivateKey();
+}
+
+// Configuration object that will be initialized async
+let asyncConfig: Config;
+
+// Helper function to get private key synchronously
+function getPrivateKeySync(): string {
+  const encryptedKey = process.env.ENCRYPTED_PRIVATE_KEY;
+  const encryptionPassword = process.env.ENCRYPTION_PASSWORD;
+  const plainKey = process.env.PRIVATE_KEY;
+  
+  if (encryptedKey && encryptionPassword) {
+    try {
+      const KeyManager = require('../utils/keyManager').KeyManager;
+      console.log('🔐 Using encrypted private key');
+      return KeyManager.decryptPrivateKey(encryptedKey, encryptionPassword);
+    } catch (error) {
+      console.error(`❌ Failed to decrypt private key: ${error}`);
+      throw new Error(`Failed to decrypt private key: ${error}`);
+    }
+  } else if (plainKey) {
+    console.warn('⚠️  Using unencrypted private key. Consider using ENCRYPTED_PRIVATE_KEY for better security.');
+    return plainKey;
+  } else {
+    return '';
+  }
+}
+
+// Synchronous config that handles both encrypted and plain text keys
+export const config = {
   gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
-  privateKey: process.env.PRIVATE_KEY || '',
+  privateKey: getPrivateKeySync(),
   secretCodes: process.env.SECRET_CODES 
     ? process.env.SECRET_CODES.split(',').map(s => s.trim())
     : ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure'],
   wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
-  airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000', // 0.01 wxHOPR by default (18 decimals)
-  xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000', // 0.01 xDai by default (18 decimals)
+  airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000',
+  xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000',
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development'
-};
+} as Config;
+
+// Log security level
+const encryptedKey = process.env.ENCRYPTED_PRIVATE_KEY;
+const plainKey = process.env.PRIVATE_KEY;
+
+if (encryptedKey) {
+  console.log('🔐 Security Level: MEDIUM (Encrypted Private Key)');
+} else if (plainKey) {
+  console.log('⚠️  Security Level: LOW (Plain Text Private Key)');
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ PRODUCTION ERROR: Plain text private key detected in production!');
+    process.exit(1);
+  }
+} else {
+  console.error('❌ No private key configuration found');
+}
+
+// Initialize configuration with secure private key loading
+export async function initializeConfig(): Promise<Config> {
+  if (asyncConfig) {
+    return asyncConfig;
+  }
+
+  const privateKey = await getPrivateKey();
+  
+  asyncConfig = {
+    gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
+    privateKey,
+    secretCodes: process.env.SECRET_CODES 
+      ? process.env.SECRET_CODES.split(',').map(s => s.trim())
+      : ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure'],
+    wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
+    airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000',
+    xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000',
+    port: parseInt(process.env.PORT || '3000', 10),
+    nodeEnv: process.env.NODE_ENV || 'development'
+  };
+
+  // Log security information
+  console.log(`🔐 Security Level: ${securityConfig.getSecurityLevel()}`);
+  console.log(`🛡️ Key Strategy: ${securityConfig.getStrategy()}`);
+  
+  if (!securityConfig.isProductionReady() && process.env.NODE_ENV === 'production') {
+    console.error('❌ PRODUCTION ERROR: Insecure key management detected in production environment!');
+    process.exit(1);
+  }
+
+  // Show security recommendations
+  const recommendations = securityConfig.getRecommendations();
+  recommendations.forEach(rec => console.log(rec));
+
+  return asyncConfig;
+}
+
+// Export a getter function for the config
+export async function getConfig(): Promise<Config> {
+  if (!asyncConfig) {
+    return await initializeConfig();
+  }
+  return asyncConfig;
+}
 
 export function validateConfig(): void {
   const requiredFields: (keyof Config)[] = ['privateKey'];
@@ -34,6 +131,16 @@ export function validateConfig(): void {
   // Validate private key format
   if (!config.privateKey.match(/^[a-fA-F0-9]{64}$/)) {
     throw new Error('Private key must be a 64-character hexadecimal string');
+  }
+
+  // Additional security check: warn if private key appears to be a common test key
+  const commonTestKeys = [
+    'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', // Hardhat #0
+    '59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d', // Hardhat #1
+  ];
+  
+  if (commonTestKeys.includes(config.privateKey.toLowerCase())) {
+    console.warn('⚠️  WARNING: Using a well-known test private key. This is extremely insecure for production!');
   }
 
   // Validate airdrop amounts are valid numbers

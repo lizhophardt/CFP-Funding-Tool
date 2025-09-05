@@ -6,21 +6,58 @@ import airdropRoutes from './routes/airdropRoutes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config } from './config';
 import { globalRateLimit, getRateLimitSummary } from './middleware/rateLimiting';
+import { SecurityHeaders } from './utils/securityHeaders';
 
 const app = express();
 
-// Security middleware with CSP configuration for inline scripts
+// Security middleware with strict CSP configuration
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+      // Scripts: Only allow from self, no inline scripts (prevents XSS)
+      scriptSrc: ["'self'"],
+      // Styles: Allow inline styles for compatibility, but restrict sources
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+      // Fonts: Allow from self and trusted CDNs
+      fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+      // API connections: Only to self (your API endpoints)
       connectSrc: ["'self'"],
+      // Images: Self, data URIs, and HTTPS images
       imgSrc: ["'self'", "data:", "https:"],
+      // Objects and embeds: None allowed
+      objectSrc: ["'none'"],
+      // Base URI: Restrict to self
+      baseUri: ["'self'"],
+      // Form actions: Only to self
+      formAction: ["'self'"],
+      // Frame ancestors: None (prevents clickjacking)
+      frameAncestors: ["'none'"],
+      // Manifest: Only from self
+      manifestSrc: ["'self'"],
+      // Media: Only from self and HTTPS
+      mediaSrc: ["'self'", "https:"],
+      // Worker scripts: Only from self
+      workerSrc: ["'self'"],
+      // Upgrade insecure requests in production
+      ...(process.env.NODE_ENV === 'production' && {
+        upgradeInsecureRequests: []
+      })
     },
+    // Report violations for monitoring
+    reportOnly: false
   },
+  // Additional security headers
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  }
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' ? [
@@ -66,6 +103,17 @@ if (config.nodeEnv === 'development') {
   });
 }
 
+// CSP violation reporting endpoint
+app.post('/api/csp-violation-report', express.json(), (req, res) => {
+  const violation = req.body;
+  
+  // Log CSP violations using security utility
+  SecurityHeaders.logCSPViolation(violation, req);
+
+  // Respond quickly to not block the browser
+  res.status(204).send();
+});
+
 // Routes
 app.use('/api/airdrop', airdropRoutes);
 
@@ -91,7 +139,7 @@ app.get('/', (req, res) => {
     security: {
       rateLimiting: getRateLimitSummary(),
       cors: 'Restricted to trusted origins',
-      headers: 'Security headers enabled',
+      ...SecurityHeaders.getSecuritySummary(),
       errors: 'Sanitized error messages'
     },
     frontend: {

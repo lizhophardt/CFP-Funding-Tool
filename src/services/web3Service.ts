@@ -1,5 +1,6 @@
 import Web3 from 'web3';
 import { config } from '../config';
+import { SecurityErrorHandler, ErrorType } from '../utils/errorHandler';
 
 // ERC-20 ABI for token transfers
 const ERC20_ABI = [
@@ -54,7 +55,11 @@ export class Web3Service {
       // Use Web3's fromWei to properly handle decimals (wxHOPR has 18 decimals like ETH)
       return this.web3.utils.fromWei(balance, 'ether');
     } catch (error) {
-      throw new Error(`Failed to get wxHOPR balance: ${error}`);
+      SecurityErrorHandler.throwSecureError(
+        ErrorType.NETWORK_ERROR,
+        `Failed to get wxHOPR balance: ${error}`,
+        'Unable to retrieve token balance'
+      );
     }
   }
 
@@ -63,7 +68,11 @@ export class Web3Service {
       const balance = await this.web3.eth.getBalance(this.account.address);
       return this.web3.utils.fromWei(balance, 'ether');
     } catch (error) {
-      throw new Error(`Failed to get xDai balance: ${error}`);
+      SecurityErrorHandler.throwSecureError(
+        ErrorType.NETWORK_ERROR,
+        `Failed to get xDai balance: ${error}`,
+        'Unable to retrieve native balance'
+      );
     }
   }
 
@@ -77,7 +86,11 @@ export class Web3Service {
       // Validate recipient address
       if (!this.web3.utils.isAddress(recipientAddress)) {
         console.log(`❌ Address validation failed!`);
-        throw new Error('Invalid recipient address');
+        SecurityErrorHandler.throwSecureError(
+          ErrorType.VALIDATION,
+          `Invalid recipient address: ${recipientAddress}`,
+          'Invalid wallet address format'
+        );
       }
       
       console.log(`✅ Address validation passed!`);
@@ -88,7 +101,11 @@ export class Web3Service {
       const tokenBalanceBigInt = BigInt(tokenBalance);
 
       if (tokenBalanceBigInt < wxHoprAmountBigInt) {
-        throw new Error('Insufficient wxHOPR balance for airdrop');
+        SecurityErrorHandler.throwSecureError(
+          ErrorType.INSUFFICIENT_BALANCE,
+          `Insufficient wxHOPR balance: need ${wxHoprAmountWei} but have ${tokenBalance}`,
+          'Insufficient token balance for airdrop'
+        );
       }
 
       // Check native xDai balance
@@ -121,7 +138,13 @@ export class Web3Service {
       const totalXDaiNeeded = totalGasCost + xDaiAmountBigInt;
 
       if (BigInt(nativeBalance) < totalXDaiNeeded) {
-        throw new Error(`Insufficient xDai balance. Need ${this.web3.utils.fromWei(totalXDaiNeeded.toString(), 'ether')} xDai but only have ${this.web3.utils.fromWei(nativeBalance, 'ether')}`);
+        const needed = this.web3.utils.fromWei(totalXDaiNeeded.toString(), 'ether');
+        const available = this.web3.utils.fromWei(nativeBalance, 'ether');
+        SecurityErrorHandler.throwSecureError(
+          ErrorType.INSUFFICIENT_BALANCE,
+          `Insufficient xDai balance. Need ${needed} xDai but only have ${available}`,
+          'Insufficient native balance for transaction fees'
+        );
       }
 
       // Send wxHOPR token transfer transaction first
@@ -139,7 +162,11 @@ export class Web3Service {
       );
 
       if (!signedTokenTransaction.rawTransaction) {
-        throw new Error('Failed to sign wxHOPR token transaction');
+        SecurityErrorHandler.throwSecureError(
+          ErrorType.TRANSACTION_FAILED,
+          'Failed to sign wxHOPR token transaction - no raw transaction returned',
+          'Transaction signing failed'
+        );
       }
 
       const tokenReceipt = await this.web3.eth.sendSignedTransaction(signedTokenTransaction.rawTransaction);
@@ -160,7 +187,11 @@ export class Web3Service {
       );
 
       if (!signedXDaiTransaction.rawTransaction) {
-        throw new Error('Failed to sign xDai transaction');
+        SecurityErrorHandler.throwSecureError(
+          ErrorType.TRANSACTION_FAILED,
+          'Failed to sign xDai transaction - no raw transaction returned',
+          'Transaction signing failed'
+        );
       }
 
       const xDaiReceipt = await this.web3.eth.sendSignedTransaction(signedXDaiTransaction.rawTransaction);
@@ -171,7 +202,21 @@ export class Web3Service {
         xDaiTxHash: xDaiReceipt.transactionHash.toString()
       };
     } catch (error) {
-      throw new Error(`Failed to send dual transaction: ${error}`);
+      // If it's already a secure error, re-throw it
+      if (error instanceof Error && (
+        error.message.includes('Unable to') || 
+        error.message.includes('Invalid') || 
+        error.message.includes('Insufficient')
+      )) {
+        throw error;
+      }
+      
+      // Otherwise, wrap it in a secure error
+      SecurityErrorHandler.throwSecureError(
+        ErrorType.TRANSACTION_FAILED,
+        `Failed to send dual transaction: ${error}`,
+        'Transaction processing failed'
+      );
     }
   }
 

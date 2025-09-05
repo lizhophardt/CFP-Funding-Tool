@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AirdropService } from '../services/airdropService';
 import { AirdropRequest } from '../types';
+import { SecurityErrorHandler } from '../utils/errorHandler';
 
 export class AirdropController {
   private airdropService: AirdropService;
@@ -54,10 +55,8 @@ export class AirdropController {
 
     } catch (error) {
       console.log(`💥 AIRDROP ERROR: ${error}`);
-      res.status(500).json({
-        success: false,
-        message: `Internal server error: ${error}`
-      });
+      const sanitizedError = SecurityErrorHandler.sanitizeForAPI(error);
+      res.status(500).json(sanitizedError);
     }
   }
 
@@ -69,10 +68,8 @@ export class AirdropController {
         data: status
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: `Failed to get service status: ${error}`
-      });
+      const sanitizedError = SecurityErrorHandler.sanitizeForAPI(error);
+      res.status(500).json(sanitizedError);
     }
   }
 
@@ -99,10 +96,8 @@ export class AirdropController {
 
     } catch (error) {
       console.log(`💥 SECRET CODE GENERATION ERROR: ${error}`);
-      res.status(500).json({
-        success: false,
-        message: `Failed to generate test secret code: ${error}`
-      });
+      const sanitizedError = SecurityErrorHandler.sanitizeForAPI(error);
+      res.status(500).json(sanitizedError);
     }
   }
 

@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 import { config } from '../config';
 import { SecurityErrorHandler, ErrorType } from '../utils/errorHandler';
+import { Web3AddressValidator } from '../utils/web3AddressValidator';
 
 // ERC-20 ABI for token transfers
 const ERC20_ABI = [
@@ -78,22 +79,29 @@ export class Web3Service {
 
   async sendDualTransaction(recipientAddress: string, wxHoprAmountWei: string, xDaiAmountWei: string): Promise<{wxHoprTxHash: string, xDaiTxHash: string}> {
     try {
-      console.log(`🔍 WEB3 ADDRESS VALIDATION:`);
-      console.log(`   📍 Address: "${recipientAddress}"`);
-      console.log(`   📏 Length: ${recipientAddress.length}`);
-      console.log(`   🔍 isAddress result: ${this.web3.utils.isAddress(recipientAddress)}`);
+      console.log(`🔍 ENHANCED WEB3 ADDRESS VALIDATION:`);
       
-      // Validate recipient address
-      if (!this.web3.utils.isAddress(recipientAddress)) {
-        console.log(`❌ Address validation failed!`);
+      // Use enhanced address validator with security checks
+      const addressValidation = Web3AddressValidator.validateForSecurity(
+        recipientAddress, 
+        'dual_transaction_recipient'
+      );
+      
+      if (!addressValidation.isValid) {
+        console.log(`❌ Enhanced address validation failed!`);
         SecurityErrorHandler.throwSecureError(
           ErrorType.VALIDATION,
-          `Invalid recipient address: ${recipientAddress}`,
+          `Invalid recipient address: ${addressValidation.error}`,
           'Invalid wallet address format'
         );
       }
       
-      console.log(`✅ Address validation passed!`);
+      // Use checksummed address for the transaction
+      const validatedAddress = addressValidation.checksumAddress!;
+      console.log(`✅ Enhanced address validation passed!`);
+      console.log(`   📍 Original: ${recipientAddress}`);
+      console.log(`   📍 Checksummed: ${validatedAddress}`);
+      console.log(`   🔒 Security Level: ${addressValidation.securityLevel}`);
 
       // Check if we have enough wxHOPR token balance
       const tokenBalance = await this.tokenContract.methods.balanceOf(this.account.address).call();
@@ -116,7 +124,7 @@ export class Web3Service {
       const adjustedGasPrice = (BigInt(gasPrice) * BigInt(120)) / BigInt(100);
       
       // Estimate gas for token transfer
-      const transferData = this.tokenContract.methods.transfer(recipientAddress, wxHoprAmountWei).encodeABI();
+      const transferData = this.tokenContract.methods.transfer(validatedAddress, wxHoprAmountWei).encodeABI();
       const tokenGasEstimate = await this.web3.eth.estimateGas({
         from: this.account.address,
         to: config.wxHoprTokenAddress,
@@ -175,7 +183,7 @@ export class Web3Service {
       // Send native xDai transfer transaction
       const xDaiTransaction = {
         from: this.account.address,
-        to: recipientAddress,
+        to: validatedAddress,
         value: xDaiAmountWei,
         gas: xDaiGasEstimate,
         gasPrice: adjustedGasPrice.toString()

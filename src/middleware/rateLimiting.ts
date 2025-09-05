@@ -1,22 +1,30 @@
 import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
+import { SecurityMetrics } from '../utils/securityMetrics';
 
 /**
  * Rate limiting configuration for different endpoints
  * Protects against brute force attacks and DoS attempts
  */
 
-// Custom key generator that considers both IP and user agent for better tracking
+// IPv6-compatible key generator using express-rate-limit's built-in helper
 const generateKey = (req: Request): string => {
-  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  // Use the built-in standardizeIP function for proper IPv6 handling
+  const standardizeIP = require('express-rate-limit').standardizeIP || ((ip: string) => ip);
+  const normalizedIP = standardizeIP(req.ip || req.connection.remoteAddress || 'unknown');
   const userAgent = req.get('User-Agent') || 'unknown';
-  // Create a simple hash of IP + UserAgent for better rate limiting
-  const combined = `${ip}-${userAgent.substring(0, 50)}`;
+  
+  // Create a secure combination of normalized IP + UserAgent for better rate limiting
+  const combined = `${normalizedIP}-${userAgent.substring(0, 50)}`;
   return combined;
 };
 
 // Custom handler for rate limit exceeded
 const rateLimitHandler = (req: Request, res: Response) => {
+  // Record security metrics
+  const securityMetrics = SecurityMetrics.getInstance();
+  securityMetrics.recordRateLimitHit(req.ip || 'unknown', req.path);
+
   console.warn(`🚫 RATE LIMIT EXCEEDED:`, {
     ip: req.ip,
     userAgent: req.get('User-Agent'),

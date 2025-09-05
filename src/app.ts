@@ -2,11 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import airdropRoutes from './routes/airdropRoutes';
+import securityRoutes from './routes/securityRoutes';
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config } from './config';
 import { globalRateLimit, getRateLimitSummary } from './middleware/rateLimiting';
 import { SecurityHeaders } from './utils/securityHeaders';
+import { SecurityMetrics } from './utils/securityMetrics';
+import { checkBlockedIP } from './middleware/threatProtection';
 
 const app = express();
 
@@ -85,6 +88,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'] // Restrict headers
 }));
 
+// Threat protection (check for blocked IPs first)
+app.use(checkBlockedIP);
+
 // Rate limiting middleware (applied globally)
 app.use(globalRateLimit);
 
@@ -114,8 +120,16 @@ app.post('/api/csp-violation-report', express.json(), (req, res) => {
   res.status(204).send();
 });
 
+// Security metrics middleware (track all requests)
+const securityMetrics = SecurityMetrics.getInstance();
+app.use((req, res, next) => {
+  securityMetrics.recordRequest(req.ip || 'unknown');
+  next();
+});
+
 // Routes
 app.use('/api/airdrop', airdropRoutes);
+app.use('/api/security', securityRoutes);
 
 // API root route - explicitly return JSON only
 app.get('/', (req, res) => {
@@ -134,12 +148,30 @@ app.get('/', (req, res) => {
       'POST /api/airdrop/claim': 'Claim dual airdrop (wxHOPR + xDai) with hash and recipient address',
       'GET /api/airdrop/status': 'Get service status and both wxHOPR/xDai balances',
       'POST /api/airdrop/generate-test-hash': 'Generate a test hash for development',
-      'GET /api/airdrop/health': 'Health check endpoint'
+      'GET /api/airdrop/health': 'Health check endpoint',
+      'GET /api/security/dashboard': 'Real-time security monitoring dashboard',
+      'GET /api/security/stats': 'Security statistics and metrics',
+      'GET /api/security/threats': 'Threat response and blocked IPs information'
     },
     security: {
       rateLimiting: getRateLimitSummary(),
       cors: 'Restricted to trusted origins',
       ...SecurityHeaders.getSecuritySummary(),
+      threatResponse: {
+        status: 'Automated IP blocking enabled',
+        features: [
+          'Real-time threat detection',
+          'Automatic IP blocking for repeated attacks',
+          'XSS/SQL injection attempt monitoring',
+          'Rate limit violation tracking',
+          'Suspicious address pattern detection'
+        ]
+      },
+      monitoring: {
+        dashboard: '/api/security/dashboard',
+        metrics: 'Real-time security event tracking',
+        alerts: 'Automated threat response system'
+      },
       errors: 'Sanitized error messages'
     },
     frontend: {

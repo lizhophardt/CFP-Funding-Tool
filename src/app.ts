@@ -23,17 +23,28 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' ? [
+    // Production: Only allow specific trusted domains
     'https://funding.lizhophart.eth',
     'https://funding.lizhophardt.eth',
     'https://funding.lizhophardt.eth.limo',
     'https://funding.lizhophardt.eth.link',
     'https://bafybeigcvasvqsodkijgat5s2zxgaf32n37qtf2j3syr6ljraphmsqiusy.ipfs.dweb.link',
     'https://bafybeigcvasvqsodkijgat5s2zxgaf32n37qtf2j3syr6ljraphmsqiusy.ipfs.cf-ipfs.com',
-    'https://ipfs.io',
+    'https://ipfs.io'
+  ] : [
+    // Development: Only allow specific localhost origins (no wildcards)
+    'http://localhost:3000',
     'http://localhost:8000',
-    'http://localhost:3000'
-  ] : true, // Allow ENS domain and IPFS gateways in production
-  credentials: true
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:8000',
+    'http://0.0.0.0:3000',
+    'http://0.0.0.0:8000'
+  ],
+  credentials: true,
+  // Additional security headers
+  optionsSuccessStatus: 200, // For legacy browser support
+  methods: ['GET', 'POST'], // Only allow necessary HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'] // Restrict headers
 }));
 
 // Body parsing middleware

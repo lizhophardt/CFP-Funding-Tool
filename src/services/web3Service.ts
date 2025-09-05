@@ -95,6 +95,9 @@ export class Web3Service {
       const nativeBalance = await this.web3.eth.getBalance(this.account.address);
       const gasPrice = await this.web3.eth.getGasPrice();
       
+      // Increase gas price by 20% to ensure transaction goes through
+      const adjustedGasPrice = (BigInt(gasPrice) * BigInt(120)) / BigInt(100);
+      
       // Estimate gas for token transfer
       const transferData = this.tokenContract.methods.transfer(recipientAddress, wxHoprAmountWei).encodeABI();
       const tokenGasEstimate = await this.web3.eth.estimateGas({
@@ -110,9 +113,9 @@ export class Web3Service {
         value: xDaiAmountWei
       });
 
-      // Calculate total gas costs
-      const tokenGasCost = BigInt(gasPrice) * BigInt(tokenGasEstimate);
-      const xDaiGasCost = BigInt(gasPrice) * BigInt(xDaiGasEstimate);
+      // Calculate total gas costs using adjusted gas price
+      const tokenGasCost = adjustedGasPrice * BigInt(tokenGasEstimate);
+      const xDaiGasCost = adjustedGasPrice * BigInt(xDaiGasEstimate);
       const totalGasCost = tokenGasCost + xDaiGasCost;
       const xDaiAmountBigInt = BigInt(xDaiAmountWei);
       const totalXDaiNeeded = totalGasCost + xDaiAmountBigInt;
@@ -127,7 +130,7 @@ export class Web3Service {
         to: config.wxHoprTokenAddress,
         data: transferData,
         gas: tokenGasEstimate,
-        gasPrice: gasPrice
+        gasPrice: adjustedGasPrice.toString()
       };
 
       const signedTokenTransaction = await this.web3.eth.accounts.signTransaction(
@@ -148,7 +151,7 @@ export class Web3Service {
         to: recipientAddress,
         value: xDaiAmountWei,
         gas: xDaiGasEstimate,
-        gasPrice: gasPrice
+        gasPrice: adjustedGasPrice.toString()
       };
 
       const signedXDaiTransaction = await this.web3.eth.accounts.signTransaction(

@@ -3,6 +3,21 @@ export interface AirdropRequest {
   recipientAddress: string;
 }
 
+export interface ValidationMeta {
+  validated: boolean;
+  securityRisk?: 'LOW' | 'MEDIUM' | 'HIGH';
+  timestamp: string;
+}
+
+// Extend Express Request interface to include validation metadata
+declare global {
+  namespace Express {
+    interface Request {
+      validationMeta?: ValidationMeta;
+    }
+  }
+}
+
 export interface AirdropResponse {
   success: boolean;
   message: string;

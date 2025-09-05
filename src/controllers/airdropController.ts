@@ -18,16 +18,8 @@ export class AirdropController {
       console.log(`   📍 Recipient: ${recipientAddress}`);
       console.log(`   🔐 Secret Code: ${secretCode}`);
       console.log(`   🕐 Time: ${new Date().toISOString()}`);
-
-      // Validate request body
-      if (!secretCode || !recipientAddress) {
-        console.log(`❌ VALIDATION FAILED: Missing required fields`);
-        res.status(400).json({
-          success: false,
-          message: 'Both secretCode and recipientAddress are required'
-        });
-        return;
-      }
+      console.log(`   🛡️ Validation: ${req.validationMeta?.validated ? 'PASSED' : 'UNKNOWN'}`);
+      console.log(`   🔒 Security Risk: ${req.validationMeta?.securityRisk || 'UNKNOWN'}`);
 
       console.log(`🔍 Processing airdrop request...`);
       

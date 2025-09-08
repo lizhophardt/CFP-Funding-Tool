@@ -200,7 +200,7 @@ npm run test:watch
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License
 
 ## ⚠️ Security Notice
 

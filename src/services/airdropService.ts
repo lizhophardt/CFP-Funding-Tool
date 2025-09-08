@@ -110,9 +110,13 @@ export class AirdropService {
       };
 
     } catch (error) {
+      logger.airdrop('error', 'Airdrop processing failed', {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined
+      });
       return {
         success: false,
-        message: `Airdrop failed: ${error}`
+        message: `Airdrop failed: ${error instanceof Error ? error.message : error}`
       };
     }
   }

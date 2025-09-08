@@ -125,10 +125,17 @@ app.post('/api/csp-violation-report', express.json(), (req, res) => {
   res.status(204).send();
 });
 
-// Security metrics middleware (track all requests)
+// Combined security and metrics middleware
 const securityMetrics = SecurityMetrics.getInstance();
 app.use((req, res, next) => {
+  // Record security metrics
   securityMetrics.recordRequest(req.ip || 'unknown');
+  
+  // Add security headers if not already added by helmet
+  if (!res.get('X-Request-ID')) {
+    res.set('X-Request-ID', `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  }
+  
   next();
 });
 

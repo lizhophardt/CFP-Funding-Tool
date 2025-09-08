@@ -8,25 +8,20 @@ dotenv.config();
 // Initialize security configuration
 const securityConfig = new SecurityConfig();
 
-// Helper function to get private key using the configured security strategy
-async function getPrivateKey(): Promise<string> {
-  return await securityConfig.getPrivateKey();
-}
 
-// Configuration object that will be initialized async
-let asyncConfig: Config;
-
-// Helper function to get private key synchronously
-function getPrivateKeySync(): string {
+// Unified configuration creation function
+function createConfig(): Config {
   const encryptedKey = process.env.ENCRYPTED_PRIVATE_KEY;
   const encryptionPassword = process.env.ENCRYPTION_PASSWORD;
   const plainKey = process.env.PRIVATE_KEY;
+  
+  let privateKey = '';
   
   if (encryptedKey && encryptionPassword) {
     try {
       const KeyManager = require('../utils/keyManager').KeyManager;
       logger.config('info', 'Using encrypted private key');
-      return KeyManager.decryptPrivateKey(encryptedKey, encryptionPassword);
+      privateKey = KeyManager.decryptPrivateKey(encryptedKey, encryptionPassword);
     } catch (error) {
       logger.config('error', 'Failed to decrypt private key', {
         error: error instanceof Error ? error.message : error
@@ -35,25 +30,25 @@ function getPrivateKeySync(): string {
     }
   } else if (plainKey) {
     logger.config('warn', 'Using unencrypted private key. Consider using ENCRYPTED_PRIVATE_KEY for better security.');
-    return plainKey;
-  } else {
-    return '';
+    privateKey = plainKey;
   }
+
+  return {
+    gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
+    privateKey,
+    secretCodes: process.env.SECRET_CODES 
+      ? process.env.SECRET_CODES.split(',').map(s => s.trim())
+      : ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure'],
+    wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
+    airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000',
+    xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000',
+    port: parseInt(process.env.PORT || '3000', 10),
+    nodeEnv: process.env.NODE_ENV || 'development'
+  };
 }
 
-// Synchronous config that handles both encrypted and plain text keys
-export const config = {
-  gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
-  privateKey: getPrivateKeySync(),
-  secretCodes: process.env.SECRET_CODES 
-    ? process.env.SECRET_CODES.split(',').map(s => s.trim())
-    : ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure'],
-  wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
-  airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000',
-  xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000',
-  port: parseInt(process.env.PORT || '3000', 10),
-  nodeEnv: process.env.NODE_ENV || 'development'
-} as Config;
+// Single configuration instance
+export const config = createConfig();
 
 // Log security level
 const encryptedKey = process.env.ENCRYPTED_PRIVATE_KEY;
@@ -71,50 +66,18 @@ if (encryptedKey) {
   logger.config('error', 'No private key configuration found');
 }
 
-// Initialize configuration with secure private key loading
-export async function initializeConfig(): Promise<Config> {
-  if (asyncConfig) {
-    return asyncConfig;
-  }
+// Log security information on startup
+logger.config('info', `Security Level: ${securityConfig.getSecurityLevel()}`);
+logger.config('info', `Key Strategy: ${securityConfig.getStrategy()}`);
 
-  const privateKey = await getPrivateKey();
-  
-  asyncConfig = {
-    gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
-    privateKey,
-    secretCodes: process.env.SECRET_CODES 
-      ? process.env.SECRET_CODES.split(',').map(s => s.trim())
-      : ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure'],
-    wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || '0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1',
-    airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000',
-    xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000',
-    port: parseInt(process.env.PORT || '3000', 10),
-    nodeEnv: process.env.NODE_ENV || 'development'
-  };
-
-  // Log security information
-  logger.config('info', `Security Level: ${securityConfig.getSecurityLevel()}`);
-  logger.config('info', `Key Strategy: ${securityConfig.getStrategy()}`);
-  
-  if (!securityConfig.isProductionReady() && process.env.NODE_ENV === 'production') {
-    logger.config('error', 'PRODUCTION ERROR: Insecure key management detected in production environment!');
-    process.exit(1);
-  }
-
-  // Show security recommendations
-  const recommendations = securityConfig.getRecommendations();
-  recommendations.forEach(rec => logger.config('info', rec));
-
-  return asyncConfig;
+if (!securityConfig.isProductionReady() && process.env.NODE_ENV === 'production') {
+  logger.config('error', 'PRODUCTION ERROR: Insecure key management detected in production environment!');
+  process.exit(1);
 }
 
-// Export a getter function for the config
-export async function getConfig(): Promise<Config> {
-  if (!asyncConfig) {
-    return await initializeConfig();
-  }
-  return asyncConfig;
-}
+// Show security recommendations
+const recommendations = securityConfig.getRecommendations();
+recommendations.forEach(rec => logger.config('info', rec));
 
 export function validateConfig(): void {
   const requiredFields: (keyof Config)[] = ['privateKey'];

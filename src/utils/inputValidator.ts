@@ -5,6 +5,7 @@
 
 import Joi from 'joi';
 import validator from 'validator';
+import { logger } from './logger';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -398,11 +399,11 @@ export class InputValidator {
     };
 
     if (risk === 'HIGH') {
-      console.error('🚨 HIGH RISK INPUT VALIDATION FAILURE:', securityEvent);
+      logger.security('error', 'HIGH RISK INPUT VALIDATION FAILURE', securityEvent);
     } else if (risk === 'MEDIUM') {
-      console.warn('⚠️  MEDIUM RISK INPUT VALIDATION FAILURE:', securityEvent);
+      logger.security('warn', 'MEDIUM RISK INPUT VALIDATION FAILURE', securityEvent);
     } else {
-      console.log('ℹ️  INPUT VALIDATION FAILURE:', securityEvent);
+      logger.validation('info', 'INPUT VALIDATION FAILURE', securityEvent);
     }
 
     return securityEvent;

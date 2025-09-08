@@ -31,7 +31,7 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
 
 # Persistent data
@@ -52,3 +52,11 @@ coverage/
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Test artifacts
+data-test/
+logs-test/
+junit.xml
+
+# Jest cache
+.jest/

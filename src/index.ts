@@ -1,47 +1,50 @@
 import app from './app';
 import { config, validateConfig } from './config';
+import { logger } from './utils/logger';
 
 async function startServer(): Promise<void> {
   try {
     // Validate configuration
-    console.log('Validating configuration...');
+    logger.config('info', 'Validating configuration...');
     validateConfig();
-    console.log('✅ Configuration validated successfully');
+    logger.config('info', 'Configuration validated successfully');
 
     // Start the server
     const server = app.listen(config.port, () => {
-      console.log(`🚀 Chiado wxHOPR Airdrop Service started successfully`);
-      console.log(`📡 Server running on port ${config.port}`);
-      console.log(`🌍 Environment: ${config.nodeEnv}`);
-      console.log(`💰 Airdrop amount: ${config.airdropAmountWei} wei`);
-      console.log(`🔗 Gnosis RPC: ${config.gnosisRpcUrl}`);
-      console.log('');
-      console.log('Available endpoints:');
-      console.log(`  POST http://localhost:${config.port}/api/airdrop/claim`);
-      console.log(`  GET  http://localhost:${config.port}/api/airdrop/status`);
-      console.log(`  POST http://localhost:${config.port}/api/airdrop/generate-test-hash`);
-      console.log(`  GET  http://localhost:${config.port}/api/airdrop/health`);
+      logger.startup('Chiado wxHOPR Airdrop Service started successfully');
+      logger.startup(`Server running on port ${config.port}`);
+      logger.startup(`Environment: ${config.nodeEnv}`);
+      logger.startup(`Airdrop amount: ${config.airdropAmountWei} wei`);
+      logger.startup(`Gnosis RPC: ${config.gnosisRpcUrl}`);
+      logger.info('Available endpoints:', {
+        endpoints: [
+          `POST http://localhost:${config.port}/api/airdrop/claim`,
+          `GET  http://localhost:${config.port}/api/airdrop/status`,
+          `POST http://localhost:${config.port}/api/airdrop/generate-test-hash`,
+          `GET  http://localhost:${config.port}/api/airdrop/health`
+        ]
+      });
     });
 
     // Graceful shutdown
     process.on('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully');
+      logger.info('SIGTERM received, shutting down gracefully');
       server.close(() => {
-        console.log('Server closed');
+        logger.info('Server closed');
         process.exit(0);
       });
     });
 
     process.on('SIGINT', () => {
-      console.log('SIGINT received, shutting down gracefully');
+      logger.info('SIGINT received, shutting down gracefully');
       server.close(() => {
-        console.log('Server closed');
+        logger.info('Server closed');
         process.exit(0);
       });
     });
 
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logger.failure('Failed to start server', { error: error instanceof Error ? error.message : error });
     process.exit(1);
   }
 }

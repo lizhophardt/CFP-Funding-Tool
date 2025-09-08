@@ -12,7 +12,16 @@
     "quick-deploy": "node scripts/quick-deploy.js",
     "security-check": "ts-node scripts/security-check.ts",
     "encrypt-key": "node scripts/encrypt-private-key.js",
-    "validate-security": "ts-node scripts/validate-security.ts"
+    "validate-security": "ts-node scripts/validate-security.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false --passWithNoTests",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:security": "jest --testPathPattern=security",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test:clear": "jest --clearCache"
   },
   "keywords": [
     "airdrop",
@@ -36,13 +45,23 @@
     "joi": "^18.0.1",
     "validator": "^13.15.15",
     "web3": "^4.3.0",
-    "web3-utils": "^4.3.3"
+    "web3-utils": "^4.3.3",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.10.5",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.1.3",
+    "jest-environment-node": "^30.1.2",
+    "jest-junit": "^16.0.0",
     "nodemon": "^3.0.2",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

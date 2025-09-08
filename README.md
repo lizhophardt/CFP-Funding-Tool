@@ -1,56 +1,63 @@
 # Gnosis Chain wxHOPR Airdrop Service
 
-A TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation. The service validates a secret code against configured valid codes and sends wxHOPR tokens to the recipient address if the validation succeeds.
+A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation with comprehensive security features and enterprise-grade logging.
 
-## Features
+## 🚀 Features
 
 - 🔐 **Secret Code Validation**: Validates secret codes against configured valid codes
-- 💰 **Automated Airdrops**: Sends wxHOPR tokens on Gnosis Chain to valid recipients
+- 💰 **Dual Token Airdrops**: Sends both wxHOPR tokens and xDai to recipients
 - 🚫 **Duplicate Prevention**: Prevents multiple claims with the same secret code
-- 🛡️ **Security**: Built-in validation, rate limiting, and error handling
-- 📊 **Status Monitoring**: Real-time service status and balance monitoring
-- 🧪 **Development Tools**: Test secret code generation for development
+- 🛡️ **Enterprise Security**: Multi-layer input validation, rate limiting, and threat protection
+- 📊 **Real-time Monitoring**: Service status, balance monitoring, and security dashboard
+- 🧪 **Development Tools**: Test secret code generation and comprehensive testing suite
+- 📝 **Professional Logging**: Winston-based logging with rotation and structured output
+- 🐳 **Docker Ready**: Secure containerized deployment with hardened configuration
 
-## Quick Start
+## 📋 Quick Start
 
 ### 1. Installation
 
 ```bash
+git clone <repository-url>
+cd gnosis-airdrop-service
 npm install
 ```
 
 ### 2. Configuration
 
-Copy the example environment file and configure it:
-
 ```bash
+# Copy environment template
 cp env.example .env
+
+# Edit with your configuration
+nano .env
 ```
 
-Edit `.env` with your configuration:
-
+Required environment variables:
 ```env
-# Gnosis Chain RPC URL
+# Gnosis Chain Configuration
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
+WXHOPR_TOKEN_ADDRESS=0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
 
-# Private key for the wallet that will send wxHOPR tokens (without 0x prefix)
-PRIVATE_KEY=your_private_key_here
+# Security (choose one method)
+PRIVATE_KEY=your_private_key_here                    # Basic (development only)
+ENCRYPTED_PRIVATE_KEY=encrypted_key_here             # Recommended
+ENCRYPTION_PASSWORD=your_encryption_password         # With encrypted key
 
-# Secret codes for airdrop validation (comma-separated)
+# Airdrop Configuration
 SECRET_CODES=DontTellUncleSam,SecretCode123,HiddenTreasure
+AIRDROP_AMOUNT_WEI=10000000000000000                 # 0.01 wxHOPR
+XDAI_AIRDROP_AMOUNT_WEI=10000000000000000           # 0.01 xDai
 
-# Amount of wxHOPR tokens to send per successful claim (in wei, 18 decimals)
-AIRDROP_AMOUNT_WEI=1000000000000000000
-
-# Server configuration
+# Server Configuration
 PORT=3000
 NODE_ENV=development
 ```
 
-### 3. Build and Run
+### 3. Development
 
 ```bash
-# Development mode with hot reload
+# Development with hot reload
 npm run dev
 
 # Build for production
@@ -58,138 +65,33 @@ npm run build
 
 # Run production build
 npm start
+
+# Run tests
+npm test
 ```
 
-## API Endpoints
+## 🌐 API Endpoints
 
-### POST `/api/airdrop/claim`
+### Core Endpoints
 
-Claim an airdrop by providing a valid secret code and recipient address.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/airdrop/claim` | Claim dual airdrop (wxHOPR + xDai) |
+| `GET` | `/api/airdrop/status` | Get service status and balances |
+| `GET` | `/api/airdrop/health` | Health check endpoint |
+| `POST` | `/api/airdrop/generate-test-code` | Generate test secret code |
 
-**Request Body:**
-```json
-{
-  "secretCode": "DontTellUncleSam",
-  "recipientAddress": "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
-}
-```
+### Security Endpoints
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Airdrop sent successfully",
-  "transactionHash": "0x...",
-  "amount": "1000000000000000000"
-}
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/security/dashboard` | Real-time security dashboard |
+| `GET` | `/api/security/stats` | Security statistics and metrics |
+| `GET` | `/api/security/threats` | Threat response information |
 
-### GET `/api/airdrop/status`
+### Example Usage
 
-Get service status, balance, and statistics.
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "isConnected": true,
-    "accountAddress": "0x...",
-    "balance": "10.5 wxHOPR",
-    "processedCount": 42
-  }
-}
-```
-
-### POST `/api/airdrop/generate-test-code`
-
-Generate a test secret code for development purposes.
-
-**Request Body:**
-```json
-{
-  "prefix": "TestCode"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "secretCode": "TestCodeabc123",
-    "configuredCodes": ["DontTellUncleSam", "SecretCode123", "HiddenTreasure"]
-  }
-}
-```
-
-### GET `/api/airdrop/health`
-
-Health check endpoint.
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Airdrop service is running",
-  "timestamp": "2024-01-01T12:00:00.000Z"
-}
-```
-
-## Secret Code Validation
-
-The service uses simple string matching for secret code validation:
-
-1. You configure a list of valid secret codes in the environment variables
-2. Users provide one of these secret codes when claiming
-3. The service validates the provided code against the configured valid codes
-4. If valid and not already used, the service sends wxHOPR tokens to the recipient address
-5. Each secret code can only be used once, regardless of the recipient address
-
-### Example Secret Codes
-
-```bash
-# In your .env file
-SECRET_CODES=DontTellUncleSam,SecretCode123,HiddenTreasure,MySpecialCode2024
-```
-
-## Security Features
-
-- **Input Validation**: All inputs are validated for format and security
-- **Duplicate Prevention**: Each secret code can only be used once
-- **Address Validation**: Ethereum addresses are validated before transactions
-- **Balance Checks**: Ensures sufficient balance before sending transactions
-- **Error Handling**: Comprehensive error handling and logging
-- **Rate Limiting**: Built-in protection against abuse
-
-## Development
-
-### Project Structure
-
-```
-src/
-├── config/           # Configuration management
-├── controllers/      # Request handlers
-├── middleware/       # Express middleware
-├── routes/          # API routes
-├── services/        # Business logic
-├── types/           # TypeScript type definitions
-├── app.ts           # Express app setup
-└── index.ts         # Application entry point
-```
-
-### Testing
-
-Generate a test secret code:
-
-```bash
-curl -X POST http://localhost:3000/api/airdrop/generate-test-code \
-  -H "Content-Type: application/json" \
-  -d '{"prefix": "MyTestCode"}'
-```
-
-Then use one of your configured secret codes to test the claim endpoint:
-
+**Claim Airdrop:**
 ```bash
 curl -X POST http://localhost:3000/api/airdrop/claim \
   -H "Content-Type: application/json" \
@@ -199,13 +101,115 @@ curl -X POST http://localhost:3000/api/airdrop/claim \
   }'
 ```
 
-## Requirements
+**Check Status:**
+```bash
+curl http://localhost:3000/api/airdrop/status
+```
 
-- Node.js 18+
-- A Gnosis Chain wallet with wxHOPR tokens for airdrops and xDai for gas fees
-- Access to Gnosis Chain RPC endpoint
+## 🏗️ Project Structure
 
-## License
+```
+├── src/
+│   ├── controllers/         # Request handlers
+│   ├── services/           # Business logic
+│   ├── middleware/         # Express middleware (validation, security)
+│   ├── routes/            # API route definitions
+│   ├── utils/             # Utilities (logging, validation, security)
+│   ├── config/            # Configuration management
+│   ├── types/             # TypeScript type definitions
+│   └── app.ts             # Express app setup
+├── tests/                 # Comprehensive test suite
+├── docs/                  # Documentation
+├── scripts/               # Utility scripts
+├── logs/                  # Application logs (auto-generated)
+└── frontend/              # Web frontend (optional)
+```
 
-MIT
-# Force Railway redeploy - Thu Aug 28 17:03:01 WIB 2025
+## 🔐 Security Features
+
+- **Multi-layer Input Validation**: Joi schemas + security pattern detection
+- **Rate Limiting**: Global and endpoint-specific limits
+- **Threat Protection**: Automatic IP blocking for repeated attacks
+- **Private Key Encryption**: Support for encrypted private key storage
+- **CSP Headers**: Content Security Policy protection
+- **CORS Configuration**: Restricted origins for production
+- **Security Monitoring**: Real-time threat detection and logging
+
+## 🚀 Deployment
+
+### Docker (Recommended)
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build manually
+docker build -t airdrop-service .
+docker run -p 3000:3000 --env-file .env airdrop-service
+```
+
+### Cloud Platforms
+
+- **Railway**: See [`docs/deployment/railway.md`](docs/deployment/railway.md)
+- **Heroku**: See [`docs/deployment/heroku.md`](docs/deployment/heroku.md)
+- **AWS/GCP/Azure**: See [`docs/deployment/cloud.md`](docs/deployment/cloud.md)
+
+## 📖 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Complete security setup guide |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Deployment instructions |
+| [`docs/API.md`](docs/API.md) | Detailed API documentation |
+| [`docs/FRONTEND.md`](docs/FRONTEND.md) | Frontend setup and usage |
+| [`docs/TESTING.md`](docs/TESTING.md) | Testing guide |
+| [`LOGGING_SYSTEM.md`](LOGGING_SYSTEM.md) | Logging implementation details |
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:unit
+npm run test:integration
+npm run test:security
+
+# Run with coverage
+npm run test:coverage
+
+# Watch mode
+npm run test:watch
+```
+
+## 📊 Monitoring & Logs
+
+- **Application Logs**: `logs/combined-*.log`
+- **Error Logs**: `logs/error-*.log`
+- **Security Logs**: `logs/security-*.log`
+- **Security Dashboard**: `http://localhost:3000/api/security/dashboard`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## ⚠️ Security Notice
+
+- Never commit private keys to version control
+- Use encrypted private keys in production
+- Regularly rotate secret codes
+- Monitor security logs for threats
+- Keep dependencies updated
+
+---
+
+**Need Help?** Check the [`docs/`](docs/) directory for detailed guides or open an issue.

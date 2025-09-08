@@ -10,6 +10,7 @@ import { globalRateLimit, getRateLimitSummary } from './middleware/rateLimiting'
 import { SecurityHeaders } from './utils/securityHeaders';
 import { SecurityMetrics } from './utils/securityMetrics';
 import { checkBlockedIP } from './middleware/threatProtection';
+import { logger } from './utils/logger';
 
 const app = express();
 
@@ -104,7 +105,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging in development
 if (config.nodeEnv === 'development') {
   app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    logger.http(`${req.method} ${req.path}`, {
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      referer: req.get('Referer')
+    });
     next();
   });
 }

@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { Config } from '../types';
 import { SecurityConfig } from './securityConfig';
+import { logger } from '../utils/logger';
 
 dotenv.config();
 
@@ -24,14 +25,16 @@ function getPrivateKeySync(): string {
   if (encryptedKey && encryptionPassword) {
     try {
       const KeyManager = require('../utils/keyManager').KeyManager;
-      console.log('🔐 Using encrypted private key');
+      logger.config('info', 'Using encrypted private key');
       return KeyManager.decryptPrivateKey(encryptedKey, encryptionPassword);
     } catch (error) {
-      console.error(`❌ Failed to decrypt private key: ${error}`);
+      logger.config('error', 'Failed to decrypt private key', {
+        error: error instanceof Error ? error.message : error
+      });
       throw new Error(`Failed to decrypt private key: ${error}`);
     }
   } else if (plainKey) {
-    console.warn('⚠️  Using unencrypted private key. Consider using ENCRYPTED_PRIVATE_KEY for better security.');
+    logger.config('warn', 'Using unencrypted private key. Consider using ENCRYPTED_PRIVATE_KEY for better security.');
     return plainKey;
   } else {
     return '';
@@ -57,15 +60,15 @@ const encryptedKey = process.env.ENCRYPTED_PRIVATE_KEY;
 const plainKey = process.env.PRIVATE_KEY;
 
 if (encryptedKey) {
-  console.log('🔐 Security Level: MEDIUM (Encrypted Private Key)');
+  logger.config('info', 'Security Level: MEDIUM (Encrypted Private Key)');
 } else if (plainKey) {
-  console.log('⚠️  Security Level: LOW (Plain Text Private Key)');
+  logger.config('warn', 'Security Level: LOW (Plain Text Private Key)');
   if (process.env.NODE_ENV === 'production') {
-    console.error('❌ PRODUCTION ERROR: Plain text private key detected in production!');
+    logger.config('error', 'PRODUCTION ERROR: Plain text private key detected in production!');
     process.exit(1);
   }
 } else {
-  console.error('❌ No private key configuration found');
+  logger.config('error', 'No private key configuration found');
 }
 
 // Initialize configuration with secure private key loading
@@ -90,17 +93,17 @@ export async function initializeConfig(): Promise<Config> {
   };
 
   // Log security information
-  console.log(`🔐 Security Level: ${securityConfig.getSecurityLevel()}`);
-  console.log(`🛡️ Key Strategy: ${securityConfig.getStrategy()}`);
+  logger.config('info', `Security Level: ${securityConfig.getSecurityLevel()}`);
+  logger.config('info', `Key Strategy: ${securityConfig.getStrategy()}`);
   
   if (!securityConfig.isProductionReady() && process.env.NODE_ENV === 'production') {
-    console.error('❌ PRODUCTION ERROR: Insecure key management detected in production environment!');
+    logger.config('error', 'PRODUCTION ERROR: Insecure key management detected in production environment!');
     process.exit(1);
   }
 
   // Show security recommendations
   const recommendations = securityConfig.getRecommendations();
-  recommendations.forEach(rec => console.log(rec));
+  recommendations.forEach(rec => logger.config('info', rec));
 
   return asyncConfig;
 }
@@ -140,7 +143,7 @@ export function validateConfig(): void {
   ];
   
   if (commonTestKeys.includes(config.privateKey.toLowerCase())) {
-    console.warn('⚠️  WARNING: Using a well-known test private key. This is extremely insecure for production!');
+    logger.config('warn', 'WARNING: Using a well-known test private key. This is extremely insecure for production!');
   }
 
   // Validate airdrop amounts are valid numbers

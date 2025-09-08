@@ -2,6 +2,7 @@ import Web3 from 'web3';
 import { config } from '../config';
 import { SecurityErrorHandler, ErrorType } from '../utils/errorHandler';
 import { Web3AddressValidator } from '../utils/web3AddressValidator';
+import { logger } from '../utils/logger';
 
 // ERC-20 ABI for token transfers
 const ERC20_ABI = [
@@ -79,7 +80,7 @@ export class Web3Service {
 
   async sendDualTransaction(recipientAddress: string, wxHoprAmountWei: string, xDaiAmountWei: string): Promise<{wxHoprTxHash: string, xDaiTxHash: string}> {
     try {
-      console.log(`🔍 ENHANCED WEB3 ADDRESS VALIDATION:`);
+      logger.web3('info', 'Enhanced Web3 address validation starting', { recipientAddress });
       
       // Use enhanced address validator with security checks
       const addressValidation = Web3AddressValidator.validateForSecurity(
@@ -88,7 +89,10 @@ export class Web3Service {
       );
       
       if (!addressValidation.isValid) {
-        console.log(`❌ Enhanced address validation failed!`);
+        logger.web3('error', 'Enhanced address validation failed', {
+          error: addressValidation.error,
+          address: recipientAddress
+        });
         SecurityErrorHandler.throwSecureError(
           ErrorType.VALIDATION,
           `Invalid recipient address: ${addressValidation.error}`,
@@ -98,10 +102,11 @@ export class Web3Service {
       
       // Use checksummed address for the transaction
       const validatedAddress = addressValidation.checksumAddress!;
-      console.log(`✅ Enhanced address validation passed!`);
-      console.log(`   📍 Original: ${recipientAddress}`);
-      console.log(`   📍 Checksummed: ${validatedAddress}`);
-      console.log(`   🔒 Security Level: ${addressValidation.securityLevel}`);
+      logger.web3('info', 'Enhanced address validation passed', {
+        original: recipientAddress,
+        checksummed: validatedAddress,
+        securityLevel: addressValidation.securityLevel
+      });
 
       // Check if we have enough wxHOPR token balance
       const tokenBalance = await this.tokenContract.methods.balanceOf(this.account.address).call();
@@ -178,7 +183,11 @@ export class Web3Service {
       }
 
       const tokenReceipt = await this.web3.eth.sendSignedTransaction(signedTokenTransaction.rawTransaction);
-      console.log(`✅ wxHOPR token transfer successful: ${tokenReceipt.transactionHash}`);
+      logger.web3('info', 'wxHOPR token transfer successful', {
+        transactionHash: tokenReceipt.transactionHash,
+        recipient: validatedAddress,
+        amount: wxHoprAmountWei
+      });
 
       // Send native xDai transfer transaction
       const xDaiTransaction = {
@@ -203,7 +212,11 @@ export class Web3Service {
       }
 
       const xDaiReceipt = await this.web3.eth.sendSignedTransaction(signedXDaiTransaction.rawTransaction);
-      console.log(`✅ xDai transfer successful: ${xDaiReceipt.transactionHash}`);
+      logger.web3('info', 'xDai transfer successful', {
+        transactionHash: xDaiReceipt.transactionHash,
+        recipient: validatedAddress,
+        amount: xDaiAmountWei
+      });
 
       return {
         wxHoprTxHash: tokenReceipt.transactionHash.toString(),

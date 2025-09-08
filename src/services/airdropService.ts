@@ -2,6 +2,7 @@ import { Web3Service } from './web3Service';
 import { SecretCodeService } from './secretCodeService';
 import { config } from '../config';
 import { AirdropRequest, AirdropResponse } from '../types';
+import { logger } from '../utils/logger';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -30,10 +31,12 @@ export class AirdropService {
         const data = fs.readFileSync(this.PROCESSED_CODES_FILE, 'utf8');
         const codes = JSON.parse(data);
         this.processedCodes = new Set(codes);
-        console.log(`✅ Loaded ${this.processedCodes.size} processed codes from storage`);
+        logger.success(`Loaded ${this.processedCodes.size} processed codes from storage`);
       }
     } catch (error) {
-      console.warn(`⚠️ Failed to load processed codes: ${error}`);
+      logger.warning('Failed to load processed codes', {
+        error: error instanceof Error ? error.message : error
+      });
     }
   }
 
@@ -42,7 +45,9 @@ export class AirdropService {
       const codes = Array.from(this.processedCodes);
       fs.writeFileSync(this.PROCESSED_CODES_FILE, JSON.stringify(codes, null, 2));
     } catch (error) {
-      console.error(`❌ Failed to save processed codes: ${error}`);
+      logger.failure('Failed to save processed codes', {
+        error: error instanceof Error ? error.message : error
+      });
     }
   }
 

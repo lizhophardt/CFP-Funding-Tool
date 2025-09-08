@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AirdropService } from '../services/airdropService';
 import { AirdropRequest } from '../types';
 import { SecurityErrorHandler } from '../utils/errorHandler';
+import { logger } from '../utils/logger';
 
 export class AirdropController {
   private airdropService: AirdropService;
@@ -14,14 +15,16 @@ export class AirdropController {
     try {
       const { secretCode, recipientAddress }: AirdropRequest = req.body;
       
-      console.log(`🎯 AIRDROP CLAIM REQUEST:`);
-      console.log(`   📍 Recipient: ${recipientAddress}`);
-      console.log(`   🔐 Secret Code: ${secretCode}`);
-      console.log(`   🕐 Time: ${new Date().toISOString()}`);
-      console.log(`   🛡️ Validation: ${req.validationMeta?.validated ? 'PASSED' : 'UNKNOWN'}`);
-      console.log(`   🔒 Security Risk: ${req.validationMeta?.securityRisk || 'UNKNOWN'}`);
+      logger.airdrop('info', 'Claim request received', {
+        recipient: recipientAddress,
+        secretCodeLength: secretCode?.length || 0,
+        validation: req.validationMeta?.validated ? 'PASSED' : 'UNKNOWN',
+        securityRisk: req.validationMeta?.securityRisk || 'UNKNOWN',
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
 
-      console.log(`🔍 Processing airdrop request...`);
+      logger.processing('Processing airdrop request...');
       
       // Process the airdrop
       const result = await this.airdropService.processAirdrop({
@@ -32,21 +35,27 @@ export class AirdropController {
       const statusCode = result.success ? 200 : 400;
       
       if (result.success) {
-        console.log(`✅ AIRDROP SUCCESS:`);
-        console.log(`   💰 wxHOPR Amount: ${result.wxHOPRAmount} wei`);
-        console.log(`   💰 xDai Amount: ${result.xDaiAmount} wei`);
-        console.log(`   📝 wxHOPR Transaction: ${result.wxHOPRTransactionHash}`);
-        console.log(`   📝 xDai Transaction: ${result.xDaiTransactionHash}`);
-        console.log(`   🎉 Message: ${result.message}`);
+        logger.airdrop('info', 'Airdrop successful', {
+          wxHOPRAmount: result.wxHOPRAmount,
+          xDaiAmount: result.xDaiAmount,
+          wxHOPRTransactionHash: result.wxHOPRTransactionHash,
+          xDaiTransactionHash: result.xDaiTransactionHash,
+          recipient: recipientAddress
+        });
       } else {
-        console.log(`❌ AIRDROP FAILED:`);
-        console.log(`   📝 Reason: ${result.message}`);
+        logger.airdrop('warn', 'Airdrop failed', {
+          reason: result.message,
+          recipient: recipientAddress
+        });
       }
       
       res.status(statusCode).json(result);
 
     } catch (error) {
-      console.log(`💥 AIRDROP ERROR: ${error}`);
+      logger.airdrop('error', 'Airdrop processing error', {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined
+      });
       const sanitizedError = SecurityErrorHandler.sanitizeForAPI(error);
       res.status(500).json(sanitizedError);
     }
@@ -69,14 +78,14 @@ export class AirdropController {
     try {
       const { prefix } = req.body;
       
-      console.log(`🔧 SECRET CODE GENERATION REQUEST:`);
-      console.log(`   📝 Prefix: "${prefix || 'TestCode'}"`);
-      console.log(`   🕐 Time: ${new Date().toISOString()}`);
+      logger.airdrop('info', 'Test code generation request', {
+        prefix: prefix || 'TestCode',
+        ip: req.ip
+      });
 
       const secretCode = this.airdropService.generateTestCode(prefix);
       
-      console.log(`✅ SECRET CODE GENERATED:`);
-      console.log(`   🔐 Secret Code: ${secretCode}`);
+      logger.success(`Test secret code generated: ${secretCode}`);
       
       res.status(200).json({
         success: true,
@@ -87,7 +96,9 @@ export class AirdropController {
       });
 
     } catch (error) {
-      console.log(`💥 SECRET CODE GENERATION ERROR: ${error}`);
+      logger.airdrop('error', 'Test code generation error', {
+        error: error instanceof Error ? error.message : error
+      });
       const sanitizedError = SecurityErrorHandler.sanitizeForAPI(error);
       res.status(500).json(sanitizedError);
     }

@@ -2,6 +2,8 @@
  * Secure error handling utility to prevent information disclosure
  */
 
+import { logger } from './logger';
+
 export enum ErrorType {
   VALIDATION = 'VALIDATION',
   INSUFFICIENT_BALANCE = 'INSUFFICIENT_BALANCE',
@@ -82,7 +84,7 @@ export class SecurityErrorHandler {
     }
 
     // Always log the detailed error for debugging
-    console.error(`[${secureError.code}] ${secureError.type}:`, {
+    logger.error(`[${secureError.code}] ${secureError.type}`, {
       internal: secureError.internalMessage,
       public: secureError.publicMessage,
       timestamp: new Date().toISOString(),

@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import { logger } from './logger';
 
 export class KeyManager {
   private static readonly ALGORITHM = 'aes-256-cbc';
@@ -50,35 +51,32 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-console.log('🔐 Private Key Encryption Tool');
-console.log('This will encrypt your private key for secure storage.');
-console.log('');
+logger.info('🔐 Private Key Encryption Tool');
+logger.info('This will encrypt your private key for secure storage.');
 
 rl.question('Enter your private key (64 hex chars): ', (privateKey) => {
   if (!privateKey.match(/^[a-fA-F0-9]{64}$/)) {
-    console.error('❌ Invalid private key format');
+    logger.error('❌ Invalid private key format');
     process.exit(1);
   }
   
   rl.question('Enter encryption password: ', (password) => {
     if (password.length < 12) {
-      console.error('❌ Password must be at least 12 characters');
+      logger.error('❌ Password must be at least 12 characters');
       process.exit(1);
     }
     
     try {
       const encrypted = encryptPrivateKey(privateKey, password);
-      console.log('');
-      console.log('✅ Private key encrypted successfully!');
-      console.log('');
-      console.log('Add this to your .env file:');
-      console.log(\`ENCRYPTED_PRIVATE_KEY=\${encrypted}\`);
-      console.log(\`ENCRYPTION_PASSWORD=\${password}\`);
-      console.log('');
-      console.log('⚠️  Store the ENCRYPTION_PASSWORD securely and separately!');
+      logger.success('Private key encrypted successfully!');
+      logger.info('Add this to your .env file:', {
+        ENCRYPTED_PRIVATE_KEY: encrypted,
+        ENCRYPTION_PASSWORD: password
+      });
+      logger.warning('Store the ENCRYPTION_PASSWORD securely and separately!');
       
     } catch (error) {
-      console.error(\`❌ Encryption failed: \${error}\`);
+      logger.error(\`❌ Encryption failed: \${error}\`);
     }
     
     rl.close();

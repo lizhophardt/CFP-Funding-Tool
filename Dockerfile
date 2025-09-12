@@ -149,7 +149,7 @@ CMD ["npm", "start"]
 # 🧪 DEVELOPMENT STAGE
 # =============================================================================
 # Development-focused stage with hot reloading and debugging capabilities
-FROM node:24-alpine AS development
+FROM base AS development
 
 # Install system updates and development tools
 RUN apk update && apk upgrade && \
@@ -274,3 +274,12 @@ CMD ["npm", "run", "dev:watch"]
 #
 # Result: Enterprise-grade container security! 🛡️🚀
 # =============================================================================
+
+# =============================================================================
+# 🚀 PRODUCTION STAGE (FINAL - DEFAULT FOR RAILWAY)
+# =============================================================================
+# This ensures Railway builds the production stage by default
+FROM base AS production
+
+# This stage inherits all the security hardening from the base stage
+# and is the default target for Railway deployment

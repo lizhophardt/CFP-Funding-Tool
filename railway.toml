@@ -1,5 +1,7 @@
 [build]
 builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+buildArgs = { BUILDKIT_INLINE_CACHE = "1" }
 
 [deploy]
 startCommand = "npm start"

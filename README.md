@@ -15,7 +15,41 @@ A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gn
 
 ## 📋 Quick Start
 
-### 1. Installation
+### 🧪 Development Mode (Recommended for Development)
+
+```bash
+# Quick development setup with hot reloading and debugging
+./deploy.sh --dev
+
+# Or use the development helper for common tasks
+./dev-helper.sh start    # Start development environment
+./dev-helper.sh logs     # Follow logs
+./dev-helper.sh shell    # Access container shell
+./dev-helper.sh debug    # Show debugger connection info
+```
+
+**Development Features:**
+- 🔄 **Hot Reloading**: Source code changes trigger automatic restart
+- 🐛 **Debug Port**: Node.js debugger on port 9229
+- 📁 **Volume Mounts**: Code, logs, and data directories mounted for persistence
+- 🔍 **Enhanced Logging**: Verbose logging for development debugging
+- 🐚 **Shell Access**: Easy container access for troubleshooting
+
+### 🚀 Production Mode
+
+```bash
+# Production deployment with security hardening
+./deploy.sh --prod
+```
+
+**Production Features:**
+- 🔒 **Read-only Filesystem**: Enhanced container security
+- 🛡️ **Minimal Capabilities**: Dropped privileges and minimal access
+- 📊 **Resource Limits**: CPU and memory constraints
+- 🌐 **Localhost Binding**: Network isolation
+- 🔄 **Auto Restart**: Automatic restart on failure
+
+### 📦 Manual Installation
 
 ```bash
 git clone <repository-url>
@@ -23,7 +57,7 @@ cd gnosis-airdrop-service
 npm install
 ```
 
-### 2. Configuration
+### ⚙️ Configuration
 
 ```bash
 # Copy environment template
@@ -57,8 +91,11 @@ NODE_ENV=development
 ### 3. Development
 
 ```bash
-# Development with hot reload
+# Development with hot reload (local)
 npm run dev
+
+# Development with Docker (recommended)
+./deploy.sh --dev
 
 # Build for production
 npm run build
@@ -68,6 +105,47 @@ npm start
 
 # Run tests
 npm test
+```
+
+## 🐛 Debugging
+
+### VS Code Debugging
+
+1. Start the development environment:
+   ```bash
+   ./deploy.sh --dev
+   ```
+
+2. In VS Code, go to Run and Debug (Ctrl+Shift+D)
+
+3. Select "Attach to Docker (Development)" configuration
+
+4. Set breakpoints in your TypeScript source files
+
+5. The debugger will attach to the running container
+
+### Chrome DevTools
+
+1. Start development mode: `./deploy.sh --dev`
+2. Open Chrome and navigate to: `chrome://inspect`
+3. Click "Open dedicated DevTools for Node"
+4. The debugger will connect to `localhost:9229`
+
+### Development Helper Commands
+
+```bash
+# Quick development commands
+./dev-helper.sh start      # Start development environment
+./dev-helper.sh stop       # Stop development environment
+./dev-helper.sh restart    # Restart development environment
+./dev-helper.sh logs       # Follow all logs
+./dev-helper.sh logs-error # Follow only error/warning logs
+./dev-helper.sh shell      # Access container shell
+./dev-helper.sh stats      # Show resource usage
+./dev-helper.sh debug      # Show debug connection info
+./dev-helper.sh test       # Run tests in container
+./dev-helper.sh clean      # Clean up containers/images
+./dev-helper.sh status     # Show service status
 ```
 
 ## 🌐 API Endpoints

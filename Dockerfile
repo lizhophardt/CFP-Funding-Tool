@@ -40,7 +40,7 @@
 # Alpine Linux provides a security-focused, lightweight base
 # Note: In production, consider pinning to specific SHA256 digest:
 # FROM node:24-alpine@sha256:...
-FROM node:24-alpine
+FROM node:24-alpine AS base
 
 # -----------------------------------------------------------------------------
 # 🛡️ SYSTEM SECURITY UPDATES & MINIMAL TOOLING
@@ -144,6 +144,48 @@ ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
 CMD ["npm", "start"]
+
+# =============================================================================
+# 🧪 DEVELOPMENT STAGE
+# =============================================================================
+# Development-focused stage with hot reloading and debugging capabilities
+FROM base AS development
+
+# Install additional development tools
+RUN apk add --no-cache curl procps
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy source code
+COPY src/ ./src/
+COPY tsconfig.json ./
+
+# Create non-root user (but allow root access for development flexibility)
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/data /tmp/app && \
+    chown -R nodejs:nodejs /app /tmp/app && \
+    chmod -R 755 /app && \
+    chmod 1777 /tmp/app
+
+# Expose application and debug ports
+EXPOSE 3000 9229
+
+# Development health check (more frequent for faster feedback)
+HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=2 \
+  CMD curl -f http://localhost:3000/api/airdrop/health || exit 1
+
+# Use nodemon for hot reloading in development
+CMD ["npm", "run", "dev:watch"]
 
 # =============================================================================
 # 🔧 PRODUCTION SECURITY CONFIGURATION

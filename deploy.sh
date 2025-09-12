@@ -75,3 +75,4 @@ else
     echo "docker logs airdrop-service"
     exit 1
 fi
+# Simple deploy.sh for local development - Fri Sep 12 20:29:40 WIB 2025

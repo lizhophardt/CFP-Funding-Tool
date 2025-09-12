@@ -272,7 +272,7 @@ grep -r "PRIVATE_KEY=" .env* || echo "✅ No plain text keys found"
 1. **Immediate Actions**:
 ```bash
 # Stop the service
-docker-compose down
+docker stop airdrop-service
 
 # Generate new private key
 node scripts/generate-new-key.js
@@ -297,7 +297,7 @@ node scripts/generate-new-key.js
 ## 📞 Support
 
 For security questions or issues:
-1. Check the logs: `docker-compose logs`
+1. Check the logs: `docker logs airdrop-service`
 2. Run diagnostics: `npm run security-check`
 3. Review this guide
 4. Consult your security team

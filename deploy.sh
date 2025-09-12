@@ -49,19 +49,19 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Check if Docker Compose is available
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    echo "❌ Docker Compose is not available. Please install Docker Compose."
-    exit 1
-fi
-
 # Stop any existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose down --remove-orphans 2>/dev/null || true
+docker stop airdrop-service 2>/dev/null || true
+docker rm airdrop-service 2>/dev/null || true
 
 # Build and start the service
 echo "🔨 Building and starting the service..."
-docker-compose up --build -d
+docker build -t airdrop-service .
+docker run -d \
+  --name airdrop-service \
+  -p 3000:3000 \
+  --env-file .env \
+  airdrop-service
 
 # Wait for service to be ready
 echo "⏳ Waiting for service to be ready..."
@@ -79,10 +79,10 @@ if curl -f http://localhost:3000/api/airdrop/health &> /dev/null; then
     echo "  📊 Status: http://localhost:3000/api/airdrop/status"
     echo "  💰 Claim Endpoint: http://localhost:3000/api/airdrop/claim"
     echo ""
-    echo "To view logs: docker-compose logs -f"
-    echo "To stop: docker-compose down"
+    echo "To view logs: docker logs -f airdrop-service"
+    echo "To stop: docker stop airdrop-service"
 else
     echo "❌ Health check failed. Service may not be ready yet."
-    echo "Check logs with: docker-compose logs"
+    echo "Check logs with: docker logs airdrop-service"
     exit 1
 fi

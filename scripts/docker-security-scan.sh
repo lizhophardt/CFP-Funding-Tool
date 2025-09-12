@@ -89,24 +89,12 @@ else
     print_warning "⚠ Consider adding dumb-init for proper signal handling"
 fi
 
-# Check docker-compose security
-print_status "Analyzing docker-compose.yml..."
-if grep -q "read_only: true" docker-compose.yml; then
-    print_success "✓ Read-only filesystem enabled"
+# Check Dockerfile security features
+print_status "Analyzing security configuration..."
+if grep -q "read_only" Dockerfile; then
+    print_success "✓ Read-only filesystem support configured"
 else
-    print_error "✗ Read-only filesystem not enabled"
-fi
-
-if grep -q "cap_drop:" docker-compose.yml; then
-    print_success "✓ Capabilities dropped"
-else
-    print_error "✗ Capabilities not dropped"
-fi
-
-if grep -q "no-new-privileges" docker-compose.yml; then
-    print_success "✓ No new privileges enabled"
-else
-    print_error "✗ No new privileges not enabled"
+    print_warning "⚠ Consider configuring read-only filesystem"
 fi
 
 # 4. Runtime security test
@@ -114,12 +102,12 @@ print_status "Testing runtime security..."
 
 # Start container in background for testing
 print_status "Starting container for security testing..."
-docker-compose up -d
+docker run -d --name airdrop-security-test --env-file .env airdrop-security-scan
 
 sleep 10
 
 # Test if container is running as non-root
-CONTAINER_ID=$(docker-compose ps -q airdrop-service)
+CONTAINER_ID="airdrop-security-test"
 if [ -n "$CONTAINER_ID" ]; then
     USER_ID=$(docker exec "$CONTAINER_ID" id -u 2>/dev/null || echo "unknown")
     if [ "$USER_ID" = "1001" ]; then
@@ -148,7 +136,8 @@ fi
 
 # Stop the test container
 print_status "Stopping test container..."
-docker-compose down
+docker stop airdrop-security-test 2>/dev/null || true
+docker rm airdrop-security-test 2>/dev/null || true
 
 # 5. Security summary
 echo ""

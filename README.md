@@ -140,10 +140,7 @@ curl http://localhost:3000/api/airdrop/status
 ### Docker (Recommended)
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
-
-# Or build manually
+# Build manually
 docker build -t airdrop-service .
 docker run -p 3000:3000 --env-file .env airdrop-service
 ```

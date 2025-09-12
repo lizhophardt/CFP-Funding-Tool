@@ -1,6 +1,6 @@
 # Quick Deployment Guide
 
-This guide provides quick and dirty deployment options for the Gnosis Chain wxHOPR Airdrop Service.
+This guide provides quick deployment options for the Gnosis Chain wxHOPR Airdrop Service.
 
 ## Prerequisites
 
@@ -29,34 +29,25 @@ Required configuration:
 - `SECRET_PREIMAGE`: Your secret preimage for hash validation
 - `AIRDROP_AMOUNT_WEI`: Amount to send per claim (default: 0.01 wxHOPR)
 
-### 2. Deploy with Script
+### 2. Manual Docker Commands
 
 ```bash
-# Make sure the script is executable (already done)
-chmod +x deploy.sh
+# Build the Docker image
+docker build -t airdrop-service .
 
-# Run the deployment script
-./deploy.sh
-```
-
-This script will:
-- ✅ Validate your environment configuration
-- 🛑 Stop any existing containers
-- 🔨 Build and start the Docker container
-- 🏥 Perform health checks
-- 🎉 Confirm successful deployment
-
-### 3. Manual Docker Commands (Alternative)
-
-```bash
-# Build and start with docker-compose
-docker-compose up --build -d
+# Run the container
+docker run -d \
+  --name airdrop-service \
+  -p 3000:3000 \
+  --env-file .env \
+  airdrop-service
 
 # View logs
-docker-compose logs -f
+docker logs -f airdrop-service
 
 # Stop the service
-docker-compose down
+docker stop airdrop-service
+docker rm airdrop-service
 ```
 
 ## Option 2: Quick Local Deployment
@@ -97,9 +88,6 @@ npm start
 Quick deployment using package.json scripts:
 
 ```bash
-# Docker deployment
-npm run deploy
-
 # Local deployment
 npm run quick-deploy
 
@@ -159,11 +147,11 @@ Key environment variables to configure:
 
 ### Docker Issues
 - Ensure Docker is running
-- Try `docker-compose down && docker-compose up --build`
+- Try `docker stop airdrop-service && docker rm airdrop-service && docker build -t airdrop-service . && docker run -d --name airdrop-service -p 3000:3000 --env-file .env airdrop-service`
 
 ### Health Check Fails
 - Wait 30-60 seconds for service to fully start
-- Check logs: `docker-compose logs` or `npm run dev`
+- Check logs: `docker logs airdrop-service` or `npm run dev`
 
 ## Security Notes
 
@@ -175,9 +163,6 @@ Key environment variables to configure:
 ## Quick Commands Reference
 
 ```bash
-# Deploy with Docker
-./deploy.sh
-
 # Deploy locally
 npm run quick-deploy
 
@@ -185,10 +170,10 @@ npm run quick-deploy
 curl http://localhost:3000/api/airdrop/health
 
 # View Docker logs
-docker-compose logs -f
+docker logs -f airdrop-service
 
 # Stop Docker deployment
-docker-compose down
+docker stop airdrop-service && docker rm airdrop-service
 ```
 
 That's it! Your airdrop service should now be running and ready to process claims.

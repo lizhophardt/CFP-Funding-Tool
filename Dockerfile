@@ -17,10 +17,10 @@
 # ❌ Basic network configuration
 #
 # AFTER (Hardened):
-# ✅ Read-only root filesystem (configured in docker-compose)
+# ✅ Read-only root filesystem (can be configured at runtime)
 # ✅ Comprehensive security options
-# ✅ Strict resource limits (configured in docker-compose)
-# ✅ Dropped ALL capabilities (configured in docker-compose)
+# ✅ Strict resource limits (can be configured at runtime)
+# ✅ Dropped ALL capabilities (can be configured at runtime)
 # ✅ Native Node.js health check
 # ✅ Isolated network with custom configuration
 #
@@ -111,8 +111,7 @@ USER nodejs
 # 🌐 NETWORK CONFIGURATION
 # -----------------------------------------------------------------------------
 # Expose application port
-# Note: In production with docker-compose, network isolation is configured
-# to bind only to localhost (127.0.0.1) for additional security
+# Note: In production, consider binding only to localhost (127.0.0.1) for additional security
 EXPOSE 3000
 
 # -----------------------------------------------------------------------------
@@ -147,69 +146,38 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["npm", "start"]
 
 # =============================================================================
-# 🔧 DOCKER-COMPOSE SECURITY CONFIGURATION
+# 🔧 PRODUCTION SECURITY CONFIGURATION
 # =============================================================================
 #
-# The following security features are configured in docker-compose.yml:
+# The following security features can be configured at runtime:
 #
 # 🛡️ READ-ONLY FILESYSTEM:
-#   read_only: true
-#   tmpfs:
-#     - /tmp:noexec,nosuid,nodev,size=100m
-#     - /var/tmp:noexec,nosuid,nodev,size=50m
+#   docker run --read-only --tmpfs /tmp:noexec,nosuid,nodev,size=100m
 #
 # 🔒 SECURITY OPTIONS:
-#   security_opt:
-#     - no-new-privileges:true    # Prevent privilege escalation
-#     - seccomp:unconfined       # Syscall filtering
-#     - apparmor:docker-default  # Mandatory Access Control
+#   docker run --security-opt no-new-privileges:true
 #
 # 🚫 CAPABILITY MANAGEMENT:
-#   cap_drop:
-#     - ALL                      # Drop all capabilities
-#   cap_add:
-#     - NET_BIND_SERVICE        # Only add what's needed
+#   docker run --cap-drop=ALL --cap-add=NET_BIND_SERVICE
 #
 # 📊 RESOURCE LIMITS:
-#   deploy:
-#     resources:
-#       limits:
-#         cpus: '0.5'           # Max 50% CPU
-#         memory: 512M          # Max 512MB RAM
-#         pids: 100            # Max 100 processes
-#       reservations:
-#         cpus: '0.1'           # Min 10% CPU
-#         memory: 128M          # Min 128MB RAM
+#   docker run --cpus="0.5" --memory="512m" --pids-limit=100
 #
 # 🌐 NETWORK ISOLATION:
-#   networks:
-#     airdrop-network:
-#       driver: bridge
-#       driver_opts:
-#         com.docker.network.bridge.enable_icc: "false"
-#         com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+#   docker run -p 127.0.0.1:3000:3000  # Bind to localhost only
 #
 # =============================================================================
 # 🔐 PRODUCTION SECRETS MANAGEMENT
 # =============================================================================
 #
-# For production deployment, use Docker Secrets instead of environment variables:
+# For production deployment, use secure secret management:
 #
-# ENVIRONMENT VARIABLES → DOCKER SECRETS MIGRATION:
-# - ENCRYPTED_PRIVATE_KEY → /run/secrets/encrypted_private_key
-# - ENCRYPTION_PASSWORD → /run/secrets/encryption_password  
-# - SECRET_PREIMAGE → /run/secrets/secret_preimage
-# - SECRET_PREIMAGES → /run/secrets/secret_preimages
-#
-# SETUP COMMANDS:
-#   # Initialize Docker Swarm (required for secrets)
-#   docker swarm init
-#   
-#   # Setup secrets
-#   ./scripts/setup-docker-secrets.sh
-#   
-#   # Deploy with secrets
-#   docker stack deploy -c docker-compose.prod.yml airdrop
+# OPTIONS:
+# 1. Docker secrets (with Docker Swarm)
+# 2. Kubernetes secrets
+# 3. HashiCorp Vault
+# 4. Cloud provider secret managers (AWS Secrets Manager, etc.)
+# 5. Environment variables (development only)
 #
 # =============================================================================
 # 🧪 SECURITY TESTING & VERIFICATION

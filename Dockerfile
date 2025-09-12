@@ -149,10 +149,12 @@ CMD ["npm", "start"]
 # 🧪 DEVELOPMENT STAGE
 # =============================================================================
 # Development-focused stage with hot reloading and debugging capabilities
-FROM base AS development
+FROM node:24-alpine AS development
 
-# Install additional development tools
-RUN apk add --no-cache curl procps
+# Install system updates and development tools
+RUN apk update && apk upgrade && \
+    apk add --no-cache dumb-init curl procps && \
+    rm -rf /var/cache/apk/*
 
 # Set working directory
 WORKDIR /app

@@ -117,17 +117,13 @@ if [ -z "$PRIVATE_KEY" ]; then
     exit 1
 fi
 
-if [ -z "$SECRET_PREIMAGE" ] && [ -z "$SECRET_PREIMAGES" ]; then
-    echo "❌ Neither SECRET_PREIMAGE nor SECRET_PREIMAGES is configured in .env file"
+if [ -z "$SECRET_CODES" ]; then
+    echo "❌ SECRET_CODES is not configured in .env file"
     exit 1
 fi
 
 echo "✅ Found PRIVATE_KEY (length: ${#PRIVATE_KEY})"
-if [ -n "$SECRET_PREIMAGES" ]; then
-    echo "✅ Found SECRET_PREIMAGES (length: ${#SECRET_PREIMAGES})"
-else
-    echo "✅ Found SECRET_PREIMAGE (length: ${#SECRET_PREIMAGE})"
-fi
+echo "✅ Found SECRET_CODES (length: ${#SECRET_CODES})"
 
 echo "✅ Environment configuration validated"
 

@@ -14,6 +14,16 @@ process.env.WXHOPR_TOKEN_ADDRESS = '0x' + '1'.repeat(40);
 process.env.AIRDROP_AMOUNT_WEI = '1000000000000000000';
 process.env.XDAI_AIRDROP_AMOUNT_WEI = '1000000000000000000';
 
+// Mock winston-daily-rotate-file to prevent file operations in tests
+jest.mock('winston-daily-rotate-file', () => {
+  return jest.fn().mockImplementation(() => ({
+    on: jest.fn(),
+    log: jest.fn(),
+    write: jest.fn(),
+    end: jest.fn()
+  }));
+});
+
 // Global test timeout
 jest.setTimeout(30000);
 

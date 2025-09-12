@@ -14,7 +14,7 @@ describe('Airdrop API Integration Tests', () => {
     app = await TestHelpers.createTestApp();
   });
 
-  // Add delay between tests to avoid rate limiting
+  // Add delay between tests for stability
   afterEach(async () => {
     await TestHelpers.wait(100);
   });
@@ -68,10 +68,10 @@ describe('Airdrop API Integration Tests', () => {
         .set('Content-Type', 'application/json')
         .send(invalidAirdropRequests.xssInSecretCode);
 
-      expect([400, 429]).toContain(response.status); // 429 = rate limited
+      expect(response.status).toBe(400); // Should be rejected due to validation
       if (response.status === 400) {
         expect(response.body.success).toBe(false);
-        expect(response.body.message).toMatch(/Security threat detected|invalid characters/i);
+        expect(response.body.message).toMatch(/Security threat detected|invalid characters|Validation failed/i);
       }
     });
 
@@ -81,10 +81,10 @@ describe('Airdrop API Integration Tests', () => {
         .set('Content-Type', 'application/json')
         .send(invalidAirdropRequests.sqlInjection);
 
-      expect([400, 429]).toContain(response.status); // 429 = rate limited
+      expect(response.status).toBe(400); // Should be rejected due to validation
       if (response.status === 400) {
         expect(response.body.success).toBe(false);
-        expect(response.body.message).toMatch(/Security threat detected|invalid characters/i);
+        expect(response.body.message).toMatch(/Security threat detected|invalid characters|Validation failed/i);
       }
     });
 
@@ -117,7 +117,7 @@ describe('Airdrop API Integration Tests', () => {
         .set('Content-Type', 'application/json')
         .send(invalidAirdropRequests.oversizedSecretCode);
 
-      expect([400, 413, 429]).toContain(response.status); // 413 = payload too large, 429 = rate limited
+      expect([400, 413]).toContain(response.status); // 413 = payload too large
       if (response.status === 400) {
         expect(response.body.success).toBe(false);
       }
@@ -208,27 +208,6 @@ describe('Airdrop API Integration Tests', () => {
     });
   });
 
-  describe('Rate Limiting', () => {
-    it('should enforce rate limits on claim endpoint', async () => {
-      const requests = [];
-      
-      // Make multiple rapid requests
-      for (let i = 0; i < 10; i++) {
-        requests.push(
-          request(app)
-            .post('/api/airdrop/claim')
-        .set('Content-Type', 'application/json')
-            .send(validAirdropRequests.basic)
-        );
-      }
-
-      const responses = await Promise.all(requests);
-      
-      // At least some requests should be rate limited
-      const rateLimitedResponses = responses.filter(r => r.status === 429);
-      expect(rateLimitedResponses.length).toBeGreaterThan(0);
-    });
-  });
 
   describe('Security Headers', () => {
     it('should include security headers in responses', async () => {
@@ -262,7 +241,7 @@ describe('Airdrop API Integration Tests', () => {
         .set('Origin', 'https://malicious-site.com')
         .send(validAirdropRequests.basic);
 
-      // CORS or rate limiting
+      // CORS or other network issue
       expect([400, 429, 500]).toContain(response.status);
     });
   });

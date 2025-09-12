@@ -206,7 +206,6 @@ curl http://localhost:3000/api/airdrop/status
 ## 🔐 Security Features
 
 - **Multi-layer Input Validation**: Joi schemas + security pattern detection
-- **Rate Limiting**: Global and endpoint-specific limits
 - **Threat Protection**: Automatic IP blocking for repeated attacks
 - **Private Key Encryption**: Support for encrypted private key storage
 - **CSP Headers**: Content Security Policy protection

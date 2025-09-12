@@ -6,7 +6,6 @@ import securityRoutes from './routes/securityRoutes';
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config } from './config';
-import { globalRateLimit, getRateLimitSummary } from './middleware/rateLimiting';
 import { SecurityHeaders } from './utils/securityHeaders';
 import { SecurityMetrics } from './utils/securityMetrics';
 import { checkBlockedIP } from './middleware/threatProtection';
@@ -92,8 +91,6 @@ app.use(cors({
 // Threat protection (check for blocked IPs first)
 app.use(checkBlockedIP);
 
-// Rate limiting middleware (applied globally)
-app.use(globalRateLimit);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -166,7 +163,6 @@ app.get('/', (req, res) => {
       'GET /api/security/threats': 'Threat response and blocked IPs information'
     },
     security: {
-      rateLimiting: getRateLimitSummary(),
       cors: 'Restricted to trusted origins',
       ...SecurityHeaders.getSecuritySummary(),
       threatResponse: {
@@ -175,7 +171,6 @@ app.get('/', (req, res) => {
           'Real-time threat detection',
           'Automatic IP blocking for repeated attacks',
           'XSS/SQL injection attempt monitoring',
-          'Rate limit violation tracking',
           'Suspicious address pattern detection'
         ]
       },

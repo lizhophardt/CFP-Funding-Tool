@@ -411,7 +411,6 @@ class SecurityTester {
     this.log('• Regularly run these security tests');
     this.log('• Monitor validation logs for attack attempts');
     this.log('• Keep validation rules updated');
-    this.log('• Consider implementing rate limiting per IP');
     this.log('• Add CAPTCHA for repeated failures');
   }
 }

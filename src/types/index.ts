@@ -45,7 +45,7 @@ export interface ValidationResult {
 
 // Security types
 export type SecurityRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
-export type ThreatEventType = 'VALIDATION_FAILURE' | 'RATE_LIMIT_EXCEEDED' | 'SUSPICIOUS_PATTERN' | 'IP_BLOCKED';
+export type ThreatEventType = 'VALIDATION_FAILURE' | 'SUSPICIOUS_PATTERN' | 'IP_BLOCKED';
 
 export interface SecurityEvent {
   type: string;
@@ -95,14 +95,6 @@ export interface LogMetadata {
   type?: string;
   timestamp?: string;
   [key: string]: unknown;
-}
-
-// Rate limiting types
-export interface RateLimitInfo {
-  limit: number;
-  current: number;
-  remaining: number;
-  resetTime: Date;
 }
 
 // Environment types

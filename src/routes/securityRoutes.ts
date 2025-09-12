@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { SecurityMetrics } from '../utils/securityMetrics';
 import { ThreatResponse } from '../utils/threatResponse';
-import { healthRateLimit } from '../middleware/rateLimiting';
 import { validateQueryParams } from '../middleware/validation';
 
 const router = Router();
@@ -14,7 +13,7 @@ const threatResponse = ThreatResponse.getInstance();
  */
 
 // GET /api/security/dashboard - Get security dashboard data
-router.get('/dashboard', healthRateLimit, validateQueryParams, (req, res) => {
+router.get('/dashboard', validateQueryParams, (req, res) => {
   try {
     const dashboardData = securityMetrics.getDashboardData();
     
@@ -33,7 +32,7 @@ router.get('/dashboard', healthRateLimit, validateQueryParams, (req, res) => {
 });
 
 // GET /api/security/stats - Get basic security statistics
-router.get('/stats', healthRateLimit, validateQueryParams, (req, res) => {
+router.get('/stats', validateQueryParams, (req, res) => {
   try {
     const stats = securityMetrics.getStats();
     
@@ -52,7 +51,7 @@ router.get('/stats', healthRateLimit, validateQueryParams, (req, res) => {
 });
 
 // GET /api/security/threats - Get threat response statistics
-router.get('/threats', healthRateLimit, validateQueryParams, (req, res) => {
+router.get('/threats', validateQueryParams, (req, res) => {
   try {
     const threatStats = threatResponse.getThreatStats();
     const blockedIPs = threatResponse.getBlockedIPs();
@@ -76,7 +75,7 @@ router.get('/threats', healthRateLimit, validateQueryParams, (req, res) => {
 
 // GET /api/security/export - Export security metrics (development only)
 if (process.env.NODE_ENV === 'development') {
-  router.get('/export', healthRateLimit, validateQueryParams, (req, res) => {
+  router.get('/export', validateQueryParams, (req, res) => {
     try {
       const exportData = securityMetrics.exportMetrics();
       const threatData = {

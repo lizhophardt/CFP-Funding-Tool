@@ -100,12 +100,10 @@ npm test -- --verbose
 - API endpoint responses
 - Middleware integration
 - Error handling flows
-- Rate limiting behavior
 
 ### Security Tests (`tests/security/`)
 - Test security measures and attack prevention
 - Validate input sanitization
-- Test rate limiting and abuse prevention
 - Verify security headers
 
 **Examples:**
@@ -334,7 +332,6 @@ Generates:
 Security tests validate:
 - Input sanitization
 - Attack vector prevention
-- Rate limiting effectiveness
 - Security header presence
 - Error message sanitization
 

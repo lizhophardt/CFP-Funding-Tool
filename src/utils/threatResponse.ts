@@ -14,7 +14,7 @@ export interface ThreatRule {
 export interface ThreatEvent {
   timestamp: string;
   ip: string;
-  type: 'VALIDATION_FAILURE' | 'RATE_LIMIT' | 'SUSPICIOUS_ADDRESS' | 'FAILED_TRANSACTION';
+  type: 'VALIDATION_FAILURE' | 'SUSPICIOUS_ADDRESS' | 'FAILED_TRANSACTION';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   details: any;
 }
@@ -78,17 +78,6 @@ export class ThreatResponse {
       description: 'SQL injection attack attempts'
     },
     {
-      name: 'EXCESSIVE_RATE_LIMITING',
-      condition: (ip, events) => {
-        const recentEvents = this.getRecentEvents(events, 15); // Last 15 minutes
-        const rateLimitHits = recentEvents.filter(e => e.type === 'RATE_LIMIT');
-        return rateLimitHits.length >= 20; // 20+ rate limit hits
-      },
-      action: 'TEMP_BLOCK',
-      blockDuration: 120, // 2 hours
-      description: 'Excessive rate limit violations'
-    },
-    {
       name: 'SUSPICIOUS_ADDRESS_PATTERN',
       condition: (ip, events) => {
         const recentEvents = this.getRecentEvents(events, 30); // Last 30 minutes
@@ -129,7 +118,7 @@ export class ThreatResponse {
    */
   recordThreatEvent(
     ip: string, 
-    type: ThreatEvent['type'], 
+    type: 'VALIDATION_FAILURE' | 'SUSPICIOUS_ADDRESS' | 'FAILED_TRANSACTION', 
     severity: ThreatEvent['severity'],
     details: any = {}
   ): { blocked: boolean; rule?: string; reason?: string } {

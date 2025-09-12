@@ -54,7 +54,6 @@ Claim a dual airdrop (wxHOPR + xDai) using a valid secret code.
 - `200`: Successful airdrop
 - `400`: Invalid request or secret code
 - `403`: IP blocked due to security violations
-- `429`: Rate limit exceeded
 - `500`: Internal server error
 
 ---
@@ -191,7 +190,6 @@ Service information and available endpoints.
     "GET /api/airdrop/health": "Health check"
   },
   "security": {
-    "rateLimiting": "Enabled",
     "cors": "Restricted to trusted origins",
     "threatResponse": "Automated IP blocking enabled"
   }
@@ -209,11 +207,6 @@ All requests undergo multi-layer validation:
 3. **Address Validation**: Ethereum address format verification
 4. **Sanitization**: Input cleaning and normalization
 
-### Rate Limiting
-
-- **Global**: 100 requests per 15 minutes per IP
-- **Claim Endpoint**: 5 requests per 15 minutes per IP
-- **Headers**: Rate limit info in response headers
 
 ### Threat Protection
 
@@ -253,7 +246,6 @@ All requests undergo multi-layer validation:
 |------|-------------|
 | `VALIDATION_ERROR` | Input validation failed |
 | `IP_AUTO_BLOCKED` | IP blocked due to security violations |
-| `RATE_LIMIT_EXCEEDED` | Too many requests |
 | `INSUFFICIENT_BALANCE` | Not enough tokens for airdrop |
 | `NETWORK_ERROR` | Blockchain connection issues |
 | `TRANSACTION_FAILED` | Blockchain transaction failed |
@@ -338,8 +330,6 @@ grep "AIRDROP: Airdrop successful" logs/combined-*.log
 # Security threats
 grep "SECURITY:" logs/security-*.log
 
-# Rate limit violations
-grep "Rate limit exceeded" logs/combined-*.log
 
 # Validation failures
 grep "VALIDATION:" logs/combined-*.log

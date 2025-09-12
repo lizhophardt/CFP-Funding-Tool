@@ -14,7 +14,6 @@ export interface SecurityMetric {
 export interface SecurityStats {
   totalRequests: number;
   validationFailures: number;
-  rateLimitHits: number;
   xssAttempts: number;
   sqlInjectionAttempts: number;
   commandInjectionAttempts: number;
@@ -32,7 +31,6 @@ export class SecurityMetrics {
   private stats: SecurityStats = {
     totalRequests: 0,
     validationFailures: 0,
-    rateLimitHits: 0,
     xssAttempts: 0,
     sqlInjectionAttempts: 0,
     commandInjectionAttempts: 0,
@@ -134,13 +132,6 @@ export class SecurityMetrics {
     this.recordEvent('VALIDATION_FAILURE', 'MEDIUM', ip, { type, ...details });
   }
 
-  /**
-   * Record rate limit hit
-   */
-  recordRateLimitHit(ip: string, endpoint: string): void {
-    this.stats.rateLimitHits++;
-    this.recordEvent('RATE_LIMIT_HIT', 'MEDIUM', ip, { endpoint });
-  }
 
   /**
    * Record suspicious address
@@ -272,7 +263,7 @@ export class SecurityMetrics {
     } else if (highAlerts > 5) {
       securityLevel = 'HIGH_RISK';
       recommendations.push('High number of security events - review and investigate');
-    } else if (stats.validationFailures > 100 || stats.rateLimitHits > 50) {
+    } else if (stats.validationFailures > 100) {
       securityLevel = 'MODERATE';
       recommendations.push('Moderate security activity detected - monitor closely');
     }
@@ -286,9 +277,6 @@ export class SecurityMetrics {
     }
     if (stats.suspiciousAddresses > 20) {
       recommendations.push('High number of suspicious addresses - review address validation');
-    }
-    if (stats.rateLimitHits > 20) {
-      recommendations.push('Frequent rate limiting - consider adjusting limits or blocking IPs');
     }
 
     return {
@@ -350,7 +338,6 @@ export class SecurityMetrics {
     this.stats = {
       totalRequests: 0,
       validationFailures: 0,
-      rateLimitHits: 0,
       xssAttempts: 0,
       sqlInjectionAttempts: 0,
       commandInjectionAttempts: 0,

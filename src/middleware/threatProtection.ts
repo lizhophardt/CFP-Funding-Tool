@@ -51,7 +51,7 @@ export const checkBlockedIP = (req: Request, res: Response, next: NextFunction):
  * Middleware to record threat events
  */
 export const recordThreatEvent = (
-  type: 'VALIDATION_FAILURE' | 'RATE_LIMIT' | 'SUSPICIOUS_ADDRESS' | 'FAILED_TRANSACTION',
+  type: 'VALIDATION_FAILURE' | 'SUSPICIOUS_ADDRESS' | 'FAILED_TRANSACTION',
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = 'MEDIUM'
 ) => {
   return (req: Request, res: Response, next: NextFunction): void => {

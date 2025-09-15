@@ -115,55 +115,6 @@ Generate a test secret code for development purposes.
 }
 ```
 
-### Security Endpoints
-
-#### GET `/api/security/dashboard`
-
-Real-time security monitoring dashboard (HTML response).
-
-**Response:** HTML page with security metrics and monitoring information.
-
----
-
-#### GET `/api/security/stats`
-
-Security statistics and metrics in JSON format.
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "totalRequests": 1000,
-    "blockedIPs": 5,
-    "threatEvents": 12,
-    "validationFailures": 23,
-    "uptime": "5 days, 2 hours"
-  }
-}
-```
-
----
-
-#### GET `/api/security/threats`
-
-Threat response and blocked IP information.
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "blockedIPs": ["192.168.1.100", "10.0.0.50"],
-    "threatLevels": {
-      "HIGH": 2,
-      "MEDIUM": 8,
-      "LOW": 15
-    },
-    "autoBlocking": true
-  }
-}
-```
 
 ### Root Endpoint
 

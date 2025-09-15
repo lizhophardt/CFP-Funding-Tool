@@ -159,13 +159,6 @@ npm test
 | `GET` | `/api/airdrop/health` | Health check endpoint |
 | `POST` | `/api/airdrop/generate-test-code` | Generate test secret code |
 
-### Security Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/security/dashboard` | Real-time security dashboard |
-| `GET` | `/api/security/stats` | Security statistics and metrics |
-| `GET` | `/api/security/threats` | Threat response information |
 
 ### Example Usage
 

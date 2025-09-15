@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import airdropRoutes from './routes/airdropRoutes';
-import securityRoutes from './routes/securityRoutes';
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config } from './config';
@@ -135,7 +134,6 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/airdrop', airdropRoutes);
-app.use('/api/security', securityRoutes);
 
 // API root route - explicitly return JSON only
 app.get('/', (req, res) => {
@@ -154,9 +152,7 @@ app.get('/', (req, res) => {
       'POST /api/airdrop/claim': 'Claim dual airdrop (wxHOPR + xDai) with hash and recipient address',
       'GET /api/airdrop/status': 'Get service status and both wxHOPR/xDai balances',
       'POST /api/airdrop/generate-test-hash': 'Generate a test hash for development',
-      'GET /api/airdrop/health': 'Health check endpoint',
-      'GET /api/security/dashboard': 'Real-time security monitoring dashboard',
-      'GET /api/security/stats': 'Security statistics and metrics',
+      'GET /api/airdrop/health': 'Health check endpoint'
     },
     security: {
       cors: 'Restricted to trusted origins',
@@ -164,11 +160,6 @@ app.get('/', (req, res) => {
       threatResponse: {
         status: 'Handled by external layer (e.g., Cloudflare)',
         note: 'Application-level threat protection removed in favor of infrastructure-level protection'
-      },
-      monitoring: {
-        dashboard: '/api/security/dashboard',
-        metrics: 'Real-time security event tracking',
-        alerts: 'Security monitoring and metrics collection'
       },
       errors: 'Sanitized error messages'
     },

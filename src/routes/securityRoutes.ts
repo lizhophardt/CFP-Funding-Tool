@@ -1,11 +1,9 @@
 import { Router } from 'express';
 import { SecurityMetrics } from '../utils/securityMetrics';
-import { ThreatResponse } from '../utils/threatResponse';
 import { validateQueryParams } from '../middleware/validation';
 
 const router = Router();
 const securityMetrics = SecurityMetrics.getInstance();
-const threatResponse = ThreatResponse.getInstance();
 
 /**
  * Security Dashboard Routes
@@ -50,28 +48,6 @@ router.get('/stats', validateQueryParams, (req, res) => {
   }
 });
 
-// GET /api/security/threats - Get threat response statistics
-router.get('/threats', validateQueryParams, (req, res) => {
-  try {
-    const threatStats = threatResponse.getThreatStats();
-    const blockedIPs = threatResponse.getBlockedIPs();
-    
-    res.json({
-      success: true,
-      data: {
-        stats: threatStats,
-        blockedIPs: blockedIPs.slice(0, 50), // Limit to 50 most recent
-        timestamp: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve threat data',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
 
 // GET /api/security/export - Export security metrics (development only)
 if (process.env.NODE_ENV === 'development') {
@@ -79,8 +55,7 @@ if (process.env.NODE_ENV === 'development') {
     try {
       const exportData = securityMetrics.exportMetrics();
       const threatData = {
-        stats: threatResponse.getThreatStats(),
-        blockedIPs: threatResponse.getBlockedIPs()
+        message: 'Threat protection disabled - handled by external layer'
       };
       
       res.json({

@@ -8,7 +8,6 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { config } from './config';
 import { SecurityHeaders } from './utils/securityHeaders';
 import { SecurityMetrics } from './utils/securityMetrics';
-import { checkBlockedIP } from './middleware/threatProtection';
 import { logger } from './utils/logger';
 
 const app = express();
@@ -88,8 +87,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'] // Restrict headers
 }));
 
-// Threat protection (check for blocked IPs first)
-app.use(checkBlockedIP);
 
 
 // Body parsing middleware
@@ -160,24 +157,18 @@ app.get('/', (req, res) => {
       'GET /api/airdrop/health': 'Health check endpoint',
       'GET /api/security/dashboard': 'Real-time security monitoring dashboard',
       'GET /api/security/stats': 'Security statistics and metrics',
-      'GET /api/security/threats': 'Threat response and blocked IPs information'
     },
     security: {
       cors: 'Restricted to trusted origins',
       ...SecurityHeaders.getSecuritySummary(),
       threatResponse: {
-        status: 'Automated IP blocking enabled',
-        features: [
-          'Real-time threat detection',
-          'Automatic IP blocking for repeated attacks',
-          'XSS/SQL injection attempt monitoring',
-          'Suspicious address pattern detection'
-        ]
+        status: 'Handled by external layer (e.g., Cloudflare)',
+        note: 'Application-level threat protection removed in favor of infrastructure-level protection'
       },
       monitoring: {
         dashboard: '/api/security/dashboard',
         metrics: 'Real-time security event tracking',
-        alerts: 'Automated threat response system'
+        alerts: 'Security monitoring and metrics collection'
       },
       errors: 'Sanitized error messages'
     },

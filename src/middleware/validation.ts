@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { InputValidator } from '../utils/inputValidator';
 import { SecurityMetrics } from '../utils/securityMetrics';
-import { ThreatResponse } from '../utils/threatResponse';
 
 export const validateAirdropRequest = (req: Request, res: Response, next: NextFunction): void => {
   // Comprehensive validation using InputValidator
@@ -10,7 +9,6 @@ export const validateAirdropRequest = (req: Request, res: Response, next: NextFu
   if (!validationResult.isValid) {
     // Record security metrics
     const securityMetrics = SecurityMetrics.getInstance();
-    const threatResponse = ThreatResponse.getInstance();
     const errorType = validationResult.errors?.[0] || 'Unknown validation error';
     const ip = req.ip || 'unknown';
     
@@ -19,25 +17,6 @@ export const validateAirdropRequest = (req: Request, res: Response, next: NextFu
       userAgent: req.get('User-Agent'),
       errors: validationResult.errors
     });
-
-    // Record threat event and check for auto-blocking
-    const severity = validationResult.securityRisk === 'HIGH' ? 'HIGH' : 
-                    validationResult.securityRisk === 'MEDIUM' ? 'MEDIUM' : 'LOW';
-    
-    const threatResult = threatResponse.recordThreatEvent(ip, 'VALIDATION_FAILURE', severity, {
-      endpoint: req.path,
-      errorType,
-      errors: validationResult.errors
-    });
-
-    if (threatResult.blocked) {
-      res.status(403).json({
-        success: false,
-        message: 'Access denied due to repeated security violations',
-        code: 'IP_AUTO_BLOCKED'
-      });
-      return;
-    }
 
     // Log security event for monitoring
     InputValidator.logSecurityEvent(

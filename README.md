@@ -1,6 +1,6 @@
-# Gnosis Chain wxHOPR Airdrop Service
+# CFP Funding Tool
 
-A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation with comprehensive security features and enterprise-grade logging.
+CFP Funding Tool - A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation with comprehensive security features and enterprise-grade logging.
 
 ## 🚀 Features
 
@@ -53,7 +53,7 @@ A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gn
 
 ```bash
 git clone <repository-url>
-cd gnosis-airdrop-service
+cd cfp-funding-tool
 npm install
 ```
 

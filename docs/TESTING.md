@@ -1,6 +1,6 @@
 # Testing Infrastructure
 
-This directory contains the comprehensive testing suite for the Gnosis Chain wxHOPR Airdrop Service.
+This directory contains the comprehensive testing suite for the CFP Funding Tool.
 
 ## 📁 Directory Structure
 

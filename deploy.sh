@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Simple deployment script for Gnosis Chain wxHOPR Airdrop Service
+# Simple deployment script for CFP Funding Tool
 # Usage: ./deploy-simple.sh [--dev]
 set -e
 

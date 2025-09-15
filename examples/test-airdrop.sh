@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Test script for the Gnosis Chain wxHOPR Airdrop Service
+# Test script for the CFP Funding Tool
 # Make sure the service is running on localhost:3000
 
 BASE_URL="http://localhost:3000/api/airdrop"
 
-echo "🧪 Testing Gnosis Chain wxHOPR Airdrop Service"
+echo "🧪 Testing CFP Funding Tool"
 echo "======================================"
 
 # Test 1: Health check

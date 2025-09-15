@@ -1,6 +1,6 @@
 # Quick Deployment Guide
 
-This guide provides quick deployment options for the Gnosis Chain wxHOPR Airdrop Service.
+This guide provides quick deployment options for the CFP Funding Tool.
 
 ## Prerequisites
 

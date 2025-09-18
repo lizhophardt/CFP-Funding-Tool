@@ -51,13 +51,10 @@ function encryptPrivateKey(privateKey, password) {
   const salt = crypto.randomBytes(32);
   const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
   
-  const cipher = crypto.createCipher('aes-256-gcm', key);
-  cipher.setAAD(Buffer.from('privatekey'));
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   
   let encrypted = cipher.update(privateKey, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   
-  const authTag = cipher.getAuthTag();
-  
-  return `${salt.toString('hex')}:${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+  return `${salt.toString('hex')}:${iv.toString('hex')}:${encrypted}`;
 }

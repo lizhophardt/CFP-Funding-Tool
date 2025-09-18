@@ -59,4 +59,4 @@ logs-test/
 junit.xml
 
 # Jest cache
-.jest/
+.jest/.env.old

@@ -57,7 +57,7 @@ describe('SecretCodeService', () => {
       const result = await secretCodeService.validateSecretCode('TestCode2'); // current_uses = max_uses = 1
       
       expect(result.isValid).toBe(false);
-      expect(result.message).toContain('Secret code has been used the maximum number of times');
+      expect(result.message).toContain('This secret code has already been claimed');
     });
 
     it('should allow unlimited use codes', async () => {

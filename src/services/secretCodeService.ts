@@ -61,7 +61,7 @@ export class SecretCodeService {
         });
         return {
           isValid: false,
-          message: 'Secret code has been used the maximum number of times'
+          message: 'This secret code has already been claimed'
         };
       }
 

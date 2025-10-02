@@ -133,7 +133,7 @@ describe('AirdropService with Database', () => {
       const result = await airdropService.processAirdrop(request);
       
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Secret code has been used the maximum number of times');
+      expect(result.message).toContain('This secret code has already been claimed');
     });
 
     it('should allow unlimited use codes', async () => {

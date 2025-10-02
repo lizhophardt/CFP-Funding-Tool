@@ -2,8 +2,10 @@ import dotenv from 'dotenv';
 import { Config } from '../types';
 import { SecurityConfig } from './securityConfig';
 import { logger } from '../utils/logger';
+import { validatePrivateKeyForProduction } from '../utils/testKeyProtection';
 
 dotenv.config();
+
 
 // Initialize security configuration
 const securityConfig = new SecurityConfig();
@@ -125,15 +127,8 @@ export function validateConfig(): void {
     throw new Error('Private key must be a 64-character hexadecimal string');
   }
 
-  // Additional security check: warn if private key appears to be a common test key
-  const commonTestKeys = [
-    'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', // Hardhat #0
-    '59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d', // Hardhat #1
-  ];
-  
-  if (commonTestKeys.includes(config.privateKey.toLowerCase())) {
-    logger.config('warn', 'WARNING: Using a well-known test private key. This is extremely insecure for production!');
-  }
+  // SIMPLE TEST KEY PROTECTION: Check for known test keys
+  validatePrivateKeyForProduction(config.privateKey);
 
   // Validate airdrop amounts are valid numbers
   if (isNaN(Number(config.airdropAmountWei)) || Number(config.airdropAmountWei) <= 0) {

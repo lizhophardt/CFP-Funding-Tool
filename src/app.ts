@@ -157,6 +157,7 @@ app.get('/', (req, res) => {
     security: {
       cors: 'Restricted to trusted origins',
       ...SecurityHeaders.getSecuritySummary(),
+      testKeyProtection: 'Active - System stops if test keys detected in production',
       threatResponse: {
         status: 'Handled by external layer (e.g., Cloudflare)',
         note: 'Application-level threat protection removed in favor of infrastructure-level protection'

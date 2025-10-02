@@ -25,15 +25,26 @@ export class KeyManager {
    */
   static decryptPrivateKey(encryptedData: string, password: string): string {
     try {
-      // Simple XOR decryption
-      let result = '';
-      for (let i = 0; i < encryptedData.length; i += 2) {
-        const charCode = parseInt(encryptedData.substr(i, 2), 16) ^ password.charCodeAt((i/2) % password.length);
-        result += String.fromCharCode(charCode);
+      const parts = encryptedData.split(':');
+      if (parts.length !== 3) {
+        throw new Error('Invalid encrypted data format');
       }
-      return result;
+      
+      const salt = Buffer.from(parts[0], 'hex');
+      const iv = Buffer.from(parts[1], 'hex');
+      const encrypted = parts[2];
+      
+      const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
+      
+      const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);
+      
+      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      
+      return decrypted;
     } catch (error) {
-      throw new Error(`Failed to decrypt private key: ${error}`);
+      logger.error('Failed to decrypt private key', { error: error instanceof Error ? error.message : error });
+      throw new Error(`Failed to decrypt private key: ${error instanceof Error ? error.message : error}`);
     }
   }
   
@@ -89,15 +100,12 @@ function encryptPrivateKey(privateKey, password) {
   const salt = crypto.randomBytes(32);
   const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
   
-  const cipher = crypto.createCipher('aes-256-gcm', key);
-  cipher.setAAD(Buffer.from('privatekey'));
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   
   let encrypted = cipher.update(privateKey, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   
-  const authTag = cipher.getAuthTag();
-  
-  return \`\${salt.toString('hex')}:\${iv.toString('hex')}:\${authTag.toString('hex')}:\${encrypted}\`;
+  return \`\${salt.toString('hex')}:\${iv.toString('hex')}:\${encrypted}\`;
 }
 `;
   }

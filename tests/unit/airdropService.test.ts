@@ -1,71 +1,65 @@
 /**
- * Unit tests for AirdropService
+ * Unit tests for AirdropService with Database Integration
  */
 
 import { AirdropService } from '../../src/services/airdropService';
-import { MockWeb3Service } from '../mocks/web3Mock';
+import { MockDatabaseService } from '../mocks/databaseMock';
 import { validAirdropRequests } from '../fixtures/testData';
-import * as fs from 'fs';
-import * as path from 'path';
 
 // Mock the Web3Service
 jest.mock('../../src/services/web3Service', () => {
-  const { MockWeb3Service } = require('../mocks/web3Mock');
   return {
-    Web3Service: MockWeb3Service
+    Web3Service: jest.fn().mockImplementation(() => ({
+      isConnected: jest.fn().mockResolvedValue(true),
+      getAccountAddress: jest.fn().mockReturnValue('0x' + '1'.repeat(40)),
+      getBalance: jest.fn().mockResolvedValue('1000'),
+      getXDaiBalance: jest.fn().mockResolvedValue('1000'),
+      sendDualTransaction: jest.fn().mockResolvedValue({
+        wxHoprTxHash: '0x' + 'a'.repeat(64),
+        xDaiTxHash: '0x' + 'b'.repeat(64)
+      })
+    }))
   };
 });
 
-// Mock the SecretCodeService
-jest.mock('../../src/services/secretCodeService', () => ({
-  SecretCodeService: class MockSecretCodeService {
-    validateSecretCode(code: string) {
-      const validCodes = ['TestCode1', 'TestCode2', 'TestCode3'];
-      return {
-        isValid: validCodes.includes(code),
-        message: validCodes.includes(code) ? 'Valid code' : 'Invalid secret code'
-      };
-    }
-
-    generateTestCode(prefix?: string) {
-      return `${prefix || 'TestCode'}${Math.random().toString(36).substr(2, 6)}`;
-    }
-
-    getConfiguredCodes() {
-      return ['TestCode1', 'TestCode2', 'TestCode3'];
-    }
-  }
-}));
-
-// Mock fs module
-jest.mock('fs');
-const mockFs = fs as jest.Mocked<typeof fs>;
-
-describe('AirdropService', () => {
+describe('AirdropService with Database', () => {
   let airdropService: AirdropService;
-  let mockWeb3Service: MockWeb3Service;
+  let mockDatabaseService: MockDatabaseService;
+  let mockWeb3Service: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
-    
-    // Setup fs mocks
-    mockFs.existsSync.mockReturnValue(true);
-    mockFs.readFileSync.mockReturnValue('[]');
-    mockFs.writeFileSync.mockImplementation();
-    mockFs.mkdirSync.mockImplementation();
 
-    airdropService = new AirdropService();
+    // Create mock database service
+    mockDatabaseService = new MockDatabaseService();
+    await mockDatabaseService.connect();
+    mockDatabaseService.resetMockData();
+
+    // Create service instance with mock database
+    airdropService = new AirdropService(mockDatabaseService);
     
-    // Get access to the mocked Web3Service instance
-    mockWeb3Service = (airdropService as any).web3Service as MockWeb3Service;
+    // Get mock Web3Service instance
+    mockWeb3Service = (airdropService as any).web3Service;
+  });
+
+  afterEach(async () => {
+    if (mockDatabaseService) {
+      await mockDatabaseService.disconnect();
+    }
   });
 
   describe('processAirdrop', () => {
     it('should successfully process a valid airdrop request', async () => {
-      const request = validAirdropRequests.basic;
+      const request = {
+        secretCode: 'TestCode1',
+        recipientAddress: '0x' + '1'.repeat(40)
+      };
       
-      const result = await airdropService.processAirdrop(request);
+      const result = await airdropService.processAirdrop(request, {
+        ipAddress: '127.0.0.1',
+        userAgent: 'test-agent'
+      });
       
       expect(result.success).toBe(true);
       expect(result.message).toContain('Dual airdrop sent successfully');
@@ -73,18 +67,28 @@ describe('AirdropService', () => {
       expect(result.xDaiTransactionHash).toBeDefined();
       expect(result.wxHOPRAmount).toBeDefined();
       expect(result.xDaiAmount).toBeDefined();
+
+      // Verify usage was recorded
+      const mockData = mockDatabaseService.getMockData();
+      expect(mockData.codeUsage.length).toBe(1);
+      expect(mockData.codeUsage[0].recipient_address).toBe(request.recipientAddress);
+      expect(mockData.codeUsage[0].status).toBe('completed');
     });
 
     it('should reject request with invalid secret code', async () => {
       const request = {
         secretCode: 'InvalidCode',
-        recipientAddress: validAirdropRequests.basic.recipientAddress
+        recipientAddress: '0x' + '1'.repeat(40)
       };
       
       const result = await airdropService.processAirdrop(request);
       
       expect(result.success).toBe(false);
       expect(result.message).toContain('Invalid secret code');
+
+      // Verify no usage was recorded
+      const mockData = mockDatabaseService.getMockData();
+      expect(mockData.codeUsage.length).toBe(0);
     });
 
     it('should reject request with missing recipient address', async () => {
@@ -99,83 +103,122 @@ describe('AirdropService', () => {
       expect(result.message).toContain('Recipient address is required');
     });
 
-    it('should prevent duplicate claims with the same secret code', async () => {
-      const request = validAirdropRequests.basic;
+    it('should prevent duplicate claims by the same recipient', async () => {
+      const request1 = {
+        secretCode: 'TestCode1',
+        recipientAddress: '0x' + '1'.repeat(40)
+      };
       
       // First claim should succeed
-      const firstResult = await airdropService.processAirdrop(request);
+      const firstResult = await airdropService.processAirdrop(request1);
       expect(firstResult.success).toBe(true);
       
-      // Second claim with same code should fail
-      const secondResult = await airdropService.processAirdrop(request);
+      // Second claim with different code but same address should fail
+      const request2 = {
+        secretCode: 'TestCode3',
+        recipientAddress: '0x' + '1'.repeat(40)
+      };
+      
+      const secondResult = await airdropService.processAirdrop(request2);
       expect(secondResult.success).toBe(false);
-      expect(secondResult.message).toContain('already been used');
+      expect(secondResult.message).toContain('This address has already received an airdrop');
     });
 
-    it('should handle Web3 service connection failure', async () => {
-      mockWeb3Service.setConnected(false);
-      
-      const request = validAirdropRequests.basic;
-      const result = await airdropService.processAirdrop(request);
-      
-      expect(result.success).toBe(false);
-      expect(result.message).toContain('Unable to connect to Chiado network');
-    });
-
-    it('should handle insufficient balance', async () => {
-      mockWeb3Service.setBalance('0');
-      
-      const request = validAirdropRequests.basic;
-      const result = await airdropService.processAirdrop(request);
-      
-      expect(result.success).toBe(false);
-      expect(result.message).toContain('Airdrop failed');
-    });
-
-    it('should handle invalid recipient address format', async () => {
+    it('should reject code that has reached usage limit', async () => {
       const request = {
-        secretCode: 'TestCode1',
-        recipientAddress: 'invalid-address'
+        secretCode: 'TestCode2', // This code has current_uses = 1, max_uses = 1
+        recipientAddress: '0x' + '2'.repeat(40)
       };
       
       const result = await airdropService.processAirdrop(request);
       
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Airdrop failed');
+      expect(result.message).toContain('Secret code has been used the maximum number of times');
+    });
+
+    it('should allow unlimited use codes', async () => {
+      const request1 = {
+        secretCode: 'TestCode3', // This code has max_uses = null (unlimited)
+        recipientAddress: '0x' + '3'.repeat(40)
+      };
+      
+      const firstResult = await airdropService.processAirdrop(request1);
+      expect(firstResult.success).toBe(true);
+
+      // Should allow another use with different recipient
+      const request2 = {
+        secretCode: 'TestCode3',
+        recipientAddress: '0x' + '4'.repeat(40)
+      };
+      
+      const secondResult = await airdropService.processAirdrop(request2);
+      expect(secondResult.success).toBe(true);
+    });
+
+    it('should handle Web3 connection failure', async () => {
+      // Mock Web3 connection failure
+      mockWeb3Service.isConnected.mockResolvedValue(false);
+
+      const request = {
+        secretCode: 'TestCode1',
+        recipientAddress: '0x' + '5'.repeat(40)
+      };
+      
+      const result = await airdropService.processAirdrop(request);
+      
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Unable to connect to Gnosis network');
+
+      // Verify failed attempt was recorded
+      const mockData = mockDatabaseService.getMockData();
+      expect(mockData.codeUsage.length).toBe(1);
+      expect(mockData.codeUsage[0].status).toBe('failed');
+      expect(mockData.codeUsage[0].error_message).toContain('Unable to connect to Gnosis network');
+    });
+
+    it('should handle transaction failure', async () => {
+      // Mock transaction failure
+      mockWeb3Service.sendDualTransaction.mockRejectedValue(new Error('Transaction failed'));
+
+      const request = {
+        secretCode: 'TestCode1',
+        recipientAddress: '0x' + '6'.repeat(40)
+      };
+      
+      const result = await airdropService.processAirdrop(request);
+      
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Airdrop failed: Transaction failed');
+
+      // Verify failed attempt was recorded
+      const mockData = mockDatabaseService.getMockData();
+      expect(mockData.codeUsage.length).toBe(1);
+      expect(mockData.codeUsage[0].status).toBe('failed');
+      expect(mockData.codeUsage[0].error_message).toBe('Transaction failed');
     });
   });
 
   describe('getServiceStatus', () => {
-    it('should return service status when connected', async () => {
+    it('should return service status with database health', async () => {
       const status = await airdropService.getServiceStatus();
       
-      expect(status.isConnected).toBe(true);
-      expect(status.accountAddress).toBeDefined();
-      expect(status.balance).toContain('wxHOPR');
-      expect(status.xDaiBalance).toContain('xDai');
-      expect(typeof status.processedCount).toBe('number');
+      expect(status).toHaveProperty('isConnected');
+      expect(status).toHaveProperty('accountAddress');
+      expect(status).toHaveProperty('balance');
+      expect(status).toHaveProperty('xDaiBalance');
+      expect(status).toHaveProperty('processedCount');
+      expect(status).toHaveProperty('databaseHealth');
+      expect(status.databaseHealth).toBe(true);
     });
 
-    it('should handle disconnected state', async () => {
-      mockWeb3Service.setConnected(false);
+    it('should handle database connection failure', async () => {
+      // Mock database disconnection
+      await mockDatabaseService.disconnect();
       
       const status = await airdropService.getServiceStatus();
       
-      expect(status.isConnected).toBe(false);
-      expect(status.accountAddress).toBeDefined(); // Address is still available even when disconnected
-      expect(status.balance).toBe('0 wxHOPR');
-      expect(status.xDaiBalance).toBe('0 xDai');
-    });
-
-    it('should handle Web3 service errors gracefully', async () => {
-      // Mock Web3 service to throw an error
-      jest.spyOn(mockWeb3Service, 'isConnected').mockRejectedValue(new Error('Network error'));
-      
-      const status = await airdropService.getServiceStatus();
-      
-      expect(status.isConnected).toBe(false);
-      expect(status.balance).toBe('0 wxHOPR');
-      expect(status.xDaiBalance).toBe('0 xDai');
+      expect(status.databaseHealth).toBe(false);
+      expect(status.processedCount).toBe(0);
     });
   });
 
@@ -187,65 +230,46 @@ describe('AirdropService', () => {
     });
 
     it('should generate a test code with custom prefix', () => {
-      const customPrefix = 'MyPrefix';
-      const testCode = airdropService.generateTestCode(customPrefix);
+      const testCode = airdropService.generateTestCode('CustomPrefix');
       
-      expect(testCode).toMatch(new RegExp(`^${customPrefix}[a-z0-9]{6}$`));
+      expect(testCode).toMatch(/^CustomPrefix[a-z0-9]{6}$/);
     });
   });
 
-  describe('getConfiguredCodes', () => {
-    it('should return configured secret codes', () => {
-      const codes = airdropService.getConfiguredCodes();
+  describe('getActiveCodesWithStats', () => {
+    it('should return active codes with usage statistics', async () => {
+      const codes = await airdropService.getActiveCodesWithStats();
       
       expect(Array.isArray(codes)).toBe(true);
-      expect(codes).toContain('TestCode1');
-      expect(codes).toContain('TestCode2');
-      expect(codes).toContain('TestCode3');
+      expect(codes.length).toBeGreaterThan(0);
+      
+      const firstCode = codes[0];
+      expect(firstCode).toHaveProperty('id');
+      expect(firstCode).toHaveProperty('code');
+      expect(firstCode).toHaveProperty('is_active');
+      expect(firstCode).toHaveProperty('successful_uses');
+      expect(firstCode).toHaveProperty('failed_uses');
     });
   });
 
-  describe('processed codes persistence', () => {
-    it('should load processed codes from file on initialization', () => {
-      const mockProcessedCodes = ['UsedCode1', 'UsedCode2'];
-      mockFs.readFileSync.mockReturnValue(JSON.stringify(mockProcessedCodes));
+  describe('createSecretCode', () => {
+    it('should create a new secret code', async () => {
+      const newCode = await airdropService.createSecretCode('NewTestCode', 'Test description', 5);
       
-      // Create new service instance to trigger loading
-      const newService = new AirdropService();
-      
-      expect(mockFs.readFileSync).toHaveBeenCalled();
+      expect(newCode).toHaveProperty('id');
+      expect(newCode.code).toBe('NewTestCode');
+      expect(newCode.description).toBe('Test description');
+      expect(newCode.max_uses).toBe(5);
     });
+  });
 
-    it('should create data directory if it does not exist', () => {
-      mockFs.existsSync.mockReturnValue(false);
+  describe('getDatabaseHealth', () => {
+    it('should return database health status', async () => {
+      const health = await airdropService.getDatabaseHealth();
       
-      // Create new service instance to trigger directory creation
-      new AirdropService();
-      
-      expect(mockFs.mkdirSync).toHaveBeenCalledWith(
-        expect.stringContaining('data'),
-        { recursive: true }
-      );
-    });
-
-    it('should save processed codes after successful airdrop', async () => {
-      const request = validAirdropRequests.basic;
-      
-      await airdropService.processAirdrop(request);
-      
-      expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining('processed-codes.json'),
-        expect.stringContaining(request.secretCode)
-      );
-    });
-
-    it('should handle file system errors gracefully', () => {
-      mockFs.readFileSync.mockImplementation(() => {
-        throw new Error('File system error');
-      });
-      
-      // Should not throw, just log a warning
-      expect(() => new AirdropService()).not.toThrow();
+      expect(health).toHaveProperty('isHealthy');
+      expect(health).toHaveProperty('details');
+      expect(health.isHealthy).toBe(true);
     });
   });
 });

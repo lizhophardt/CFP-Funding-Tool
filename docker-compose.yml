@@ -1,0 +1,107 @@
+# CFP Funding Tool - Docker Compose Configuration
+# This file sets up the complete development environment with PostgreSQL
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: cfp-postgres
+    environment:
+      POSTGRES_DB: cfp_funding_tool
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/migrations:/docker-entrypoint-initdb.d/migrations
+    networks:
+      - cfp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cfp_funding_tool"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # CFP Funding Tool API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: cfp-api
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      
+      # Database Configuration
+      DATABASE_URL: postgresql://postgres:postgres_password@postgres:5432/cfp_funding_tool
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cfp_funding_tool
+      DB_USER: postgres
+      DB_PASSWORD: postgres_password
+      DB_SSL: "false"
+      
+      # Blockchain Configuration (use your actual values)
+      GNOSIS_RPC_URL: https://rpc.gnosischain.com
+      PRIVATE_KEY: ${PRIVATE_KEY:-your_private_key_here}
+      WXHOPR_TOKEN_ADDRESS: 0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
+      AIRDROP_AMOUNT_WEI: 10000000000000000
+      XDAI_AIRDROP_AMOUNT_WEI: 10000000000000000
+      
+      # Legacy environment variable for migration (optional)
+      SECRET_CODES: ${SECRET_CODES:-DontTellUncleSam,SecretCode123,HiddenTreasure}
+    ports:
+      - "3000:3000"
+      - "9229:9229" # Debug port for development
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    networks:
+      - cfp-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/airdrop/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    command: npm run dev:watch
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cfp-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cfp.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - cfp-network
+    depends_on:
+      - postgres
+    profiles:
+      - admin # Only start with --profile admin
+
+networks:
+  cfp-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local

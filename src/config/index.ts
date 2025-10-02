@@ -43,7 +43,16 @@ function createConfig(): Config {
     airdropAmountWei: process.env.AIRDROP_AMOUNT_WEI || '10000000000000000',
     xDaiAirdropAmountWei: process.env.XDAI_AIRDROP_AMOUNT_WEI || '10000000000000000',
     port: parseInt(process.env.PORT || '3000', 10),
-    nodeEnv: process.env.NODE_ENV || 'development'
+    nodeEnv: process.env.NODE_ENV || 'development',
+    database: {
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      database: process.env.DB_NAME || 'cfp_funding_tool',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'password',
+      ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production',
+      connectionString: process.env.DATABASE_URL // Railway/Heroku style connection string
+    }
   };
 }
 
@@ -88,10 +97,27 @@ export function validateConfig(): void {
     }
   }
 
-  // Validate that we have at least one secret code
+  // Validate database configuration
+  if (!config.database.connectionString) {
+    // If no connection string, validate individual fields
+    if (!config.database.host) {
+      throw new Error('Missing required environment variable: DB_HOST or DATABASE_URL');
+    }
+    if (!config.database.user) {
+      throw new Error('Missing required environment variable: DB_USER');
+    }
+    if (!config.database.password) {
+      throw new Error('Missing required environment variable: DB_PASSWORD');
+    }
+    if (!config.database.database) {
+      throw new Error('Missing required environment variable: DB_NAME');
+    }
+  }
+
+  // Validate that we have at least one secret code (for backward compatibility)
   if (!config.secretCodes || config.secretCodes.length === 0 || 
       (config.secretCodes.length === 1 && !config.secretCodes[0])) {
-    throw new Error('Missing required environment variable: SECRET_CODES');
+    logger.config('warn', 'No SECRET_CODES environment variable found. This is expected when using database storage.');
   }
 
   // Validate private key format

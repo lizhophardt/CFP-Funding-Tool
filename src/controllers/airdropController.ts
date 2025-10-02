@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AirdropService } from '../services/airdropService';
+import { ServiceContainer } from '../services/serviceContainer';
 import { AirdropRequest } from '../types';
 import { SecurityErrorHandler } from '../utils/errorHandler';
 import { logger } from '../utils/logger';
@@ -8,7 +9,7 @@ export class AirdropController {
   private airdropService: AirdropService;
 
   constructor() {
-    this.airdropService = new AirdropService();
+    this.airdropService = ServiceContainer.getInstance().getAirdropService();
   }
 
   async claimAirdrop(req: Request, res: Response): Promise<void> {
@@ -26,10 +27,13 @@ export class AirdropController {
 
       logger.processing('Processing airdrop request...');
       
-      // Process the airdrop
+      // Process the airdrop with metadata
       const result = await this.airdropService.processAirdrop({
         secretCode,
         recipientAddress
+      }, {
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
       });
 
       const statusCode = result.success ? 200 : 400;
@@ -91,7 +95,7 @@ export class AirdropController {
         success: true,
         data: {
           secretCode,
-          configuredCodes: this.airdropService.getConfiguredCodes()
+          note: 'For production, use database-managed secret codes'
         }
       });
 
@@ -105,10 +109,32 @@ export class AirdropController {
   }
 
   async healthCheck(req: Request, res: Response): Promise<void> {
-    res.status(200).json({
-      success: true,
-      message: 'Airdrop service is running',
-      timestamp: new Date().toISOString()
-    });
+    try {
+      const serviceContainer = ServiceContainer.getInstance();
+      const healthStatus = await serviceContainer.healthCheck();
+      const airdropHealth = await this.airdropService.getDatabaseHealth();
+      
+      const isHealthy = healthStatus.database.isHealthy && 
+                       healthStatus.services.initialized &&
+                       airdropHealth.isHealthy;
+
+      res.status(isHealthy ? 200 : 503).json({
+        success: isHealthy,
+        message: isHealthy ? 'All services are healthy' : 'Some services are unhealthy',
+        timestamp: new Date().toISOString(),
+        details: {
+          database: healthStatus.database,
+          services: healthStatus.services,
+          airdropService: airdropHealth
+        }
+      });
+    } catch (error) {
+      res.status(503).json({
+        success: false,
+        message: 'Health check failed',
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
 }

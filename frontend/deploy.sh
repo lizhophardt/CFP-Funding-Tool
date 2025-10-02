@@ -53,7 +53,7 @@ done
 
 # Check API connectivity
 print_info "Testing API connectivity..."
-API_URL="https://airdrop-api-only-production.up.railway.app/api/airdrop/health"
+API_URL="https://cfp-fundingtool-api.up.railway.app/api/airdrop/health"
 
 if curl -sf "$API_URL" > /dev/null; then
     print_status "API is accessible"
@@ -122,7 +122,7 @@ echo "Then visit: http://localhost:8080"
 echo ""
 
 print_status "Frontend deployment package ready!"
-print_info "API Endpoint: https://airdrop-api-only-production.up.railway.app/api/airdrop"
+print_info "API Endpoint: https://cfp-fundingtool-api.up.railway.app/api/airdrop"
 
 echo ""
 echo "🎯 Next Steps:"

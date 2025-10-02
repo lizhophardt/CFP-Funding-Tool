@@ -1,78 +1,25 @@
 import { Web3Service } from './web3Service';
 import { SecretCodeService } from './secretCodeService';
+import { DatabaseService } from './databaseService';
 import { config } from '../config';
 import { AirdropRequest, AirdropResponse } from '../types';
 import { logger } from '../utils/logger';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export class AirdropService {
   private web3Service: Web3Service;
   private secretCodeService: SecretCodeService;
-  private processedCodes: Set<string> = new Set();
-  private readonly PROCESSED_CODES_FILE = path.join(process.cwd(), 'data', 'processed-codes.json');
 
-  constructor() {
+  constructor(databaseService: DatabaseService) {
     this.web3Service = new Web3Service();
-    this.secretCodeService = new SecretCodeService();
-    this.loadProcessedCodes();
+    this.secretCodeService = new SecretCodeService(databaseService);
   }
 
-  private loadProcessedCodes(): void {
+
+  async processAirdrop(request: AirdropRequest, metadata?: { ipAddress?: string; userAgent?: string }): Promise<AirdropResponse> {
+    let codeId: string | undefined;
+    
     try {
-      // Ensure data directory exists
-      const dataDir = path.dirname(this.PROCESSED_CODES_FILE);
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-
-      // Load processed codes from file if it exists
-      if (fs.existsSync(this.PROCESSED_CODES_FILE)) {
-        const data = fs.readFileSync(this.PROCESSED_CODES_FILE, 'utf8');
-        const codes = JSON.parse(data);
-        this.processedCodes = new Set(codes);
-        logger.success(`Loaded ${this.processedCodes.size} processed codes from storage`);
-      }
-    } catch (error) {
-      logger.warning('Failed to load processed codes', {
-        error: error instanceof Error ? error.message : error
-      });
-    }
-  }
-
-  private saveProcessedCodes(): void {
-    try {
-      const codes = Array.from(this.processedCodes);
-      fs.writeFileSync(this.PROCESSED_CODES_FILE, JSON.stringify(codes, null, 2));
-    } catch (error) {
-      logger.failure('Failed to save processed codes', {
-        error: error instanceof Error ? error.message : error
-      });
-    }
-  }
-
-  async processAirdrop(request: AirdropRequest): Promise<AirdropResponse> {
-    try {
-      // Validate secret code
-      const codeValidation = this.secretCodeService.validateSecretCode(request.secretCode);
-      if (!codeValidation.isValid) {
-        return {
-          success: false,
-          message: codeValidation.message
-        };
-      }
-
-      // Check if this secret code has already been used
-      const normalizedCode = request.secretCode.trim();
-      
-      if (this.processedCodes.has(normalizedCode)) {
-        return {
-          success: false,
-          message: 'This secret code has already been used for an airdrop'
-        };
-      }
-
-      // Validate recipient address format
+      // Validate recipient address format first
       if (!request.recipientAddress || typeof request.recipientAddress !== 'string') {
         return {
           success: false,
@@ -80,12 +27,45 @@ export class AirdropService {
         };
       }
 
+      // Check if this recipient has already received an airdrop
+      const hasUsedCode = await this.secretCodeService.hasRecipientUsedCode(request.recipientAddress);
+      if (hasUsedCode) {
+        return {
+          success: false,
+          message: 'This address has already received an airdrop'
+        };
+      }
+
+      // Validate secret code against database
+      const codeValidation = await this.secretCodeService.validateSecretCode(request.secretCode);
+      if (!codeValidation.isValid) {
+        return {
+          success: false,
+          message: codeValidation.message
+        };
+      }
+
+      codeId = codeValidation.codeId;
+
       // Check if Web3 service is connected
       const isConnected = await this.web3Service.isConnected();
       if (!isConnected) {
+        // Record failed attempt
+        if (codeId) {
+          await this.secretCodeService.recordCodeUsage(
+            codeId,
+            request.recipientAddress,
+            {},
+            {
+              ...metadata,
+              status: 'failed',
+              errorMessage: 'Unable to connect to Gnosis network'
+            }
+          );
+        }
         return {
           success: false,
-          message: 'Unable to connect to Chiado network'
+          message: 'Unable to connect to Gnosis network'
         };
       }
 
@@ -96,9 +76,23 @@ export class AirdropService {
         config.xDaiAirdropAmountWei
       );
 
-      // Mark this secret code as processed and save to persistent storage
-      this.processedCodes.add(normalizedCode);
-      this.saveProcessedCodes();
+      // Record successful usage in database
+      if (codeId) {
+        await this.secretCodeService.recordCodeUsage(
+          codeId,
+          request.recipientAddress,
+          {
+            wxhoprTransactionHash: transactionResult.wxHoprTxHash,
+            xdaiTransactionHash: transactionResult.xDaiTxHash,
+            wxhoprAmountWei: config.airdropAmountWei,
+            xdaiAmountWei: config.xDaiAirdropAmountWei
+          },
+          {
+            ...metadata,
+            status: 'completed'
+          }
+        );
+      }
 
       return {
         success: true,
@@ -114,6 +108,27 @@ export class AirdropService {
         error: error instanceof Error ? error.message : error,
         stack: error instanceof Error ? error.stack : undefined
       });
+
+      // Record failed attempt
+      if (codeId) {
+        try {
+          await this.secretCodeService.recordCodeUsage(
+            codeId,
+            request.recipientAddress,
+            {},
+            {
+              ...metadata,
+              status: 'failed',
+              errorMessage: error instanceof Error ? error.message : String(error)
+            }
+          );
+        } catch (recordError) {
+          logger.airdrop('error', 'Failed to record failed attempt', {
+            error: recordError instanceof Error ? recordError.message : recordError
+          });
+        }
+      }
+
       return {
         success: false,
         message: `Airdrop failed: ${error instanceof Error ? error.message : error}`
@@ -127,19 +142,39 @@ export class AirdropService {
     balance: string;
     xDaiBalance: string;
     processedCount: number;
+    databaseHealth: boolean;
   }> {
     try {
       const isConnected = await this.web3Service.isConnected();
       const accountAddress = this.web3Service.getAccountAddress();
       const wxHoprBalance = isConnected ? await this.web3Service.getBalance() : '0';
       const xDaiBalance = isConnected ? await this.web3Service.getXDaiBalance() : '0';
+      
+      // Get database statistics
+      let processedCount = 0;
+      let databaseHealth = false;
+      
+      try {
+        const healthStatus = await this.secretCodeService.getHealthStatus();
+        databaseHealth = healthStatus.isHealthy;
+        
+        if (databaseHealth) {
+          const codes = await this.secretCodeService.getActiveCodesWithStats();
+          processedCount = codes.reduce((total, code) => total + (code as any).successful_uses, 0);
+        }
+      } catch (dbError) {
+        logger.config('error', 'Failed to get database statistics', {
+          error: dbError instanceof Error ? dbError.message : dbError
+        });
+      }
 
       return {
         isConnected,
         accountAddress,
         balance: `${wxHoprBalance} wxHOPR`,
         xDaiBalance: `${xDaiBalance} xDai`,
-        processedCount: this.processedCodes.size
+        processedCount,
+        databaseHealth
       };
     } catch (error) {
       return {
@@ -147,7 +182,8 @@ export class AirdropService {
         accountAddress: '',
         balance: '0 wxHOPR',
         xDaiBalance: '0 xDai',
-        processedCount: this.processedCodes.size
+        processedCount: 0,
+        databaseHealth: false
       };
     }
   }
@@ -157,8 +193,18 @@ export class AirdropService {
     return this.secretCodeService.generateTestCode(prefix);
   }
 
-  // Method to get configured secret codes for development purposes
-  getConfiguredCodes(): string[] {
-    return this.secretCodeService.getConfiguredCodes();
+  // Method to get active secret codes with stats (for admin/development purposes)
+  async getActiveCodesWithStats() {
+    return this.secretCodeService.getActiveCodesWithStats();
+  }
+
+  // Method to create a new secret code (for admin purposes)
+  async createSecretCode(code: string, description?: string, maxUses: number | null = 1) {
+    return this.secretCodeService.createSecretCode(code, description, maxUses);
+  }
+
+  // Method to get database health status
+  async getDatabaseHealth() {
+    return this.secretCodeService.getHealthStatus();
   }
 }

@@ -72,9 +72,24 @@ COPY tsconfig.json ./
 # Build the TypeScript application to JavaScript
 RUN npm run build
 
+# Verify build output exists
+RUN ls -la dist/ && test -f dist/index.js
+
+# Create a temporary backup of the built files
+RUN cp -r dist /tmp/dist-backup
+
 # Remove development dependencies to reduce image size and attack surface
 # Clean npm cache to further reduce image size
 RUN npm ci --only=production && npm cache clean --force
+
+# Restore the built files if they were removed
+RUN if [ ! -f dist/index.js ]; then cp -r /tmp/dist-backup/* dist/; fi
+
+# Verify final build output
+RUN ls -la dist/ && test -f dist/index.js
+
+# Clean up temporary backup
+RUN rm -rf /tmp/dist-backup
 
 # -----------------------------------------------------------------------------
 # 👤 NON-ROOT USER SECURITY (PRINCIPLE OF LEAST PRIVILEGE)

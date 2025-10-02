@@ -9,10 +9,19 @@ process.env.NODE_ENV = 'test';
 process.env.PORT = '3001';
 process.env.GNOSIS_RPC_URL = 'http://localhost:8545'; // Mock RPC URL
 process.env.PRIVATE_KEY = 'a'.repeat(64); // Mock private key
-process.env.SECRET_CODES = 'TestCode1,TestCode2,TestCode3';
+process.env.SECRET_CODES = 'TestCode1,TestCode2,TestCode3'; // For migration tests
 process.env.WXHOPR_TOKEN_ADDRESS = '0x' + '1'.repeat(40);
 process.env.AIRDROP_AMOUNT_WEI = '1000000000000000000';
 process.env.XDAI_AIRDROP_AMOUNT_WEI = '1000000000000000000';
+
+// Database test configuration
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5433/test_cfp_funding_tool';
+process.env.DB_HOST = 'localhost';
+process.env.DB_PORT = '5433';
+process.env.DB_NAME = 'test_cfp_funding_tool';
+process.env.DB_USER = 'test';
+process.env.DB_PASSWORD = 'test';
+process.env.DB_SSL = 'false';
 
 // Mock winston-daily-rotate-file to prevent file operations in tests
 jest.mock('winston-daily-rotate-file', () => {

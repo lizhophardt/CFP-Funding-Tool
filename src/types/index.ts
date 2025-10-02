@@ -30,12 +30,21 @@ export interface AirdropResponse {
 export interface Config {
   gnosisRpcUrl: string;
   privateKey: string;
-  secretCodes: string[];
+  secretCodes: string[]; // Keep for backward compatibility during migration
   wxHoprTokenAddress: string;
   airdropAmountWei: string;
   xDaiAirdropAmountWei: string;
   port: number;
   nodeEnv: string;
+  database: {
+    host: string;
+    port: number;
+    database: string;
+    user: string;
+    password: string;
+    ssl: boolean;
+    connectionString?: string;
+  };
 }
 
 export interface ValidationResult {
@@ -99,3 +108,37 @@ export interface LogMetadata {
 
 // Environment types
 export type NodeEnvironment = 'development' | 'production' | 'test';
+
+// Database types
+export interface SecretCode {
+  id: string;
+  code: string;
+  description?: string;
+  is_active: boolean;
+  max_uses: number | null;
+  current_uses: number;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+}
+
+export interface CodeUsage {
+  id: string;
+  code_id: string;
+  recipient_address: string;
+  wxhopr_transaction_hash?: string;
+  xdai_transaction_hash?: string;
+  wxhopr_amount_wei?: string;
+  xdai_amount_wei?: string;
+  ip_address?: string;
+  user_agent?: string;
+  used_at: Date;
+  status: 'completed' | 'failed' | 'pending';
+  error_message?: string;
+  metadata: Record<string, any>;
+}
+
+export interface CodeValidationResult extends ValidationResult {
+  codeId?: string;
+  remainingUses?: number;
+}

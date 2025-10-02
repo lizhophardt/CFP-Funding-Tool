@@ -2,7 +2,9 @@
 
 ## Quick Railway Deployment
 
-Railway provides an easy way to deploy the wxHOPR Airdrop Service with automatic builds and deployments.
+Railway provides an easy way to deploy the wxHOPR Airdrop Service with automatic builds and deployments. This service now uses PostgreSQL for persistent storage of secret codes and usage tracking.
+
+> **⚠️ IMPORTANT**: Starting with v2.1.0, this service requires a PostgreSQL database. Railway provides PostgreSQL as an add-on service.
 
 ## 📋 Environment Variables for Railway
 
@@ -11,6 +13,9 @@ Copy these environment variables to your Railway dashboard:
 ### Required Variables
 
 ```env
+# Database Configuration (Railway PostgreSQL)
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+
 # Blockchain Configuration
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
 WXHOPR_TOKEN_ADDRESS=0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
@@ -22,7 +27,6 @@ ENCRYPTED_PRIVATE_KEY=your_encrypted_private_key
 ENCRYPTION_PASSWORD=your_encryption_password
 
 # Airdrop Configuration
-SECRET_CODES=DontTellUncleSam,SecretCode123,HiddenTreasure
 AIRDROP_AMOUNT_WEI=10000000000000000
 XDAI_AIRDROP_AMOUNT_WEI=10000000000000000
 
@@ -31,10 +35,12 @@ PORT=3000
 NODE_ENV=production
 ```
 
+> **📝 Note**: `SECRET_CODES` environment variable is no longer used. Secret codes are now managed in the PostgreSQL database.
+
 ### Optional Variables
 
 ```env
-# Multiple Secret Codes (alternative format)
+# Legacy Secret Codes (for initial migration only)
 SECRET_CODES=Code1,Code2,Code3,Code4
 
 # Custom RPC URL
@@ -42,6 +48,9 @@ GNOSIS_RPC_URL=https://your-custom-rpc-endpoint.com
 
 # Custom Token Address (if using different token)
 WXHOPR_TOKEN_ADDRESS=0xYourCustomTokenAddress
+
+# Database SSL (usually true for production)
+DB_SSL=true
 ```
 
 ## 🚀 Deployment Steps
@@ -51,6 +60,7 @@ WXHOPR_TOKEN_ADDRESS=0xYourCustomTokenAddress
 Ensure your repository has:
 - `package.json` with build scripts
 - `Dockerfile` (optional, Railway auto-detects Node.js)
+- Database schema files in `database/` directory
 - Environment variables configured
 
 ### 2. Connect to Railway
@@ -61,21 +71,45 @@ Ensure your repository has:
 4. Select "Deploy from GitHub repo"
 5. Choose your repository
 
-### 3. Configure Environment Variables
+### 3. Add PostgreSQL Database
+
+**IMPORTANT: Do this BEFORE deploying the application**
+
+1. In your Railway project dashboard
+2. Click "New Service" → "Database" → "Add PostgreSQL"
+3. Wait for PostgreSQL to deploy (this creates the `DATABASE_URL` variable)
+4. The database will be automatically linked to your project
+
+### 4. Configure Environment Variables
 
 In Railway dashboard:
 1. Go to your project
-2. Click "Variables" tab
-3. Add all required environment variables
-4. Click "Add Variable" for each one
+2. Click on your application service (not the database)
+3. Click "Variables" tab
+4. Add all required environment variables (see list above)
+5. For `DATABASE_URL`, use: `${{Postgres.DATABASE_URL}}`
 
-### 4. Deploy
+### 5. Deploy and Initialize Database
 
 Railway will automatically:
 - Detect Node.js project
 - Run `npm install`
 - Run `npm run build`
 - Start with `npm start`
+- Connect to PostgreSQL and run migrations
+
+### 6. Migrate Secret Codes (One-time Setup)
+
+After successful deployment, migrate your secret codes to the database:
+
+```bash
+# Option 1: Use Railway CLI
+railway connect
+node scripts/migrate-secret-codes.js
+
+# Option 2: Set SECRET_CODES environment variable temporarily
+# The system will automatically migrate codes on first startup
+```
 
 ## 🔒 Security Best Practices
 

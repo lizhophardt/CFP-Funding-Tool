@@ -14,14 +14,7 @@ export const errorHandler = (
   const statusCode = error.statusCode || 500;
   const message = error.message || 'Internal Server Error';
 
-  logger.error(`Error ${statusCode}: ${message}`, { 
-    statusCode, 
-    message, 
-    stack: error.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip 
-  });
+  logger.error(`Error ${statusCode}: ${message}`, { statusCode, message, stack: error.stack, url: req.url, method: req.method, ip: req.ip });
 
   res.status(statusCode).json({
     success: false,

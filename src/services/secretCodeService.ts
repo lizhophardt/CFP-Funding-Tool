@@ -66,7 +66,7 @@ export class SecretCodeService {
       }
 
       const remainingUses = codeData.max_uses === null 
-        ? null 
+        ? undefined 
         : codeData.max_uses - codeData.current_uses;
 
       return {

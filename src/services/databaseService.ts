@@ -37,12 +37,12 @@ export class DatabaseService {
 
     // Handle client connection
     this.pool.on('connect', (client) => {
-      logger.config('debug', 'New database client connected');
+      logger.config('info', 'New database client connected');
     });
 
     // Handle client removal
     this.pool.on('remove', (client) => {
-      logger.config('debug', 'Database client removed from pool');
+      logger.config('info', 'Database client removed from pool');
     });
   }
 

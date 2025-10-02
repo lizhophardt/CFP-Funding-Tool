@@ -116,7 +116,8 @@ export class SecurityHeaders {
       risk: this.assessViolationRisk(violation)
     };
 
-    console.warn('🚨 CSP VIOLATION:', securityEvent);
+    const { logger } = require('./logger');
+    logger.security('warn', 'CSP VIOLATION', securityEvent);
 
     // In production, you might want to send this to a security monitoring service
     if (process.env.NODE_ENV === 'production') {

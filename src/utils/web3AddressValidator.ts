@@ -235,7 +235,8 @@ export class Web3AddressValidator {
       securityLevel = 'HIGH'; // Invalid addresses are high security risk
       
       // Log security event
-      console.warn('🚨 ADDRESS VALIDATION SECURITY EVENT:', {
+      const { logger } = require('./logger');
+      logger.security('warn', 'ADDRESS VALIDATION SECURITY EVENT', {
         context,
         address: address?.substring(0, 10) + '...', // Partial address for logging
         error: validation.error,
@@ -245,7 +246,8 @@ export class Web3AddressValidator {
     } else if (validation.warnings && validation.warnings.length > 0) {
       securityLevel = 'MEDIUM'; // Valid but with warnings
       
-      console.warn('⚠️  ADDRESS VALIDATION WARNING:', {
+      const { logger } = require('./logger');
+      logger.validation('warn', 'ADDRESS VALIDATION WARNING', {
         context,
         address: validation.checksumAddress?.substring(0, 10) + '...',
         warnings: validation.warnings,
@@ -254,7 +256,8 @@ export class Web3AddressValidator {
       });
     } else {
       // Valid address with no warnings
-      console.log('✅ ADDRESS VALIDATION SUCCESS:', {
+      const { logger } = require('./logger');
+      logger.validation('info', 'ADDRESS VALIDATION SUCCESS', {
         context,
         address: validation.checksumAddress?.substring(0, 10) + '...',
         isChecksum: validation.isChecksum,

@@ -86,7 +86,9 @@ export class SecurityMetrics {
 
     // Log high/critical events
     if (level === 'HIGH' || level === 'CRITICAL') {
-      console.warn(`🚨 SECURITY EVENT [${level}]:`, {
+      // Import logger dynamically to avoid circular dependency
+      const { logger } = require('./logger');
+      logger.security(level === 'CRITICAL' ? 'error' : 'warn', `SECURITY EVENT [${level}]`, {
         type,
         source,
         timestamp: event.timestamp,

@@ -22,7 +22,8 @@ export class SecurityConfig {
     }
     
     if (process.env.PRIVATE_KEY) {
-      console.warn('⚠️  Using plain text private key. This is not secure for production!');
+      const { logger } = require('../utils/logger');
+      logger.security('warn', 'Using plain text private key. This is not secure for production!');
       return KeyManagementStrategy.PLAIN_TEXT;
     }
     
@@ -30,16 +31,18 @@ export class SecurityConfig {
   }
 
   async getPrivateKey(): Promise<string> {
+    const { logger } = require('../utils/logger');
+    
     try {
       switch (this.strategy) {
         case KeyManagementStrategy.ENCRYPTED:
-          console.log('🔐 Decrypting private key with local encryption');
+          logger.config('info', 'Decrypting private key with local encryption');
           const encryptedKey = process.env.ENCRYPTED_PRIVATE_KEY!;
           const password = process.env.ENCRYPTION_PASSWORD!;
           return KeyManager.decryptPrivateKey(encryptedKey, password);
 
         case KeyManagementStrategy.PLAIN_TEXT:
-          console.warn('⚠️  Using plain text private key');
+          logger.security('warn', 'Using plain text private key');
           return process.env.PRIVATE_KEY || '';
 
         default:

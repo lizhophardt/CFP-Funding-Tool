@@ -1,6 +1,6 @@
 # CFP Funding Tool
 
-CFP Funding Tool - A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation with comprehensive security features and enterprise-grade logging.
+A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gnosis Chain through secret code validation with comprehensive security features and enterprise-grade logging.
 
 ## 🚀 Features
 
@@ -88,7 +88,7 @@ PORT=3000
 NODE_ENV=development
 ```
 
-### 3. Development
+### Development
 
 ```bash
 # Development with hot reload (local)
@@ -107,47 +107,6 @@ npm start
 npm test
 ```
 
-## 🐛 Debugging
-
-### VS Code Debugging
-
-1. Start the development environment:
-   ```bash
-   ./deploy.sh --dev
-   ```
-
-2. In VS Code, go to Run and Debug (Ctrl+Shift+D)
-
-3. Select "Attach to Docker (Development)" configuration
-
-4. Set breakpoints in your TypeScript source files
-
-5. The debugger will attach to the running container
-
-### Chrome DevTools
-
-1. Start development mode: `./deploy.sh --dev`
-2. Open Chrome and navigate to: `chrome://inspect`
-3. Click "Open dedicated DevTools for Node"
-4. The debugger will connect to `localhost:9229`
-
-### Development Helper Commands
-
-```bash
-# Quick development commands
-./dev-helper.sh start      # Start development environment
-./dev-helper.sh stop       # Stop development environment
-./dev-helper.sh restart    # Restart development environment
-./dev-helper.sh logs       # Follow all logs
-./dev-helper.sh logs-error # Follow only error/warning logs
-./dev-helper.sh shell      # Access container shell
-./dev-helper.sh stats      # Show resource usage
-./dev-helper.sh debug      # Show debug connection info
-./dev-helper.sh test       # Run tests in container
-./dev-helper.sh clean      # Clean up containers/images
-./dev-helper.sh status     # Show service status
-```
-
 ## 🌐 API Endpoints
 
 ### Core Endpoints
@@ -158,7 +117,6 @@ npm test
 | `GET` | `/api/airdrop/status` | Get service status and balances |
 | `GET` | `/api/airdrop/health` | Health check endpoint |
 | `POST` | `/api/airdrop/generate-test-code` | Generate test secret code |
-
 
 ### Example Usage
 
@@ -190,7 +148,7 @@ curl http://localhost:3000/api/airdrop/status
 │   ├── types/             # TypeScript type definitions
 │   └── app.ts             # Express app setup
 ├── tests/                 # Comprehensive test suite
-├── docs/                  # Documentation
+├── docs/                  # High-level tutorials and guides
 ├── scripts/               # Utility scripts
 ├── logs/                  # Application logs (auto-generated)
 └── frontend/              # Web frontend (optional)
@@ -198,39 +156,57 @@ curl http://localhost:3000/api/airdrop/status
 
 ## 🔐 Security Features
 
-- **Multi-layer Input Validation**: Joi schemas + security pattern detection
-- **Threat Protection**: Automatic IP blocking for repeated attacks
-- **Private Key Encryption**: Support for encrypted private key storage
+The application implements multiple layers of security:
+
+### Input Validation & Sanitization
+- **Multi-layer validation**: Joi schemas + security pattern detection
+- **XSS Protection**: Script tags, event handlers blocked
+- **SQL Injection Prevention**: Database query patterns blocked
+- **Command Injection Prevention**: Shell commands blocked
+- **50+ malicious patterns** detected and blocked automatically
+
+### Private Key Security
+- **Encrypted Storage**: Support for encrypted private key storage
+- **Multiple Security Levels**: From basic encryption to enterprise Vault/KMS
+- **Key Rotation**: Automated key management capabilities
+- **Hardware Security Modules**: AWS KMS and HashiCorp Vault support
+
+### Network Security
 - **CSP Headers**: Content Security Policy protection
 - **CORS Configuration**: Restricted origins for production
+- **Rate Limiting**: Automatic IP blocking for repeated attacks
 - **Security Monitoring**: Real-time threat detection and logging
+
+### Container Security
+- **Read-only filesystem**: Enhanced container security
+- **Minimal capabilities**: Dropped privileges and minimal access
+- **Resource limits**: CPU and memory constraints
+- **Network isolation**: Localhost binding in production
 
 ## 🚀 Deployment
 
 ### Docker (Recommended)
 
 ```bash
-# Build manually
+# Development deployment
+./deploy.sh --dev
+
+# Production deployment
+./deploy.sh --prod
+
+# Manual Docker commands
 docker build -t airdrop-service .
 docker run -p 3000:3000 --env-file .env airdrop-service
 ```
 
 ### Cloud Platforms
 
-- **Railway**: See [`docs/deployment/railway.md`](docs/deployment/railway.md)
-- **Heroku**: See [`docs/deployment/heroku.md`](docs/deployment/heroku.md)
-- **AWS/GCP/Azure**: See [`docs/deployment/cloud.md`](docs/deployment/cloud.md)
+The service can be deployed to various cloud platforms:
+- **Railway**: Automated deployment with environment variables
+- **Heroku**: Container-based deployment
+- **AWS/GCP/Azure**: Full cloud infrastructure deployment
 
-## 📖 Documentation
-
-| Document | Description |
-|----------|-------------|
-| [`docs/SECURITY.md`](docs/SECURITY.md) | Complete security setup guide |
-| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Deployment instructions |
-| [`docs/API.md`](docs/API.md) | Detailed API documentation |
-| [`docs/FRONTEND.md`](docs/FRONTEND.md) | Frontend setup and usage |
-| [`docs/TESTING.md`](docs/TESTING.md) | Testing guide |
-| [`LOGGING_SYSTEM.md`](LOGGING_SYSTEM.md) | Logging implementation details |
+For detailed deployment instructions, see [`docs/deployment.md`](docs/deployment.md).
 
 ## 🧪 Testing
 
@@ -250,20 +226,76 @@ npm run test:coverage
 npm run test:watch
 ```
 
+### Test Coverage
+- **Unit Tests**: Business logic and utilities
+- **Integration Tests**: API endpoints and middleware
+- **Security Tests**: Input validation and attack prevention
+- **Coverage Target**: 70% minimum, 90% for security-critical code
+
 ## 📊 Monitoring & Logs
 
+### Log Files
 - **Application Logs**: `logs/combined-*.log`
 - **Error Logs**: `logs/error-*.log`
 - **Security Logs**: `logs/security-*.log`
-- **Security Dashboard**: `http://localhost:3000/api/security/dashboard`
+- **Automatic Rotation**: Daily rotation with compression
+
+### Monitoring Endpoints
+- **Health Check**: `GET /api/airdrop/health`
+- **Service Status**: `GET /api/airdrop/status`
+- **Security Dashboard**: Real-time security metrics
+
+### Key Metrics
+- API response times and error rates
+- Airdrop success/failure rates
+- Security events and blocked attacks
+- Token balance monitoring
+
+## 📖 Documentation
+
+For detailed information on specific topics:
+
+| Topic | Document | Description |
+|-------|----------|-------------|
+| **Deployment** | [`docs/deployment.md`](docs/deployment.md) | Comprehensive deployment guide |
+| **Security** | [`docs/security.md`](docs/security.md) | Security setup and best practices |
+
+## 🐛 Debugging
+
+### VS Code Debugging
+
+1. Start the development environment:
+   ```bash
+   ./deploy.sh --dev
+   ```
+
+2. In VS Code, go to Run and Debug (Ctrl+Shift+D)
+
+3. Select "Attach to Docker (Development)" configuration
+
+4. Set breakpoints in your TypeScript source files
+
+### Chrome DevTools
+
+1. Start development mode: `./deploy.sh --dev`
+2. Open Chrome and navigate to: `chrome://inspect`
+3. Click "Open dedicated DevTools for Node"
+4. The debugger will connect to `localhost:9229`
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
-5. Submit a pull request
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+### Code Quality Standards
+- TypeScript strict mode enabled
+- ESLint and Prettier configured
+- Comprehensive test coverage required
+- Security-first development approach
 
 ## 📄 License
 
@@ -279,4 +311,8 @@ MIT License
 
 ---
 
-**Need Help?** Check the [`docs/`](docs/) directory for detailed guides or open an issue.
+**Need Help?** 
+- Check the [`docs/`](docs/) directory for detailed guides
+- Review the API documentation for endpoint details
+- Run security validation scripts for troubleshooting
+- Open an issue for bugs or feature requests

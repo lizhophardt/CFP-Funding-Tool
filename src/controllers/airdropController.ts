@@ -5,13 +5,57 @@ import { AirdropRequest } from '../types';
 import { SecurityErrorHandler } from '../utils/errorHandler';
 import { logger } from '../utils/logger';
 
+/**
+ * AirdropController handles HTTP requests for airdrop operations.
+ * 
+ * This controller provides REST API endpoints for:
+ * - Processing airdrop claims
+ * - Checking service status
+ * - Health monitoring
+ * - Test code generation
+ * 
+ * All requests undergo comprehensive input validation and security scanning
+ * before being processed by the underlying services.
+ */
 export class AirdropController {
   private airdropService: AirdropService;
 
+  /**
+   * Creates a new AirdropController instance.
+   * 
+   * Automatically initializes the airdrop service through dependency injection
+   * via the ServiceContainer singleton pattern.
+   */
   constructor() {
     this.airdropService = ServiceContainer.getInstance().getAirdropService();
   }
 
+  /**
+   * Handles airdrop claim requests.
+   * 
+   * Processes POST requests to claim dual token airdrops (wxHOPR + xDai).
+   * Performs comprehensive validation and security checks before processing.
+   * 
+   * @param req - Express request object containing secretCode and recipientAddress
+   * @param res - Express response object for sending results
+   * 
+   * @example
+   * POST /api/airdrop/claim
+   * {
+   *   "secretCode": "DontTellUncleSam",
+   *   "recipientAddress": "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
+   * }
+   * 
+   * Response:
+   * {
+   *   "success": true,
+   *   "message": "Dual airdrop sent successfully",
+   *   "wxHOPRTransactionHash": "0x...",
+   *   "xDaiTransactionHash": "0x...",
+   *   "wxHOPRAmount": "10000000000000000",
+   *   "xDaiAmount": "10000000000000000"
+   * }
+   */
   async claimAirdrop(req: Request, res: Response): Promise<void> {
     try {
       const { secretCode, recipientAddress }: AirdropRequest = req.body;

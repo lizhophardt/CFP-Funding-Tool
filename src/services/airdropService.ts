@@ -5,16 +5,65 @@ import { config } from '../config';
 import { AirdropRequest, AirdropResponse } from '../types';
 import { logger } from '../utils/logger';
 
+/**
+ * AirdropService handles the core business logic for processing token airdrops.
+ * 
+ * This service orchestrates the validation of secret codes, recipient addresses,
+ * and blockchain transactions for dual token airdrops (wxHOPR + xDai).
+ * 
+ * @example
+ * ```typescript
+ * const service = new AirdropService(databaseService);
+ * const result = await service.processAirdrop({
+ *   secretCode: "MySecret123",
+ *   recipientAddress: "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
+ * });
+ * ```
+ */
 export class AirdropService {
   private web3Service: Web3Service;
   private secretCodeService: SecretCodeService;
 
+  /**
+   * Creates a new AirdropService instance.
+   * 
+   * @param databaseService - Database service for persistent storage
+   */
   constructor(databaseService: DatabaseService) {
     this.web3Service = new Web3Service();
     this.secretCodeService = new SecretCodeService(databaseService);
   }
 
 
+  /**
+   * Processes an airdrop request by validating the secret code and sending tokens.
+   * 
+   * This method performs comprehensive validation including:
+   * - Secret code validation against the database
+   * - Recipient address format validation
+   * - Duplicate claim prevention
+   * - Blockchain balance checks
+   * - Dual token transfer (wxHOPR + xDai)
+   * 
+   * @param request - The airdrop request containing secret code and recipient address
+   * @param metadata - Optional metadata including client IP and user agent
+   * @returns Promise resolving to airdrop response with success status and transaction details
+   * 
+   * @example
+   * ```typescript
+   * const result = await airdropService.processAirdrop({
+   *   secretCode: "DontTellUncleSam",
+   *   recipientAddress: "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
+   * }, {
+   *   ipAddress: "192.168.1.1",
+   *   userAgent: "Mozilla/5.0..."
+   * });
+   * 
+   * if (result.success) {
+   *   console.log('Airdrop successful:', result.wxHOPRTransactionHash);
+   * }
+   * ```
+   */
   async processAirdrop(request: AirdropRequest, metadata?: { ipAddress?: string; userAgent?: string }): Promise<AirdropResponse> {
     let codeId: string | undefined;
     

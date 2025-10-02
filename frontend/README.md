@@ -1,42 +1,53 @@
 # wxHOPR Airdrop Frontend
 
-> **📖 For complete documentation, see [`../docs/FRONTEND.md`](../docs/FRONTEND.md)**
+A modern web interface for claiming wxHOPR tokens on Gnosis Chain.
 
-A beautiful, modern frontend for claiming wxHOPR tokens on Gnosis Chain.
+## 🚀 Quick Start
 
-## Quick Start
+### Local Development
 
-1. **Configure API endpoint** in `script.js`:
-   ```javascript
-   const CONFIG = {
-       API_BASE_URL: 'https://your-api-endpoint.com/api/airdrop'
-   };
-   ```
+```bash
+# Serve locally
+python3 -m http.server 8080
+# or
+npx serve .
+```
 
-2. **Deploy to IPFS** (for ENS domains):
-   ```bash
-   ./deploy.sh
-   ```
+### Configuration
 
-3. **Or serve locally**:
-   ```bash
-   python3 -m http.server 8080
-   ```
+Update the API endpoint in `script.js`:
+
+```javascript
+const CONFIG = {
+    API_BASE_URL: 'https://your-api-endpoint.com/api/airdrop'
+};
+```
+
+### Deployment
+
+```bash
+# Deploy to IPFS
+./deploy.sh
+```
 
 ## 📁 Files
 
-- `index.html` - Main HTML structure
-- `styles.css` - Modern CSS styling
-- `script.js` - API integration and interactivity
+- `index.html` - Main application
+- `styles.css` - Styling and responsive design
+- `script.js` - API integration and functionality
 - `deploy.sh` - IPFS deployment script
 
-## 📖 Full Documentation
+## 📖 Complete Documentation
 
-For complete setup, deployment, and customization guides:
-**[📖 Frontend Documentation](../docs/FRONTEND.md)**
+For comprehensive setup, API integration, and deployment guides:
 
-## 🔗 Related Documentation
+**[📖 Main Documentation](../README.md)**
 
-- [🔌 API Documentation](../docs/API.md)
-- [🚀 Deployment Guide](../docs/DEPLOYMENT.md)  
-- [🔒 Security Setup](../docs/SECURITY.md)
+## 🔗 Related
+
+- [🚀 Deployment Guide](../docs/deployment.md)
+- [🔒 Security Setup](../docs/security.md)
+
+---
+
+This frontend connects to the CFP Funding Tool API to provide a user-friendly interface for token claims.

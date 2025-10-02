@@ -39,11 +39,41 @@ const ERC20_ABI = [
   }
 ];
 
+/**
+ * Web3Service handles all blockchain interactions for the airdrop system.
+ * 
+ * This service manages:
+ * - Connection to Gnosis Chain RPC
+ * - wxHOPR token contract interactions
+ * - xDai (native token) transfers
+ * - Balance checking and transaction management
+ * - Gas estimation and transaction signing
+ * 
+ * @example
+ * ```typescript
+ * const web3Service = new Web3Service();
+ * const isConnected = await web3Service.isConnected();
+ * 
+ * if (isConnected) {
+ *   const balance = await web3Service.getTokenBalance();
+ *   console.log(`Current balance: ${balance} wxHOPR`);
+ * }
+ * ```
+ */
 export class Web3Service {
   private web3: Web3;
   private account: any;
   private tokenContract: any;
 
+  /**
+   * Creates a new Web3Service instance and initializes blockchain connection.
+   * 
+   * Automatically:
+   * - Connects to Gnosis Chain RPC endpoint
+   * - Loads the private key from configuration
+   * - Initializes the wxHOPR token contract
+   * - Adds the account to the Web3 wallet
+   */
   constructor() {
     this.web3 = new Web3(config.gnosisRpcUrl);
     this.account = this.web3.eth.accounts.privateKeyToAccount('0x' + config.privateKey);

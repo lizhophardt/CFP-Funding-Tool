@@ -2,7 +2,7 @@
 
 This guide shows you the **fastest way** to deploy the CFP Funding Tool with secure, encrypted private keys.
 
-## ⚡ 30-Second Setup
+## ⚡ Quick Setup
 
 ### 1. Clone and Install
 ```bash
@@ -11,7 +11,19 @@ cd CFP-Funding-Tool
 npm install
 ```
 
-### 2. Encrypt Your Private Key
+### 2. Setup Database
+```bash
+# Start PostgreSQL with Docker (recommended)
+npm run db:setup
+
+# Wait for database to be ready, then run migrations
+npm run db:migrate
+
+# Seed with initial secret codes (optional)
+npm run db:seed
+```
+
+### 3. Encrypt Your Private Key
 ```bash
 npm run quick-encrypt
 ```
@@ -21,7 +33,7 @@ npm run quick-encrypt
 - Enter a strong password (12+ characters)
 - Copy the output
 
-### 3. Configure Environment
+### 4. Configure Environment
 ```bash
 cp env.example .env
 nano .env  # or use your preferred editor
@@ -29,7 +41,7 @@ nano .env  # or use your preferred editor
 
 **Paste the encrypted values:**
 ```env
-# Replace these with your encrypted values from step 2
+# Replace these with your encrypted values from step 3
 ENCRYPTED_PRIVATE_KEY=a1b2c3d4e5f6...your_encrypted_key_here
 ENCRYPTION_PASSWORD=YourSecurePassword123!
 
@@ -37,7 +49,7 @@ ENCRYPTION_PASSWORD=YourSecurePassword123!
 # PRIVATE_KEY=your_private_key_here
 ```
 
-### 4. Deploy
+### 5. Deploy
 ```bash
 # Local development
 npm run dev

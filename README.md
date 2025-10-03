@@ -57,6 +57,32 @@ cd cfp-funding-tool
 npm install
 ```
 
+### 🗄️ Database Setup
+
+The application requires PostgreSQL. Choose one option:
+
+**Option 1: Using Docker (Recommended)**
+```bash
+# Start PostgreSQL with Docker
+npm run db:setup
+
+# Wait for database to be ready, then run migrations
+npm run db:migrate
+
+# Seed with initial secret codes (optional)
+npm run db:seed
+```
+
+**Option 2: Local PostgreSQL Installation**
+```bash
+# Install PostgreSQL on your system first, then:
+createdb cfp_funding_tool
+psql cfp_funding_tool -f database/schema.sql
+
+# Migrate secret codes from environment (optional)
+npm run db:seed
+```
+
 ### ⚙️ Configuration
 
 ```bash
@@ -93,6 +119,8 @@ NODE_ENV=development
 
 ### Development
 
+**Prerequisites:** Ensure database is set up (see Database Setup section above)
+
 ```bash
 # Development with hot reload (local)
 npm run dev
@@ -109,6 +137,8 @@ npm start
 # Run tests
 npm test
 ```
+
+**⚠️ Important:** If you get a "Database connection failed" error, make sure PostgreSQL is running and properly configured in your `.env` file.
 
 ## 🌐 API Endpoints
 

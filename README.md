@@ -75,8 +75,11 @@ WXHOPR_TOKEN_ADDRESS=0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
 
 # Security (choose one method)
 PRIVATE_KEY=your_private_key_here                    # Basic (development only)
-ENCRYPTED_PRIVATE_KEY=encrypted_key_here             # Recommended
-ENCRYPTION_PASSWORD=your_encryption_password         # With encrypted key
+
+# Encrypted private key (RECOMMENDED for production)
+# Generate with: npm run quick-encrypt
+ENCRYPTED_PRIVATE_KEY=encrypted_key_here             # AES-256-CBC encrypted
+ENCRYPTION_PASSWORD=your_encryption_password         # Strong password (12+ chars)
 
 # Airdrop Configuration
 SECRET_CODES=DontTellUncleSam,SecretCode123,HiddenTreasure

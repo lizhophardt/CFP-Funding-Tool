@@ -12,6 +12,8 @@
     "quick-deploy": "node scripts/quick-deploy.js",
     "security-check": "ts-node scripts/security-check.ts",
     "encrypt-key": "node scripts/encrypt-private-key.js",
+    "quick-encrypt": "node scripts/quick-encrypt.js",
+    "key-helper": "node scripts/key-helper.js",
     "validate-security": "ts-node scripts/validate-security.ts",
     "migrate-codes": "node scripts/migrate-secret-codes.js",
     "db:setup": "docker-compose up -d postgres",

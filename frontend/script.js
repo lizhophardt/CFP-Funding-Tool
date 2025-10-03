@@ -213,12 +213,13 @@ const api = {
                 ...options
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
+            // Always try to parse JSON response, even for 4xx errors
             const data = await response.json();
+            
+            // For API responses, return the parsed data regardless of status
+            // The API sends proper success/failure info in the JSON
             return { success: true, data };
+            
         } catch (error) {
             console.error('API Request failed:', error);
             return { 

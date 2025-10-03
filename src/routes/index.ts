@@ -14,11 +14,19 @@ router.post('/v1/test', (req, res) => {
   res.json({ message: 'V1 direct routing works!', path: req.path, originalUrl: req.originalUrl });
 });
 
-// DEBUG: Direct route registration instead of nested routers
+// DEBUG: Test different path patterns
+router.post('/v1/claim', (req, res) => {
+  res.json({ message: "SHORT PATH WORKS!", path: req.path });
+});
+
+router.get('/v1/airdrop/claim', (req, res) => {
+  res.json({ message: "GET METHOD WORKS!", path: req.path });
+});
+
 router.post('/v1/airdrop/claim', (req, res) => {
   res.json({
     success: true,
-    message: "DIRECT ROUTE WORKS! The issue was nested router mounting!",
+    message: "POST TO LONG PATH WORKS!",
     path: req.path,
     originalUrl: req.originalUrl
   });

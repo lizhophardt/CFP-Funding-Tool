@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'development') {
   router.post('/generate-test-code', validateTestCodeRequest, (req, res) => airdropController.generateTestCode(req, res));
 }
 
-// GET /api/airdrop/health - Health check
-router.get('/health', validateQueryParams, (req, res) => airdropController.healthCheck(req, res));
+// GET /api/airdrop/health - Health check (no validation needed for health checks)
+router.get('/health', (req, res) => airdropController.healthCheck(req, res));
 
 export default router;

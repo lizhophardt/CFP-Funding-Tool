@@ -185,26 +185,56 @@ The application implements multiple layers of security:
 
 ## 🚀 Deployment
 
-### Docker (Recommended)
+### Railway (Production - Recommended)
+
+Railway provides managed PostgreSQL, automatic scaling, and zero-downtime deployments:
 
 ```bash
-# Development deployment
-./deploy.sh --dev
-
-# Production deployment
-./deploy.sh --prod
-
-# Manual Docker commands
-docker build -t airdrop-service .
-docker run -p 3000:3000 --env-file .env airdrop-service
+# 1. Connect your repository to Railway
+# 2. Add PostgreSQL service
+# 3. Configure environment variables
+# 4. Automatic deployment from main branch
 ```
 
-### Cloud Platforms
+**Features:**
+- 🔄 **Automatic Deployments**: Push to main branch triggers deployment
+- 🗄️ **Managed PostgreSQL**: Database provided and managed automatically  
+- 📈 **Auto Scaling**: Based on CPU/memory usage
+- 🔒 **HTTPS by Default**: SSL certificates managed automatically
+- 📊 **Built-in Monitoring**: Logs, metrics, and health checks
 
-The service can be deployed to various cloud platforms:
-- **Railway**: Automated deployment with environment variables
-- **Heroku**: Container-based deployment
-- **AWS/GCP/Azure**: Full cloud infrastructure deployment
+### Docker Compose (Development)
+
+Complete development environment with hot reloading:
+
+```bash
+# Start development environment
+docker-compose up -d
+
+# Start with database admin interface
+docker-compose --profile admin up -d
+
+# View logs
+docker-compose logs -f api
+```
+
+**Features:**
+- 🔄 **Hot Reloading**: Code changes trigger automatic restart
+- 🗄️ **PostgreSQL**: Local database with migrations
+- 🔧 **pgAdmin**: Database management interface
+- 🐛 **Debug Support**: Debug port exposed for IDE attachment
+
+### Local Docker (Simple)
+
+Quick local deployment for testing:
+
+```bash
+# Development mode
+./deploy.sh --dev
+
+# Production mode  
+./deploy.sh
+```
 
 For detailed deployment instructions, see [`docs/deployment.md`](docs/deployment.md).
 

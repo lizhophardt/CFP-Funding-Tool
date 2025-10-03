@@ -1,9 +1,14 @@
 # =============================================================================
-# 🐳 DOCKER SECURITY HARDENED AIRDROP SERVICE
+# 🐳 CFP FUNDING TOOL - UNIFIED DOCKERFILE
 # =============================================================================
 #
+# This is the single Dockerfile for all deployment scenarios:
+# - Railway production deployment (default target: production)
+# - Docker Compose development (target: development)
+# - Local Docker deployment (target: base/production)
+#
 # This Dockerfile implements enterprise-grade container security hardening
-# for the airdrop service, addressing multiple attack vectors and security
+# for the CFP Funding Tool API, addressing multiple attack vectors and security
 # concerns through defense-in-depth principles.
 #
 # 🛡️ SECURITY IMPROVEMENTS OVERVIEW:

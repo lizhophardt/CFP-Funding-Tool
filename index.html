@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wxHOPR Airdrop - Claim Your Tokens</title>
+    <meta name="description" content="Claim your wxHOPR and xDai to use Gnosis VPN">
+    
+    <!-- Fonts and Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-coins"></i>
+                    <span>Gnosis VPN Airdrop</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1>Claim Your wxHOPR and xDai</h1>
+                <p class="hero-description">
+                    Get your wxHOPR and xDai to use Gnosis VPN.
+                    Enter your wallet address and secret code to claim your airdrop.
+                </p>
+            </section>
+
+            <!-- Claim Form -->
+            <section class="claim-section">
+                <div class="form-container">
+                    <form id="airdropForm" class="claim-form">
+                        <div class="form-group">
+                            <label for="recipientAddress">
+                                <i class="fas fa-wallet"></i>
+                                Recipient Address
+                            </label>
+                            <div class="input-container">
+                                <input 
+                                    type="text" 
+                                    id="recipientAddress" 
+                                    name="recipientAddress"
+                                    placeholder="0x..." 
+                                    required
+                                    autocomplete="off"
+                                >
+                                <div class="input-icon">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                            </div>
+                            <div class="error-message" id="recipientAddressError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="secretCode">
+                                <i class="fas fa-key"></i>
+                                Secret Code
+                            </label>
+                            <div class="input-container">
+                                <input 
+                                    type="text" 
+                                    id="secretCode" 
+                                    name="secretCode"
+                                    placeholder="Enter your secret code..." 
+                                    required
+                                    autocomplete="off"
+                                >
+                                <div class="input-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                            </div>
+                            <div class="error-message" id="secretCodeError"></div>
+                        </div>
+
+                        <button type="submit" class="claim-btn" id="claimBtn">
+                            <div class="btn-content">
+                                <div class="spinner" id="spinner"></div>
+                                <span id="btnText">
+                                    <i class="fas fa-gift"></i>
+                                    Claim Airdrop
+                                </span>
+                            </div>
+                        </button>
+                    </form>
+
+                    <!-- Result Display -->
+                    <div class="result" id="result">
+                        <div class="result-content">
+                            <div class="result-icon" id="resultIcon"></div>
+                            <h3 id="resultTitle"></h3>
+                            <p id="resultMessage"></p>
+                            <div id="resultDetails"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About wxHOPR</a>
+                    <a href="#" class="footer-link">Gnosis VPN</a>
+                    <a href="#" class="footer-link">Support</a>
+                </div>
+                <div class="footer-text">
+                    <p>&copy; 2024 wxHOPR Airdrop. Powered by Gnosis Chain.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

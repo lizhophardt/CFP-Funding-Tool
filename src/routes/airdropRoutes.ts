@@ -61,8 +61,8 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// GET /api/airdrop/health - Health check
-router.get('/health', validateQueryParams, (req, res) => {
+// GET /api/airdrop/health - Health check (no validation needed for health checks)
+router.get('/health', (req, res) => {
   const controller = createAirdropController();
   return controller.healthCheck(req, res);
 });

@@ -1,53 +1,19 @@
 import { Router } from 'express';
 import v1Routes from './v1';
 import legacyAirdropRoutes from './airdropRoutes';
-
-const router = Router();
-
-// DEBUG: Simple test route at root level
-router.get('/test', (req, res) => {
-  res.json({ message: 'Basic routing works!', path: req.path, originalUrl: req.originalUrl });
-});
-
-// DEBUG: Simple test route for v1 structure  
-router.post('/v1/test', (req, res) => {
-  res.json({ message: 'V1 direct routing works!', path: req.path, originalUrl: req.originalUrl });
-});
-
-// Import the actual controller and middleware
 import { AirdropController } from '../controllers/airdropController';
 import { validateAirdropRequest, validateQueryParams } from '../middleware/validation';
 import { getContainer } from '../container/DIContainer';
 
-// Controller factory
-const createAirdropController = () => {
-  const container = getContainer();
-  return new AirdropController(container);
-};
+const router = Router();
 
-// V1 API routes - registered directly (nested router mounting was broken)
-router.post('/v1/airdrop/claim', validateAirdropRequest, (req, res) => {
-  const controller = createAirdropController();
-  return controller.claimAirdrop(req, res);
+// Simple test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Basic routing works!', path: req.path, originalUrl: req.originalUrl });
 });
 
-router.get('/v1/airdrop/status', validateQueryParams, (req, res) => {
-  const controller = createAirdropController();
-  return controller.getStatus(req, res);
-});
-
-router.get('/v1/airdrop/health', validateQueryParams, (req, res) => {
-  const controller = createAirdropController();
-  return controller.healthCheck(req, res);
-});
-
-// Development-only route
-if (process.env.NODE_ENV === 'development') {
-  router.post('/v1/airdrop/generate-test-code', (req, res) => {
-    const controller = createAirdropController();
-    return controller.generateTestCode(req, res);
-  });
-}
+// V1 API routes - using nested router (let's try this again)
+router.use('/v1', v1Routes);
 
 // Legacy routes (maintain backward compatibility)
 // These will continue to work but are deprecated

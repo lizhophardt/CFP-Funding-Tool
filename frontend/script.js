@@ -1,7 +1,7 @@
 // Configuration
 const CONFIG = {
-    // Your Railway API URL - Updated to use v1 versioning
-    API_BASE_URL: 'https://cfp-fundingtool-api.up.railway.app/api/v1/airdrop',
+    // Your Railway API URL - Using legacy endpoint (v1 routing is broken)
+    API_BASE_URL: 'https://cfp-fundingtool-api.up.railway.app/api/airdrop',
     
     // Network configuration
     NETWORK: {

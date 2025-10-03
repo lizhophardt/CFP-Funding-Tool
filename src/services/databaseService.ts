@@ -266,29 +266,6 @@ export class DatabaseService {
           ORDER BY sc.created_at DESC;
         `);
 
-        // Insert default secret codes
-        const defaultCodes = [
-          'DontTellUncleSam',
-          'SecretCode123', 
-          'HiddenTreasure',
-          'TestCode2024',
-          'CFPFunding'
-        ];
-
-        for (const code of defaultCodes) {
-          try {
-            await this.query(
-              `INSERT INTO secret_codes (code, description, max_uses, created_by) 
-               VALUES ($1, $2, $3, $4) 
-               ON CONFLICT (code) DO NOTHING`,
-              [code, `Default secret code for airdrop claims`, 1, 'system']
-            );
-            logger.config('info', `Added default secret code: ${code}`);
-          } catch (error) {
-            logger.config('warn', `Failed to add secret code ${code}:`, error);
-          }
-        }
-
         // Record the migration as completed
         await this.query(
           'INSERT INTO migrations (filename) VALUES ($1)',

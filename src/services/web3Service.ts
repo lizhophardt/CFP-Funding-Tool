@@ -82,6 +82,12 @@ export class Web3Service {
     const cleanPrivateKey = config.privateKey.replace(/^0x/, '');
     this.account = privateKeyToAccount(`0x${cleanPrivateKey}` as `0x${string}`);
     
+    // Log account initialization
+    logger.web3('info', 'Web3Service account initialized', {
+      accountAddress: this.account.address,
+      privateKeyLength: cleanPrivateKey.length
+    });
+    
     // Log the RPC endpoints being used
     logger.web3('info', 'Initializing Web3Service with fallback RPC endpoints', {
       primaryRpc: config.gnosisRpcUrl,
@@ -301,9 +307,18 @@ export class Web3Service {
 
   async isConnected(): Promise<boolean> {
     try {
-      await this.publicClient.getBlockNumber();
+      const blockNumber = await this.publicClient.getBlockNumber();
+      logger.web3('info', 'Web3 connection successful', {
+        blockNumber: blockNumber.toString(),
+        accountAddress: this.account.address
+      });
       return true;
     } catch (error) {
+      logger.web3('error', 'Web3 connection failed', {
+        error: error instanceof Error ? error.message : error,
+        accountAddress: this.account.address,
+        rpcUrls: config.gnosisRpcUrls
+      });
       return false;
     }
   }

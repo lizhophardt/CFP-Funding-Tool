@@ -21,8 +21,8 @@ export const apiVersionMiddleware = (req: Request, res: Response, next: NextFunc
   if (versionMatch) {
     req.apiVersion = `v${versionMatch[1]}`;
     req.isLegacyRequest = false;
-  } else if (req.path.startsWith('/airdrop')) {
-    // Legacy endpoint detection
+  } else if (req.path.startsWith('/airdrop') && !req.path.startsWith('/v1/airdrop')) {
+    // Legacy endpoint detection - only for direct /airdrop paths, not /v1/airdrop
     req.apiVersion = 'v1'; // Default to v1 for legacy
     req.isLegacyRequest = true;
     

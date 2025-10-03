@@ -1,4 +1,6 @@
-import Web3 from 'web3';
+import { createWalletClient, createPublicClient, http, parseEther, formatEther, getContract, parseUnits, formatUnits } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { gnosis } from 'viem/chains';
 import { config } from '../config';
 import { SecurityErrorHandler, ErrorType } from '../utils/errorHandler';
 import { Web3AddressValidator } from '../utils/web3AddressValidator';
@@ -61,7 +63,8 @@ const ERC20_ABI = [
  * ```
  */
 export class Web3Service {
-  private web3: Web3;
+  private publicClient: any;
+  private walletClient: any;
   private account: any;
   private tokenContract: any;
 
@@ -72,20 +75,34 @@ export class Web3Service {
    * - Connects to Gnosis Chain RPC endpoint
    * - Loads the private key from configuration
    * - Initializes the wxHOPR token contract
-   * - Adds the account to the Web3 wallet
+   * - Creates wallet and public clients
    */
   constructor() {
-    this.web3 = new Web3(config.gnosisRpcUrl);
-    this.account = this.web3.eth.accounts.privateKeyToAccount('0x' + config.privateKey);
-    this.web3.eth.accounts.wallet.add(this.account);
-    this.tokenContract = new this.web3.eth.Contract(ERC20_ABI, config.wxHoprTokenAddress);
+    this.account = privateKeyToAccount(`0x${config.privateKey}` as `0x${string}`);
+    
+    this.publicClient = createPublicClient({
+      chain: gnosis,
+      transport: http(config.gnosisRpcUrl)
+    });
+
+    this.walletClient = createWalletClient({
+      chain: gnosis,
+      transport: http(config.gnosisRpcUrl),
+      account: this.account
+    });
+
+    this.tokenContract = getContract({
+      address: config.wxHoprTokenAddress as `0x${string}`,
+      abi: ERC20_ABI,
+      client: this.publicClient
+    });
   }
 
   async getBalance(): Promise<string> {
     try {
-      const balance = await this.tokenContract.methods.balanceOf(this.account.address).call();
-      // Use Web3's fromWei to properly handle decimals (wxHOPR has 18 decimals like ETH)
-      return this.web3.utils.fromWei(balance, 'ether');
+      const balance = await this.tokenContract.read.balanceOf([this.account.address]);
+      // Use Viem's formatEther to properly handle decimals (wxHOPR has 18 decimals like ETH)
+      return formatEther(balance);
     } catch (error) {
       SecurityErrorHandler.throwSecureError(
         ErrorType.NETWORK_ERROR,
@@ -97,8 +114,10 @@ export class Web3Service {
 
   async getXDaiBalance(): Promise<string> {
     try {
-      const balance = await this.web3.eth.getBalance(this.account.address);
-      return this.web3.utils.fromWei(balance, 'ether');
+      const balance = await this.publicClient.getBalance({
+        address: this.account.address
+      });
+      return formatEther(balance);
     } catch (error) {
       SecurityErrorHandler.throwSecureError(
         ErrorType.NETWORK_ERROR,
@@ -139,7 +158,7 @@ export class Web3Service {
       });
 
       // Check if we have enough wxHOPR token balance
-      const tokenBalance = await this.tokenContract.methods.balanceOf(this.account.address).call();
+      const tokenBalance = await this.tokenContract.read.balanceOf([this.account.address]);
       const wxHoprAmountBigInt = BigInt(wxHoprAmountWei);
       const tokenBalanceBigInt = BigInt(tokenBalance);
 
@@ -152,25 +171,28 @@ export class Web3Service {
       }
 
       // Check native xDai balance
-      const nativeBalance = await this.web3.eth.getBalance(this.account.address);
-      const gasPrice = await this.web3.eth.getGasPrice();
+      const nativeBalance = await this.publicClient.getBalance({
+        address: this.account.address
+      });
+      const gasPrice = await this.publicClient.getGasPrice();
       
       // Increase gas price by 20% to ensure transaction goes through
       const adjustedGasPrice = (BigInt(gasPrice) * BigInt(120)) / BigInt(100);
       
       // Estimate gas for token transfer
-      const transferData = this.tokenContract.methods.transfer(validatedAddress, wxHoprAmountWei).encodeABI();
-      const tokenGasEstimate = await this.web3.eth.estimateGas({
-        from: this.account.address,
-        to: config.wxHoprTokenAddress,
-        data: transferData
+      const tokenGasEstimate = await this.publicClient.estimateContractGas({
+        address: config.wxHoprTokenAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [validatedAddress as `0x${string}`, BigInt(wxHoprAmountWei)],
+        account: this.account.address
       });
 
       // Estimate gas for native xDai transfer
-      const xDaiGasEstimate = await this.web3.eth.estimateGas({
-        from: this.account.address,
-        to: recipientAddress,
-        value: xDaiAmountWei
+      const xDaiGasEstimate = await this.publicClient.estimateGas({
+        account: this.account.address,
+        to: recipientAddress as `0x${string}`,
+        value: BigInt(xDaiAmountWei)
       });
 
       // Calculate total gas costs using adjusted gas price
@@ -181,8 +203,8 @@ export class Web3Service {
       const totalXDaiNeeded = totalGasCost + xDaiAmountBigInt;
 
       if (BigInt(nativeBalance) < totalXDaiNeeded) {
-        const needed = this.web3.utils.fromWei(totalXDaiNeeded.toString(), 'ether');
-        const available = this.web3.utils.fromWei(nativeBalance, 'ether');
+        const needed = formatEther(totalXDaiNeeded);
+        const available = formatEther(nativeBalance);
         SecurityErrorHandler.throwSecureError(
           ErrorType.INSUFFICIENT_BALANCE,
           `Insufficient xDai balance. Need ${needed} xDai but only have ${available}`,
@@ -191,28 +213,18 @@ export class Web3Service {
       }
 
       // Send wxHOPR token transfer transaction first
-      const tokenTransaction = {
-        from: this.account.address,
-        to: config.wxHoprTokenAddress,
-        data: transferData,
+      const tokenHash = await this.walletClient.writeContract({
+        address: config.wxHoprTokenAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [validatedAddress as `0x${string}`, BigInt(wxHoprAmountWei)],
         gas: tokenGasEstimate,
-        gasPrice: adjustedGasPrice.toString()
-      };
+        gasPrice: adjustedGasPrice
+      });
 
-      const signedTokenTransaction = await this.web3.eth.accounts.signTransaction(
-        tokenTransaction,
-        '0x' + config.privateKey
-      );
-
-      if (!signedTokenTransaction.rawTransaction) {
-        SecurityErrorHandler.throwSecureError(
-          ErrorType.TRANSACTION_FAILED,
-          'Failed to sign wxHOPR token transaction - no raw transaction returned',
-          'Transaction signing failed'
-        );
-      }
-
-      const tokenReceipt = await this.web3.eth.sendSignedTransaction(signedTokenTransaction.rawTransaction);
+      const tokenReceipt = await this.publicClient.waitForTransactionReceipt({
+        hash: tokenHash
+      });
       logger.web3('info', 'wxHOPR token transfer successful', {
         transactionHash: tokenReceipt.transactionHash,
         recipient: validatedAddress,
@@ -220,28 +232,16 @@ export class Web3Service {
       });
 
       // Send native xDai transfer transaction
-      const xDaiTransaction = {
-        from: this.account.address,
-        to: validatedAddress,
-        value: xDaiAmountWei,
+      const xDaiHash = await this.walletClient.sendTransaction({
+        to: validatedAddress as `0x${string}`,
+        value: BigInt(xDaiAmountWei),
         gas: xDaiGasEstimate,
-        gasPrice: adjustedGasPrice.toString()
-      };
+        gasPrice: adjustedGasPrice
+      });
 
-      const signedXDaiTransaction = await this.web3.eth.accounts.signTransaction(
-        xDaiTransaction,
-        '0x' + config.privateKey
-      );
-
-      if (!signedXDaiTransaction.rawTransaction) {
-        SecurityErrorHandler.throwSecureError(
-          ErrorType.TRANSACTION_FAILED,
-          'Failed to sign xDai transaction - no raw transaction returned',
-          'Transaction signing failed'
-        );
-      }
-
-      const xDaiReceipt = await this.web3.eth.sendSignedTransaction(signedXDaiTransaction.rawTransaction);
+      const xDaiReceipt = await this.publicClient.waitForTransactionReceipt({
+        hash: xDaiHash
+      });
       logger.web3('info', 'xDai transfer successful', {
         transactionHash: xDaiReceipt.transactionHash,
         recipient: validatedAddress,
@@ -249,8 +249,8 @@ export class Web3Service {
       });
 
       return {
-        wxHoprTxHash: tokenReceipt.transactionHash.toString(),
-        xDaiTxHash: xDaiReceipt.transactionHash.toString()
+        wxHoprTxHash: tokenReceipt.transactionHash,
+        xDaiTxHash: xDaiReceipt.transactionHash
       };
     } catch (error) {
       // If it's already a secure error, re-throw it
@@ -279,7 +279,7 @@ export class Web3Service {
 
   async isConnected(): Promise<boolean> {
     try {
-      await this.web3.eth.getBlockNumber();
+      await this.publicClient.getBlockNumber();
       return true;
     } catch (error) {
       return false;

@@ -3,8 +3,7 @@
  * Provides comprehensive Ethereum address validation with checksum support
  */
 
-import Web3 from 'web3';
-import { isAddress, toChecksumAddress, isHexStrict } from 'web3-utils';
+import { isAddress, getAddress, isHex } from 'viem';
 
 export interface AddressValidationResult {
   isValid: boolean;
@@ -51,14 +50,14 @@ export class Web3AddressValidator {
       }
 
       // Check if it's a valid hex string
-      if (!isHexStrict(trimmedAddress)) {
+      if (!isHex(trimmedAddress)) {
         return {
           isValid: false,
           error: 'Address contains invalid hexadecimal characters'
         };
       }
 
-      // Use Web3.js isAddress function for comprehensive validation
+      // Use Viem's isAddress function for comprehensive validation
       if (!isAddress(trimmedAddress)) {
         return {
           isValid: false,
@@ -73,7 +72,7 @@ export class Web3AddressValidator {
       }
 
       // Generate checksum address
-      const checksumAddress = toChecksumAddress(trimmedAddress);
+      const checksumAddress = getAddress(trimmedAddress);
       const normalizedAddress = trimmedAddress.toLowerCase();
 
       // Check if the provided address has correct checksum (if mixed case)

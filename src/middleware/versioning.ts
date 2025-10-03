@@ -15,20 +15,23 @@ declare global {
  * Middleware to detect and set API version information
  */
 export const apiVersionMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  // Extract version from URL path
-  const versionMatch = req.path.match(/^\/v(\d+)/);
+  // Get the full path including /api prefix
+  const fullPath = req.originalUrl.split('?')[0]; // Remove query params
+  
+  // Extract version from URL path - check for /api/v1/... pattern
+  const versionMatch = fullPath.match(/\/api\/v(\d+)/);
   
   if (versionMatch) {
     req.apiVersion = `v${versionMatch[1]}`;
     req.isLegacyRequest = false;
-  } else if (req.path.startsWith('/airdrop') && !req.path.startsWith('/v1/airdrop')) {
-    // Legacy endpoint detection - only for direct /airdrop paths, not /v1/airdrop
+  } else if (fullPath.includes('/api/airdrop')) {
+    // Legacy endpoint detection - /api/airdrop/* (not /api/v1/airdrop/*)
     req.apiVersion = 'v1'; // Default to v1 for legacy
     req.isLegacyRequest = true;
     
     // Log legacy usage for monitoring
     logger.warn('Legacy API endpoint accessed', {
-      path: req.path,
+      path: fullPath,
       method: req.method,
       userAgent: req.get('User-Agent'),
       ip: req.ip

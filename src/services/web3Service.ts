@@ -78,7 +78,9 @@ export class Web3Service {
    * - Creates wallet and public clients with automatic RPC failover
    */
   constructor() {
-    this.account = privateKeyToAccount(`0x${config.privateKey}` as `0x${string}`);
+    // Ensure private key has correct format (remove 0x if present, then add it back)
+    const cleanPrivateKey = config.privateKey.replace(/^0x/, '');
+    this.account = privateKeyToAccount(`0x${cleanPrivateKey}` as `0x${string}`);
     
     // Log the RPC endpoints being used
     logger.web3('info', 'Initializing Web3Service with fallback RPC endpoints', {
@@ -119,7 +121,9 @@ export class Web3Service {
     try {
       const balance = await this.tokenContract.read.balanceOf([this.account.address]);
       // Use Viem's formatEther to properly handle decimals (wxHOPR has 18 decimals like ETH)
-      return formatEther(balance);
+      // Ensure balance is properly converted to BigInt
+      const balanceBigInt = BigInt(balance.toString());
+      return formatEther(balanceBigInt);
     } catch (error) {
       SecurityErrorHandler.throwSecureError(
         ErrorType.NETWORK_ERROR,
@@ -177,7 +181,8 @@ export class Web3Service {
       // Check if we have enough wxHOPR token balance
       const tokenBalance = await this.tokenContract.read.balanceOf([this.account.address]);
       const wxHoprAmountBigInt = BigInt(wxHoprAmountWei);
-      const tokenBalanceBigInt = BigInt(tokenBalance);
+      // tokenBalance is already a BigInt from Viem
+      const tokenBalanceBigInt = BigInt(tokenBalance.toString());
 
       if (tokenBalanceBigInt < wxHoprAmountBigInt) {
         SecurityErrorHandler.throwSecureError(

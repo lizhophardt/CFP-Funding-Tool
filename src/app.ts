@@ -133,9 +133,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// TEMP: Skip all middleware for debugging
-// app.use('/api', apiVersionMiddleware);
-// app.use('/api', validateApiVersion(['v1']));
+// API versioning middleware
+app.use('/api', apiVersionMiddleware);
+app.use('/api', validateApiVersion(['v1']));
 
 // API Routes with versioning
 app.use('/api', apiRoutes);

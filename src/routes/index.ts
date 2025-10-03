@@ -14,26 +14,40 @@ router.post('/v1/test', (req, res) => {
   res.json({ message: 'V1 direct routing works!', path: req.path, originalUrl: req.originalUrl });
 });
 
-// DEBUG: Test different path patterns
-router.post('/v1/claim', (req, res) => {
-  res.json({ message: "SHORT PATH WORKS!", path: req.path });
+// Import the actual controller and middleware
+import { AirdropController } from '../controllers/airdropController';
+import { validateAirdropRequest, validateQueryParams } from '../middleware/validation';
+import { getContainer } from '../container/DIContainer';
+
+// Controller factory
+const createAirdropController = () => {
+  const container = getContainer();
+  return new AirdropController(container);
+};
+
+// V1 API routes - registered directly (nested router mounting was broken)
+router.post('/v1/airdrop/claim', validateAirdropRequest, (req, res) => {
+  const controller = createAirdropController();
+  return controller.claimAirdrop(req, res);
 });
 
-router.get('/v1/airdrop/claim', (req, res) => {
-  res.json({ message: "GET METHOD WORKS!", path: req.path });
+router.get('/v1/airdrop/status', validateQueryParams, (req, res) => {
+  const controller = createAirdropController();
+  return controller.getStatus(req, res);
 });
 
-router.post('/v1/airdrop/claim', (req, res) => {
-  res.json({
-    success: true,
-    message: "POST TO LONG PATH WORKS!",
-    path: req.path,
-    originalUrl: req.originalUrl
+router.get('/v1/airdrop/health', validateQueryParams, (req, res) => {
+  const controller = createAirdropController();
+  return controller.healthCheck(req, res);
+});
+
+// Development-only route
+if (process.env.NODE_ENV === 'development') {
+  router.post('/v1/airdrop/generate-test-code', (req, res) => {
+    const controller = createAirdropController();
+    return controller.generateTestCode(req, res);
   });
-});
-
-// Version 1 API routes (commented out for debugging)
-// router.use('/v1', v1Routes);
+}
 
 // Legacy routes (maintain backward compatibility)
 // These will continue to work but are deprecated

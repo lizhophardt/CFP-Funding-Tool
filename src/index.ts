@@ -7,15 +7,32 @@ async function startServer(): Promise<void> {
   let diContainer: DIContainer | null = null;
   
   try {
+    console.log('🚀 Starting CFP Funding Tool server...');
+    console.log('📍 NODE_ENV:', process.env.NODE_ENV);
+    console.log('🔌 PORT:', process.env.PORT || 3000);
+    
     // Validate configuration
+    console.log('⚙️  Validating configuration...');
     logger.config('info', 'Validating configuration...');
     validateConfig();
+    console.log('✅ Configuration validated successfully');
     logger.config('info', 'Configuration validated successfully');
 
     // Initialize services
+    console.log('🔧 Initializing dependency injection container...');
     logger.config('info', 'Initializing dependency injection container...');
     diContainer = getContainer();
-    await diContainer.initialize();
+    
+    console.log('🔄 Starting DI container initialization...');
+    
+    // Add timeout to prevent hanging
+    const initPromise = diContainer.initialize();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('DI container initialization timeout after 30 seconds')), 30000)
+    );
+    
+    await Promise.race([initPromise, timeoutPromise]);
+    console.log('✅ Dependency injection container initialized successfully');
     logger.config('info', 'Dependency injection container initialized successfully');
 
     // Start the server

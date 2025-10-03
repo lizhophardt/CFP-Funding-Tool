@@ -119,8 +119,9 @@ export class DIContainer {
       logger.config('info', 'Initializing database connection...');
       await databaseService.connect();
       
-      logger.config('info', 'Running database migrations...');
-      await databaseService.runMigrations();
+      // Skip migrations for local testing since we set up the DB manually
+      // logger.config('info', 'Running database migrations...');
+      // await databaseService.runMigrations();
       
       logger.config('info', 'Dependency injection container initialized successfully');
       this.initialized = true;

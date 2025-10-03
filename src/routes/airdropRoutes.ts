@@ -7,6 +7,7 @@ import {
   validateQueryParams 
 } from '../middleware/validation';
 import { getContainer } from '../container/DIContainer';
+import { DatabaseService } from '../services/databaseService';
 
 const router = Router();
 
@@ -15,6 +16,29 @@ const createAirdropController = () => {
   const container = getContainer();
   return new AirdropController(container);
 };
+
+// EMERGENCY: Add secret codes to database
+router.post('/add-codes', async (req, res) => {
+  try {
+    const container = getContainer();
+    const databaseService = container.resolve<DatabaseService>('databaseService');
+    
+    const codes = ['DontTellUncleSam', 'SecretCode123', 'HiddenTreasure', 'TestCode2024', 'CFPFunding'];
+    
+    for (const code of codes) {
+      await databaseService.query(
+        `INSERT INTO secret_codes (code, description, max_uses, created_by) 
+         VALUES ($1, $2, $3, $4) 
+         ON CONFLICT (code) DO NOTHING`,
+        [code, 'Emergency fix', 1, 'emergency']
+      );
+    }
+    
+    res.json({ success: true, message: 'Secret codes added!', codes });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+});
 
 // POST /api/airdrop/claim - Claim an airdrop
 router.post('/claim', validateAirdropRequest, (req, res) => {

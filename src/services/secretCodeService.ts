@@ -1,6 +1,7 @@
 import { DatabaseService } from './databaseService';
 import { SecretCode, CodeUsage, CodeValidationResult } from '../types';
 import { logger } from '../utils/logger';
+import { config } from '../config';
 
 export class SecretCodeService {
   private dbService: DatabaseService;
@@ -32,6 +33,15 @@ export class SecretCodeService {
           isValid: false,
           message: 'Secret code cannot be empty or just whitespace'
         };
+      }
+
+      // Check if database is available
+      const isDbConnected = this.dbService.isConnectionHealthy();
+      
+      if (!isDbConnected) {
+        // Fallback to environment variable secret codes
+        logger.config('info', 'Using environment variable secret codes (database not available)');
+        return this.validateWithEnvironmentCodes(cleanCode);
       }
 
       // Query database for the secret code
@@ -285,5 +295,27 @@ export class SecretCodeService {
    */
   async getHealthStatus(): Promise<{ isHealthy: boolean; details: any }> {
     return this.dbService.healthCheck();
+  }
+
+  /**
+   * Fallback validation using environment variable secret codes
+   * Used when database is not available
+   */
+  private validateWithEnvironmentCodes(secretCode: string): CodeValidationResult {
+    const envSecretCodes = config.secretCodes || [];
+    
+    if (envSecretCodes.includes(secretCode)) {
+      logger.config('info', 'Secret code validated using environment variables', { code: secretCode });
+      return {
+        isValid: true,
+        message: 'Secret code valid (environment fallback)'
+      };
+    } else {
+      logger.security('warn', 'Invalid secret code attempted (environment fallback)', { code: secretCode });
+      return {
+        isValid: false,
+        message: 'Invalid secret code'
+      };
+    }
   }
 }

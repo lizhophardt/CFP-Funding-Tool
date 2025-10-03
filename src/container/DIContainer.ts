@@ -114,10 +114,17 @@ export class DIContainer {
         return new AirdropService(databaseService, web3Service, secretCodeService);
       });
 
-      // Initialize database connection
+      // Initialize database connection with fallback
       const databaseService = this.resolve<DatabaseService>('databaseService');
       logger.config('info', 'Initializing database connection...');
-      await databaseService.connect();
+      try {
+        await databaseService.connect();
+      } catch (error) {
+        logger.config('warn', 'Database connection failed, continuing with environment-based secret codes', {
+          error: error instanceof Error ? error.message : error
+        });
+        // Don't throw - allow app to start without database
+      }
       
       // Skip migrations for local testing since we set up the DB manually
       // logger.config('info', 'Running database migrations...');

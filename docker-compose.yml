@@ -9,9 +9,9 @@ services:
     image: postgres:15-alpine
     container_name: cfp-postgres
     environment:
-      POSTGRES_DB: cfp_funding_tool
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: ${POSTGRES_DB:-cfp_funding_tool}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
@@ -22,7 +22,7 @@ services:
     networks:
       - cfp-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d cfp_funding_tool"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cfp_funding_tool}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,12 +40,12 @@ services:
       PORT: 3000
       
       # Database Configuration
-      DATABASE_URL: postgresql://postgres:postgres_password@postgres:5432/cfp_funding_tool
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_password}@postgres:5432/${POSTGRES_DB:-cfp_funding_tool}
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: cfp_funding_tool
-      DB_USER: postgres
-      DB_PASSWORD: postgres_password
+      DB_NAME: ${POSTGRES_DB:-cfp_funding_tool}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
       DB_SSL: "false"
       
       # Blockchain Configuration (use your actual values)

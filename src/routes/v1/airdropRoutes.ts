@@ -17,10 +17,21 @@ const createAirdropController = () => {
 };
 
 // POST /api/v1/airdrop/claim - Claim an airdrop
-router.post('/claim', validateAirdropRequest, (req, res) => {
-  const controller = createAirdropController();
-  return controller.claimAirdrop(req, res);
+router.post('/claim', (req, res) => {
+  // Temporary simple response to test routing
+  res.json({
+    success: true,
+    message: "Route works! Validation temporarily bypassed for testing",
+    receivedBody: req.body,
+    apiVersion: "v1"
+  });
 });
+
+// Commented out original route for debugging
+// router.post('/claim', validateAirdropRequest, (req, res) => {
+//   const controller = createAirdropController();
+//   return controller.claimAirdrop(req, res);
+// });
 
 // GET /api/v1/airdrop/status - Get service status
 router.get('/status', validateQueryParams, (req, res) => {

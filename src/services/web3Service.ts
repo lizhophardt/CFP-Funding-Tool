@@ -1,4 +1,4 @@
-import { createWalletClient, createPublicClient, http, parseEther, formatEther, getContract, parseUnits, formatUnits } from 'viem';
+import { createWalletClient, createPublicClient, http, fallback, parseEther, formatEther, getContract, parseUnits, formatUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { gnosis } from 'viem/chains';
 import { config } from '../config';
@@ -72,22 +72,39 @@ export class Web3Service {
    * Creates a new Web3Service instance and initializes blockchain connection.
    * 
    * Automatically:
-   * - Connects to Gnosis Chain RPC endpoint
+   * - Connects to Gnosis Chain RPC endpoints with fallback support
    * - Loads the private key from configuration
    * - Initializes the wxHOPR token contract
-   * - Creates wallet and public clients
+   * - Creates wallet and public clients with automatic RPC failover
    */
   constructor() {
     this.account = privateKeyToAccount(`0x${config.privateKey}` as `0x${string}`);
     
+    // Log the RPC endpoints being used
+    logger.web3('info', 'Initializing Web3Service with fallback RPC endpoints', {
+      primaryRpc: config.gnosisRpcUrl,
+      totalEndpoints: config.gnosisRpcUrls.length,
+      endpoints: config.gnosisRpcUrls
+    });
+    
+    // Create fallback transport with multiple RPC endpoints
+    const fallbackTransport = fallback(
+      config.gnosisRpcUrls.map(url => http(url)),
+      {
+        rank: true, // Enable automatic ranking based on latency and stability
+        retryCount: 3, // Retry failed requests up to 3 times
+        retryDelay: 150 // 150ms delay between retries
+      }
+    );
+    
     this.publicClient = createPublicClient({
       chain: gnosis,
-      transport: http(config.gnosisRpcUrl)
+      transport: fallbackTransport
     });
 
     this.walletClient = createWalletClient({
       chain: gnosis,
-      transport: http(config.gnosisRpcUrl),
+      transport: fallbackTransport,
       account: this.account
     });
 

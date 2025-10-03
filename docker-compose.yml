@@ -50,6 +50,7 @@ services:
       
       # Blockchain Configuration (use your actual values)
       GNOSIS_RPC_URL: https://rpc.gnosischain.com
+      GNOSIS_FALLBACK_RPC_URLS: https://rpc.ankr.com/gnosis,https://gnosis-mainnet.public.blastapi.io,https://gnosis.blockpi.network/v1/rpc/public
       PRIVATE_KEY: ${PRIVATE_KEY:-your_private_key_here}
       WXHOPR_TOKEN_ADDRESS: 0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
       AIRDROP_AMOUNT_WEI: 10000000000000000

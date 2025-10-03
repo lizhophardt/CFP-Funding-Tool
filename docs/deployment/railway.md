@@ -18,6 +18,7 @@ DATABASE_URL=${{Postgres.DATABASE_URL}}
 
 # Blockchain Configuration
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
+GNOSIS_FALLBACK_RPC_URLS=https://rpc.ankr.com/gnosis,https://gnosis-mainnet.public.blastapi.io,https://gnosis.blockpi.network/v1/rpc/public
 WXHOPR_TOKEN_ADDRESS=0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
 
 # Security - Choose ONE method
@@ -45,6 +46,9 @@ SECRET_CODES=Code1,Code2,Code3,Code4
 
 # Custom RPC URL
 GNOSIS_RPC_URL=https://your-custom-rpc-endpoint.com
+
+# Custom Fallback RPC URLs (comma-separated)
+GNOSIS_FALLBACK_RPC_URLS=https://rpc1.example.com,https://rpc2.example.com
 
 # Custom Token Address (if using different token)
 WXHOPR_TOKEN_ADDRESS=0xYourCustomTokenAddress

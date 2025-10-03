@@ -13,6 +13,40 @@ A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gn
 - 📝 **Professional Logging**: Winston-based logging with rotation and structured output
 - 🐳 **Docker Ready**: Secure containerized deployment with hardened configuration
 
+## 🌐 RPC Reliability & Failover
+
+The service implements robust RPC failover using Viem's fallback transport mechanism:
+
+### Automatic Failover
+- **Primary RPC**: Configured via `GNOSIS_RPC_URL`
+- **Fallback RPCs**: Multiple endpoints via `GNOSIS_FALLBACK_RPC_URLS`
+- **Smart Ranking**: Automatically ranks endpoints by latency and stability
+- **Retry Logic**: 3 retries with 150ms delay between attempts
+- **Zero Downtime**: Seamless switching between endpoints
+
+### Default Fallback Endpoints
+```
+https://rpc.gnosischain.com          # Primary
+https://rpc.ankr.com/gnosis          # Fallback 1
+https://gnosis-mainnet.public.blastapi.io  # Fallback 2
+https://gnosis.blockpi.network/v1/rpc/public  # Fallback 3
+```
+
+### Configuration
+```env
+# Primary endpoint (required)
+GNOSIS_RPC_URL=https://rpc.gnosischain.com
+
+# Fallback endpoints (optional, comma-separated)
+GNOSIS_FALLBACK_RPC_URLS=https://rpc.ankr.com/gnosis,https://gnosis-mainnet.public.blastapi.io
+```
+
+**Benefits:**
+- 🔄 **High Availability**: Service continues running even if primary RPC fails
+- ⚡ **Performance**: Automatic selection of fastest available endpoint
+- 🛡️ **Resilience**: Protection against single point of failure
+- 📊 **Monitoring**: Logs endpoint performance and failover events
+
 ## 📋 Quick Start
 
 ### 🧪 Development Mode (Recommended for Development)
@@ -97,6 +131,8 @@ Required environment variables:
 ```env
 # Gnosis Chain Configuration
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
+# Optional fallback RPC endpoints for improved reliability (comma-separated)
+GNOSIS_FALLBACK_RPC_URLS=https://rpc.ankr.com/gnosis,https://gnosis-mainnet.public.blastapi.io
 WXHOPR_TOKEN_ADDRESS=0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
 
 # Security (choose one method)

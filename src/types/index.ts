@@ -29,6 +29,7 @@ export interface AirdropResponse {
 
 export interface Config {
   gnosisRpcUrl: string;
+  gnosisRpcUrls: string[]; // Fallback RPC endpoints
   privateKey: string;
   secretCodes: string[]; // Keep for backward compatibility during migration
   wxHoprTokenAddress: string;

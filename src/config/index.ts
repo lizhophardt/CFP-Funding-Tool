@@ -35,8 +35,22 @@ function createConfig(): Config {
     privateKey = plainKey;
   }
 
+  // Parse multiple RPC URLs for fallback support
+  const primaryRpcUrl = process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com';
+  const fallbackRpcUrls = process.env.GNOSIS_FALLBACK_RPC_URLS 
+    ? process.env.GNOSIS_FALLBACK_RPC_URLS.split(',').map(url => url.trim())
+    : [
+        'https://rpc.ankr.com/gnosis',
+        'https://gnosis-mainnet.public.blastapi.io',
+        'https://gnosis.blockpi.network/v1/rpc/public'
+      ];
+  
+  // Combine primary and fallback URLs
+  const allRpcUrls = [primaryRpcUrl, ...fallbackRpcUrls];
+
   return {
-    gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'https://rpc.gnosischain.com',
+    gnosisRpcUrl: primaryRpcUrl, // Keep for backward compatibility
+    gnosisRpcUrls: allRpcUrls,
     privateKey,
     secretCodes: process.env.SECRET_CODES 
       ? process.env.SECRET_CODES.split(',').map(s => s.trim())

@@ -26,10 +26,15 @@ async function startServer(): Promise<void> {
       logger.startup(`Airdrop amount: ${config.airdropAmountWei} wei`);
       logger.startup(`Gnosis RPC: ${config.gnosisRpcUrl}`);
       logger.info('Available endpoints:', {
-        endpoints: [
+        'v1 (current)': [
+          `POST http://localhost:${config.port}/api/v1/airdrop/claim`,
+          `GET  http://localhost:${config.port}/api/v1/airdrop/status`,
+          `POST http://localhost:${config.port}/api/v1/airdrop/generate-test-code`,
+          `GET  http://localhost:${config.port}/api/v1/airdrop/health`
+        ],
+        'legacy (deprecated)': [
           `POST http://localhost:${config.port}/api/airdrop/claim`,
           `GET  http://localhost:${config.port}/api/airdrop/status`,
-          `POST http://localhost:${config.port}/api/airdrop/generate-test-hash`,
           `GET  http://localhost:${config.port}/api/airdrop/health`
         ]
       });

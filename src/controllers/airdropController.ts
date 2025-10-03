@@ -3,6 +3,7 @@ import { AirdropService } from '../services/airdropService';
 import { ServiceContainer } from '../services/serviceContainer';
 import { AirdropRequest } from '../types';
 import { SecurityErrorHandler } from '../utils/errorHandler';
+import { getVersionedResponse } from '../middleware/versioning';
 import { logger } from '../utils/logger';
 
 /**
@@ -97,7 +98,7 @@ export class AirdropController {
         });
       }
       
-      res.status(statusCode).json(result);
+      res.status(statusCode).json(getVersionedResponse(req, result));
 
     } catch (error) {
       logger.airdrop('error', 'Airdrop processing error', {
@@ -112,10 +113,10 @@ export class AirdropController {
   async getStatus(req: Request, res: Response): Promise<void> {
     try {
       const status = await this.airdropService.getServiceStatus();
-      res.status(200).json({
+      res.status(200).json(getVersionedResponse(req, {
         success: true,
         data: status
-      });
+      }));
     } catch (error) {
       const sanitizedError = SecurityErrorHandler.sanitizeForAPI(error);
       res.status(500).json(sanitizedError);
@@ -135,13 +136,13 @@ export class AirdropController {
       
       logger.success(`Test secret code generated: ${secretCode}`);
       
-      res.status(200).json({
+      res.status(200).json(getVersionedResponse(req, {
         success: true,
         data: {
           secretCode,
           note: 'For production, use database-managed secret codes'
         }
-      });
+      }));
 
     } catch (error) {
       logger.airdrop('error', 'Test code generation error', {
@@ -162,23 +163,23 @@ export class AirdropController {
                        healthStatus.services.initialized &&
                        airdropHealth.isHealthy;
 
-      res.status(isHealthy ? 200 : 503).json({
+      res.status(isHealthy ? 200 : 503).json(getVersionedResponse(req, {
         success: isHealthy,
-        message: isHealthy ? 'All services are healthy' : 'Some services are unhealthy',
+        message: isHealthy ? 'All services are healthy and running' : 'Some services are unhealthy',
         timestamp: new Date().toISOString(),
         details: {
           database: healthStatus.database,
           services: healthStatus.services,
           airdropService: airdropHealth
         }
-      });
+      }));
     } catch (error) {
-      res.status(503).json({
+      res.status(503).json(getVersionedResponse(req, {
         success: false,
         message: 'Health check failed',
         timestamp: new Date().toISOString(),
         error: error instanceof Error ? error.message : String(error)
-      });
+      }));
     }
   }
 }

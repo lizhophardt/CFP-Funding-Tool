@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import airdropRoutes from './routes/airdropRoutes';
+import apiRoutes from './routes';
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { apiVersionMiddleware, validateApiVersion } from './middleware/versioning';
 import { config } from './config';
 import { SecurityHeaders } from './utils/securityHeaders';
 import { SecurityMetrics } from './utils/securityMetrics';
@@ -132,8 +133,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/api/airdrop', airdropRoutes);
+// API versioning middleware
+app.use('/api', apiVersionMiddleware);
+app.use('/api', validateApiVersion(['v1']));
+
+// API Routes with versioning
+app.use('/api', apiRoutes);
 
 // API root route - explicitly return JSON only
 app.get('/', (req, res) => {
@@ -149,10 +154,19 @@ app.get('/', (req, res) => {
       description: 'Recipients get both wxHOPR tokens and native xDai'
     },
     endpoints: {
-      'POST /api/airdrop/claim': 'Claim dual airdrop (wxHOPR + xDai) with hash and recipient address',
-      'GET /api/airdrop/status': 'Get service status and both wxHOPR/xDai balances',
-      'POST /api/airdrop/generate-test-hash': 'Generate a test hash for development',
-      'GET /api/airdrop/health': 'Health check endpoint'
+      'POST /api/v1/airdrop/claim': 'Claim dual airdrop (wxHOPR + xDai) with hash and recipient address',
+      'GET /api/v1/airdrop/status': 'Get service status and both wxHOPR/xDai balances',
+      'POST /api/v1/airdrop/generate-test-hash': 'Generate a test hash for development',
+      'GET /api/v1/airdrop/health': 'Health check endpoint'
+    },
+    versioning: {
+      current: 'v1',
+      supported: ['v1'],
+      legacy: {
+        'POST /api/airdrop/claim': 'Legacy endpoint - use /api/v1/airdrop/claim instead',
+        'GET /api/airdrop/status': 'Legacy endpoint - use /api/v1/airdrop/status instead',
+        'GET /api/airdrop/health': 'Legacy endpoint - use /api/v1/airdrop/health instead'
+      }
     },
     security: {
       cors: 'Restricted to trusted origins',

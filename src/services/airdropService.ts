@@ -13,7 +13,7 @@ import { logger } from '../utils/logger';
  * 
  * @example
  * ```typescript
- * const service = new AirdropService(databaseService);
+ * const service = new AirdropService(databaseService, web3Service, secretCodeService);
  * const result = await service.processAirdrop({
  *   secretCode: "MySecret123",
  *   recipientAddress: "0x742d35Cc6634C0532925a3b8D8B9B3a8d8b8B3a8"
@@ -23,15 +23,24 @@ import { logger } from '../utils/logger';
 export class AirdropService {
   private web3Service: Web3Service;
   private secretCodeService: SecretCodeService;
+  private databaseService: DatabaseService;
 
   /**
-   * Creates a new AirdropService instance.
+   * Creates a new AirdropService instance with dependency injection.
    * 
    * @param databaseService - Database service for persistent storage
+   * @param web3Service - Web3 service for blockchain interactions
+   * @param secretCodeService - Secret code service for validation
    */
-  constructor(databaseService: DatabaseService) {
-    this.web3Service = new Web3Service();
-    this.secretCodeService = new SecretCodeService(databaseService);
+  constructor(
+    databaseService: DatabaseService,
+    web3Service?: Web3Service,
+    secretCodeService?: SecretCodeService
+  ) {
+    this.databaseService = databaseService;
+    // For backward compatibility, create services if not provided
+    this.web3Service = web3Service || new Web3Service();
+    this.secretCodeService = secretCodeService || new SecretCodeService(databaseService);
   }
 
 

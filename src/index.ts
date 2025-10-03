@@ -1,10 +1,10 @@
 import app from './app';
 import { config, validateConfig } from './config';
-import { ServiceContainer } from './services/serviceContainer';
+import { getContainer, DIContainer } from './container/DIContainer';
 import { logger } from './utils/logger';
 
 async function startServer(): Promise<void> {
-  let serviceContainer: ServiceContainer | null = null;
+  let diContainer: DIContainer | null = null;
   
   try {
     // Validate configuration
@@ -13,10 +13,10 @@ async function startServer(): Promise<void> {
     logger.config('info', 'Configuration validated successfully');
 
     // Initialize services
-    logger.config('info', 'Initializing services...');
-    serviceContainer = ServiceContainer.getInstance();
-    await serviceContainer.initialize();
-    logger.config('info', 'Services initialized successfully');
+    logger.config('info', 'Initializing dependency injection container...');
+    diContainer = getContainer();
+    await diContainer.initialize();
+    logger.config('info', 'Dependency injection container initialized successfully');
 
     // Start the server
     const server = app.listen(config.port, () => {
@@ -46,8 +46,8 @@ async function startServer(): Promise<void> {
       
       server.close(async () => {
         try {
-          if (serviceContainer) {
-            await serviceContainer.shutdown();
+          if (diContainer) {
+            await diContainer.shutdown();
           }
           logger.info('Server and services closed');
           process.exit(0);

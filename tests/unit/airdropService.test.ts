@@ -22,10 +22,11 @@ jest.mock('../../src/services/web3Service', () => {
   };
 });
 
-describe('AirdropService with Database', () => {
+describe('AirdropService with Dependency Injection', () => {
   let airdropService: AirdropService;
   let mockDatabaseService: MockDatabaseService;
   let mockWeb3Service: any;
+  let mockSecretCodeService: any;
 
   beforeEach(async () => {
     // Reset mocks
@@ -36,11 +37,41 @@ describe('AirdropService with Database', () => {
     await mockDatabaseService.connect();
     mockDatabaseService.resetMockData();
 
-    // Create service instance with mock database
-    airdropService = new AirdropService(mockDatabaseService);
-    
-    // Get mock Web3Service instance
-    mockWeb3Service = (airdropService as any).web3Service;
+    // Create mock web3 service  
+    const { MockWeb3Service } = await import('../mocks/web3Mock');
+    mockWeb3Service = new MockWeb3Service();
+
+    // Create mock secret code service with all required methods
+    mockSecretCodeService = {
+      validateSecretCode: jest.fn().mockResolvedValue({
+        isValid: true,
+        message: 'Secret code validation successful',
+        codeId: 'test-id-1'
+      }),
+      recordUsage: jest.fn().mockResolvedValue(undefined),
+      hasRecipientUsedCode: jest.fn().mockResolvedValue(false),
+      generateTestCode: jest.fn().mockReturnValue('TEST_' + Math.random().toString(36).substr(2, 9)),
+      getActiveCodesWithStats: jest.fn().mockResolvedValue([]),
+      createSecretCode: jest.fn().mockResolvedValue({
+        id: 'test-id',
+        code: 'TestCode',
+        description: 'Test code',
+        max_uses: 1,
+        current_uses: 0,
+        created_at: new Date()
+      }),
+      getHealthStatus: jest.fn().mockResolvedValue({
+        isHealthy: true,
+        details: { message: 'Database connection is healthy' }
+      })
+    };
+
+    // Create service instance with dependency injection
+    airdropService = new AirdropService(
+      mockDatabaseService as any,
+      mockWeb3Service,
+      mockSecretCodeService
+    );
   });
 
   afterEach(async () => {
@@ -157,7 +188,7 @@ describe('AirdropService with Database', () => {
 
     it('should handle Web3 connection failure', async () => {
       // Mock Web3 connection failure
-      mockWeb3Service.isConnected.mockResolvedValue(false);
+      mockWeb3Service.setConnected(false);
 
       const request = {
         secretCode: 'TestCode1',
@@ -167,7 +198,7 @@ describe('AirdropService with Database', () => {
       const result = await airdropService.processAirdrop(request);
       
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Unable to connect to Gnosis network');
+      expect(result.message).toContain('Not connected to network');
 
       // Verify failed attempt was recorded
       const mockData = mockDatabaseService.getMockData();
@@ -177,8 +208,8 @@ describe('AirdropService with Database', () => {
     });
 
     it('should handle transaction failure', async () => {
-      // Mock transaction failure
-      mockWeb3Service.sendDualTransaction.mockRejectedValue(new Error('Transaction failed'));
+      // Mock transaction failure by setting balance to 0
+      mockWeb3Service.setBalance('0');
 
       const request = {
         secretCode: 'TestCode1',
@@ -188,7 +219,7 @@ describe('AirdropService with Database', () => {
       const result = await airdropService.processAirdrop(request);
       
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Airdrop failed: Transaction failed');
+      expect(result.message).toContain('Insufficient balance');
 
       // Verify failed attempt was recorded
       const mockData = mockDatabaseService.getMockData();

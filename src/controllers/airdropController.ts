@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { AirdropService } from '../services/airdropService';
-import { ServiceContainer } from '../services/serviceContainer';
 import { AirdropRequest } from '../types';
 import { SecurityErrorHandler } from '../utils/errorHandler';
 import { getVersionedResponse } from '../middleware/versioning';
 import { logger } from '../utils/logger';
+import { DIContainer } from '../container/DIContainer';
 
 /**
  * AirdropController handles HTTP requests for airdrop operations.
@@ -20,15 +20,16 @@ import { logger } from '../utils/logger';
  */
 export class AirdropController {
   private airdropService: AirdropService;
+  private container: DIContainer;
 
   /**
-   * Creates a new AirdropController instance.
+   * Creates a new AirdropController instance with dependency injection.
    * 
-   * Automatically initializes the airdrop service through dependency injection
-   * via the ServiceContainer singleton pattern.
+   * @param container - The dependency injection container containing all required services
    */
-  constructor() {
-    this.airdropService = ServiceContainer.getInstance().getAirdropService();
+  constructor(container: DIContainer) {
+    this.container = container;
+    this.airdropService = container.resolve<AirdropService>('airdropService');
   }
 
   /**
@@ -155,8 +156,7 @@ export class AirdropController {
 
   async healthCheck(req: Request, res: Response): Promise<void> {
     try {
-      const serviceContainer = ServiceContainer.getInstance();
-      const healthStatus = await serviceContainer.healthCheck();
+      const healthStatus = await this.container.healthCheck();
       const airdropHealth = await this.airdropService.getDatabaseHealth();
       
       const isHealthy = healthStatus.database.isHealthy && 

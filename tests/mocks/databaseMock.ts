@@ -69,6 +69,22 @@ export class MockDatabaseService {
       return { rows: this.mockData.secretCodes };
     }
 
+    if (text.includes('INSERT INTO secret_codes')) {
+      const newCode = {
+        id: `code-${Date.now()}`,
+        code: params?.[0],
+        description: params?.[1],
+        max_uses: params?.[2],
+        created_by: params?.[3],
+        is_active: true,
+        current_uses: 0,
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+      this.mockData.secretCodes.push(newCode);
+      return { rows: [newCode] };
+    }
+
     if (text.includes('INSERT INTO code_usage')) {
       const usage = {
         id: `usage-${Date.now()}`,

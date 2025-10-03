@@ -4,15 +4,69 @@
 
 import request from 'supertest';
 import { Application } from 'express';
+import { DIContainer, setContainer, resetContainer } from '../../src/container/DIContainer';
+import { createTestContainer, createTestContainerWithMocks } from './testContainer';
 
 export class TestHelpers {
   /**
-   * Create a mock Express app for testing
+   * Create a mock Express app for testing with dependency injection
    */
   static async createTestApp(): Promise<Application> {
+    // Set up test container before importing app
+    const testContainer = createTestContainer();
+    setContainer(testContainer);
+    
     // Dynamically import the app to avoid side effects during import
     const { default: app } = await import('../../src/app');
     return app;
+  }
+
+  /**
+   * Create a test app with custom mock services
+   */
+  static async createTestAppWithMocks(mocks: {
+    databaseService?: any;
+    web3Service?: any;
+    secretCodeService?: any;
+    airdropService?: any;
+  }): Promise<Application> {
+    // Set up test container with custom mocks
+    const testContainer = createTestContainerWithMocks(mocks);
+    setContainer(testContainer);
+    
+    // Dynamically import the app to avoid side effects during import
+    const { default: app } = await import('../../src/app');
+    return app;
+  }
+
+  /**
+   * Setup test container (call before each test)
+   */
+  static setupTestContainer(): DIContainer {
+    const testContainer = createTestContainer();
+    setContainer(testContainer);
+    return testContainer;
+  }
+
+  /**
+   * Setup test container with custom mocks
+   */
+  static setupTestContainerWithMocks(mocks: {
+    databaseService?: any;
+    web3Service?: any;
+    secretCodeService?: any;
+    airdropService?: any;
+  }): DIContainer {
+    const testContainer = createTestContainerWithMocks(mocks);
+    setContainer(testContainer);
+    return testContainer;
+  }
+
+  /**
+   * Cleanup test container (call after each test)
+   */
+  static cleanupTestContainer(): void {
+    resetContainer();
   }
 
   /**

@@ -67,4 +67,38 @@ router.get('/health', (req, res) => {
   return controller.healthCheck(req, res);
 });
 
+// GET /api/airdrop/debug - Debug endpoint for Web3 connection testing
+router.get('/debug', async (req, res) => {
+  try {
+    const container = getContainer();
+    const web3Service = container.resolve('web3Service') as any;
+    
+    const debugInfo: any = {
+      accountAddress: web3Service.getAccountAddress(),
+      isConnected: await web3Service.isConnected(),
+      timestamp: new Date().toISOString()
+    };
+    
+    // Try to get balances if connected
+    if (debugInfo.isConnected) {
+      try {
+        debugInfo.wxHOPRBalance = await web3Service.getBalance();
+        debugInfo.xDaiBalance = await web3Service.getXDaiBalance();
+      } catch (balanceError: any) {
+        debugInfo.balanceError = balanceError?.message || 'Unknown balance error';
+      }
+    }
+    
+    res.json({ success: true, debug: debugInfo });
+  } catch (error: any) {
+    res.json({ 
+      success: false, 
+      error: error?.message || 'Unknown error',
+      debug: {
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+});
+
 export default router;

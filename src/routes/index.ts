@@ -4,6 +4,16 @@ import legacyAirdropRoutes from './airdropRoutes';
 
 const router = Router();
 
+// DEBUG: Simple test route at root level
+router.get('/test', (req, res) => {
+  res.json({ message: 'Basic routing works!', path: req.path, originalUrl: req.originalUrl });
+});
+
+// DEBUG: Simple test route for v1 structure  
+router.post('/v1/test', (req, res) => {
+  res.json({ message: 'V1 direct routing works!', path: req.path, originalUrl: req.originalUrl });
+});
+
 // Version 1 API routes
 router.use('/v1', v1Routes);
 

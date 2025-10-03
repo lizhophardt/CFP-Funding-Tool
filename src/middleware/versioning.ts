@@ -18,13 +18,21 @@ export const apiVersionMiddleware = (req: Request, res: Response, next: NextFunc
   // Get the full path including /api prefix
   const fullPath = req.originalUrl.split('?')[0]; // Remove query params
   
+  // Debug logging
+  logger.info('API Version Middleware Debug', {
+    originalUrl: req.originalUrl,
+    fullPath: fullPath,
+    method: req.method
+  });
+  
   // Extract version from URL path - check for /api/v1/... pattern
   const versionMatch = fullPath.match(/\/api\/v(\d+)/);
   
   if (versionMatch) {
     req.apiVersion = `v${versionMatch[1]}`;
     req.isLegacyRequest = false;
-  } else if (fullPath.includes('/api/airdrop')) {
+    logger.info('Detected versioned endpoint', { version: req.apiVersion, path: fullPath });
+  } else if (fullPath.includes('/api/airdrop') && !fullPath.includes('/api/v1/airdrop')) {
     // Legacy endpoint detection - /api/airdrop/* (not /api/v1/airdrop/*)
     req.apiVersion = 'v1'; // Default to v1 for legacy
     req.isLegacyRequest = true;
@@ -39,6 +47,7 @@ export const apiVersionMiddleware = (req: Request, res: Response, next: NextFunc
   } else {
     req.apiVersion = 'v1'; // Default version
     req.isLegacyRequest = false;
+    logger.info('Default version assigned', { version: req.apiVersion, path: fullPath });
   }
 
   // Add version info to response headers
@@ -61,8 +70,8 @@ export const apiVersionMiddleware = (req: Request, res: Response, next: NextFunc
 /**
  * Middleware to validate API version support
  */
-export const validateApiVersion = (supportedVersions: string[] = ['v1']) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+export const validateApiVersion = (supportedVersions: string[] = ['v1']) =>
+  (req: Request, res: Response, next: NextFunction): void => {
     const requestedVersion = req.apiVersion || 'v1';
     
     if (!supportedVersions.includes(requestedVersion)) {
@@ -77,7 +86,6 @@ export const validateApiVersion = (supportedVersions: string[] = ['v1']) => {
     
     next();
   };
-};
 
 /**
  * Utility to get version-specific response format

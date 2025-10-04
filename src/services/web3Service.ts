@@ -133,7 +133,7 @@ export class Web3Service {
         this.tokenContract = getContract({
           address: config.wxHoprTokenAddress as `0x${string}`,
           abi: ERC20_ABI,
-          client: this.publicClient
+          client: { public: this.publicClient, wallet: this.walletClient }
         });
 
         logger.web3('info', 'Token contract created, validating...', {

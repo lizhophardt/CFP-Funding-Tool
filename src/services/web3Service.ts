@@ -385,8 +385,16 @@ export class Web3Service {
         gasPrice: adjustedGasPrice
       });
 
+      logger.web3('info', 'Waiting for wxHOPR transaction receipt', {
+        transactionHash: tokenHash,
+        recipient: validatedAddress
+      });
+
       const tokenReceipt = await this.publicClient.waitForTransactionReceipt({
-        hash: tokenHash
+        hash: tokenHash,
+        timeout: 120_000, // 2 minutes timeout for Gnosis Chain
+        retryCount: 3,
+        retryDelay: 2_000 // 2 second delay between retries
       });
       logger.web3('info', 'wxHOPR token transfer successful', {
         transactionHash: tokenReceipt.transactionHash,
@@ -402,8 +410,16 @@ export class Web3Service {
         gasPrice: adjustedGasPrice
       });
 
+      logger.web3('info', 'Waiting for xDai transaction receipt', {
+        transactionHash: xDaiHash,
+        recipient: validatedAddress
+      });
+
       const xDaiReceipt = await this.publicClient.waitForTransactionReceipt({
-        hash: xDaiHash
+        hash: xDaiHash,
+        timeout: 120_000, // 2 minutes timeout for Gnosis Chain
+        retryCount: 3,
+        retryDelay: 2_000 // 2 second delay between retries
       });
       logger.web3('info', 'xDai transfer successful', {
         transactionHash: xDaiReceipt.transactionHash,
@@ -425,8 +441,23 @@ export class Web3Service {
         throw error;
       }
       
-      // Otherwise, wrap it in a secure error with more detail
+      // Handle specific transaction receipt errors
       const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('could not be found') || errorMessage.includes('Transaction may not be processed')) {
+        logger.web3('warn', 'Transaction receipt timeout - transaction may still be processing', {
+          error: errorMessage,
+          note: 'Transaction was likely sent but confirmation timed out'
+        });
+        
+        SecurityErrorHandler.throwSecureError(
+          ErrorType.TRANSACTION_FAILED,
+          `Transaction confirmation timeout: ${errorMessage}`,
+          'Transaction was sent but confirmation timed out. Please check the blockchain explorer.'
+        );
+      }
+      
+      // Otherwise, wrap it in a secure error with more detail
       SecurityErrorHandler.throwSecureError(
         ErrorType.TRANSACTION_FAILED,
         `Failed to send dual transaction: ${errorMessage}`,

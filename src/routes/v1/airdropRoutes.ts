@@ -62,6 +62,49 @@ router.get('/debug', async (req, res) => {
       }
     };
     
+    // Test RPC connectivity directly
+    debugInfo.rpcTests = {};
+    const rpcEndpoints = [
+      'https://rpc.gnosischain.com',
+      'https://gnosis-mainnet.public.blastapi.io',
+      'https://rpc.gnosis.gateway.fm',
+      'https://gnosis.drpc.org'
+    ];
+    
+    for (const rpc of rpcEndpoints) {
+      try {
+        const response = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_blockNumber',
+            params: [],
+            id: 1
+          }),
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        });
+        
+        if (response.ok) {
+          const data = await response.json() as any;
+          debugInfo.rpcTests[rpc] = {
+            status: 'success',
+            blockNumber: data.result
+          };
+        } else {
+          debugInfo.rpcTests[rpc] = {
+            status: 'failed',
+            error: `HTTP ${response.status}`
+          };
+        }
+      } catch (error: any) {
+        debugInfo.rpcTests[rpc] = {
+          status: 'failed',
+          error: error?.message || 'Unknown error'
+        };
+      }
+    }
+
     try {
       const web3Service = container.resolve('web3Service') as any;
       debugInfo.web3Service = {

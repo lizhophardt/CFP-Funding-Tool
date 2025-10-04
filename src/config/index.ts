@@ -40,9 +40,9 @@ function createConfig(): Config {
   const fallbackRpcUrls = process.env.GNOSIS_FALLBACK_RPC_URLS 
     ? process.env.GNOSIS_FALLBACK_RPC_URLS.split(',').map(url => url.trim())
     : [
-        'https://rpc.ankr.com/gnosis',
         'https://gnosis-mainnet.public.blastapi.io',
-        'https://gnosis.blockpi.network/v1/rpc/public'
+        'https://rpc.gnosis.gateway.fm',
+        'https://gnosis.drpc.org'
       ];
   
   // Combine primary and fallback URLs

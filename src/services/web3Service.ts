@@ -477,17 +477,28 @@ export class Web3Service {
    */
   isInitialized(): boolean {
     try {
-      return !!(
+      const result = !!(
         this.account &&
         this.publicClient &&
         this.walletClient &&
         this.tokenContract &&
-        this.tokenContract.read &&
-        typeof this.tokenContract.read.balanceOf === 'function'
+        this.tokenContract.publicClient
       );
+      
+      logger.web3('info', 'Web3Service initialization check', {
+        hasAccount: !!this.account,
+        hasPublicClient: !!this.publicClient,
+        hasWalletClient: !!this.walletClient,
+        hasTokenContract: !!this.tokenContract,
+        hasTokenPublicClient: !!(this.tokenContract && this.tokenContract.publicClient),
+        overallResult: result
+      });
+      
+      return result;
     } catch (error) {
       logger.web3('error', 'Error checking Web3Service initialization', {
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined
       });
       return false;
     }

@@ -123,10 +123,22 @@ export class Web3Service {
       }
 
       try {
+        logger.web3('info', 'Creating token contract', {
+          tokenAddress: config.wxHoprTokenAddress,
+          publicClientType: typeof this.publicClient,
+          abiLength: ERC20_ABI.length,
+          chainId: 100
+        });
+
         this.tokenContract = getContract({
           address: config.wxHoprTokenAddress as `0x${string}`,
           abi: ERC20_ABI,
           client: this.publicClient
+        });
+
+        logger.web3('info', 'Token contract created, validating...', {
+          contractExists: !!this.tokenContract,
+          contractType: typeof this.tokenContract
         });
 
         // Validate that the contract was created successfully
@@ -148,8 +160,13 @@ export class Web3Service {
       } catch (contractError) {
         logger.web3('error', 'Failed to initialize token contract', {
           error: contractError instanceof Error ? contractError.message : contractError,
+          stack: contractError instanceof Error ? contractError.stack : undefined,
           tokenAddress: config.wxHoprTokenAddress,
-          publicClientExists: !!this.publicClient
+          publicClientExists: !!this.publicClient,
+          accountExists: !!this.account,
+          accountAddress: this.account?.address || 'undefined',
+          viemVersion: 'unknown', // We can't easily get this
+          chainId: 100 // Gnosis Chain
         });
         // Set tokenContract to null to make the failure explicit
         this.tokenContract = null;

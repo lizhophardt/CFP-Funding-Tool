@@ -97,7 +97,18 @@ export class DIContainer {
 
       // Register web3 service
       this.register('web3Service', () => {
-        return new Web3Service();
+        try {
+          logger.config('info', 'Creating Web3Service instance...');
+          const web3Service = new Web3Service();
+          logger.config('info', 'Web3Service created successfully');
+          return web3Service;
+        } catch (error) {
+          logger.config('error', 'Failed to create Web3Service', {
+            error: error instanceof Error ? error.message : error,
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          throw error;
+        }
       });
 
       // Register secret code service (depends on database service)

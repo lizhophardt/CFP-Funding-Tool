@@ -106,7 +106,18 @@ export class AirdropService {
       codeId = codeValidation.codeId;
 
       // Check if Web3 service is connected
-      const isConnected = await this.web3Service.isConnected();
+      let isConnected = false;
+      try {
+        isConnected = await this.web3Service.isConnected();
+      } catch (web3Error) {
+        logger.airdrop('error', 'Web3Service connection check failed', {
+          error: web3Error instanceof Error ? web3Error.message : web3Error,
+          stack: web3Error instanceof Error ? web3Error.stack : undefined
+        });
+        // Treat as not connected and record the failure
+        isConnected = false;
+      }
+      
       if (!isConnected) {
         // Record failed attempt
         if (codeId) {
@@ -128,11 +139,39 @@ export class AirdropService {
       }
 
       // Send the dual airdrop transaction (wxHOPR + xDai)
-      const transactionResult = await this.web3Service.sendDualTransaction(
-        request.recipientAddress,
-        config.airdropAmountWei,
-        config.xDaiAirdropAmountWei
-      );
+      let transactionResult;
+      try {
+        transactionResult = await this.web3Service.sendDualTransaction(
+          request.recipientAddress,
+          config.airdropAmountWei,
+          config.xDaiAirdropAmountWei
+        );
+      } catch (transactionError) {
+        logger.airdrop('error', 'Transaction failed', {
+          error: transactionError instanceof Error ? transactionError.message : transactionError,
+          stack: transactionError instanceof Error ? transactionError.stack : undefined,
+          recipient: request.recipientAddress
+        });
+        
+        // Record failed attempt
+        if (codeId) {
+          await this.secretCodeService.recordCodeUsage(
+            codeId,
+            request.recipientAddress,
+            {},
+            {
+              ...metadata,
+              status: 'failed',
+              errorMessage: transactionError instanceof Error ? transactionError.message : String(transactionError)
+            }
+          );
+        }
+        
+        return {
+          success: false,
+          message: `Transaction failed: ${transactionError instanceof Error ? transactionError.message : String(transactionError)}`
+        };
+      }
 
       // Record successful usage in database
       if (codeId) {
@@ -203,10 +242,38 @@ export class AirdropService {
     databaseHealth: boolean;
   }> {
     try {
-      const isConnected = await this.web3Service.isConnected();
-      const accountAddress = this.web3Service.getAccountAddress();
-      const wxHoprBalance = isConnected ? await this.web3Service.getBalance() : '0';
-      const xDaiBalance = isConnected ? await this.web3Service.getXDaiBalance() : '0';
+      let isConnected = false;
+      let accountAddress = '';
+      let wxHoprBalance = '0';
+      let xDaiBalance = '0';
+      
+      try {
+        isConnected = await this.web3Service.isConnected();
+        accountAddress = this.web3Service.getAccountAddress();
+        
+        if (isConnected) {
+          try {
+            wxHoprBalance = await this.web3Service.getBalance();
+          } catch (balanceError) {
+            logger.config('warn', 'Failed to get wxHOPR balance', {
+              error: balanceError instanceof Error ? balanceError.message : balanceError
+            });
+          }
+          
+          try {
+            xDaiBalance = await this.web3Service.getXDaiBalance();
+          } catch (xDaiError) {
+            logger.config('warn', 'Failed to get xDai balance', {
+              error: xDaiError instanceof Error ? xDaiError.message : xDaiError
+            });
+          }
+        }
+      } catch (web3Error) {
+        logger.config('error', 'Web3Service error in status check', {
+          error: web3Error instanceof Error ? web3Error.message : web3Error,
+          stack: web3Error instanceof Error ? web3Error.stack : undefined
+        });
+      }
       
       // Get database statistics
       let processedCount = 0;

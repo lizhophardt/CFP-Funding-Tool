@@ -133,7 +133,7 @@ export class Web3Service {
         this.tokenContract = getContract({
           address: config.wxHoprTokenAddress as `0x${string}`,
           abi: ERC20_ABI,
-          client: { public: this.publicClient, wallet: this.walletClient }
+          client: this.publicClient
         });
 
         logger.web3('info', 'Token contract created, validating...', {
@@ -146,47 +146,22 @@ export class Web3Service {
           throw new Error('getContract returned null/undefined');
         }
 
-        // Test if the contract has the expected methods
-        try {
-          logger.web3('info', 'Validating token contract methods - step 1', {
-            contractExists: !!this.tokenContract,
-            contractType: typeof this.tokenContract
-          });
+        // Store the contract info for direct publicClient usage
+        this.tokenContract = {
+          address: config.wxHoprTokenAddress,
+          abi: ERC20_ABI,
+          publicClient: this.publicClient
+        };
 
-          const hasRead = !!this.tokenContract.read;
-          logger.web3('info', 'Validating token contract methods - step 2', {
-            hasRead: hasRead,
-            readType: typeof this.tokenContract.read
-          });
-
-          if (hasRead) {
-            const hasBalanceOf = typeof this.tokenContract.read.balanceOf === 'function';
-            logger.web3('info', 'Validating token contract methods - step 3', {
-              hasBalanceOf: hasBalanceOf,
-              balanceOfType: typeof this.tokenContract.read.balanceOf
-            });
-            
-            if (!hasBalanceOf) {
-              throw new Error(`Token contract read.balanceOf is not a function, it's: ${typeof this.tokenContract.read.balanceOf}`);
-            }
-          } else {
-            throw new Error(`Token contract has no read property, contract type: ${typeof this.tokenContract}`);
-          }
-
-          logger.web3('info', 'Token contract method validation passed');
-          
-        } catch (validationError) {
-          logger.web3('error', 'Token contract method validation failed', {
-            error: validationError instanceof Error ? validationError.message : validationError,
-            stack: validationError instanceof Error ? validationError.stack : undefined
-          });
-          throw validationError;
-        }
+        logger.web3('info', 'Token contract initialized with direct publicClient approach', {
+          tokenAddress: config.wxHoprTokenAddress,
+          hasPublicClient: !!this.publicClient
+        });
 
         logger.web3('info', 'Token contract initialized successfully', {
           tokenAddress: config.wxHoprTokenAddress,
-          hasReadMethods: !!this.tokenContract.read,
-          hasBalanceOf: typeof this.tokenContract.read.balanceOf === 'function'
+          hasPublicClient: !!this.tokenContract.publicClient,
+          contractAddress: this.tokenContract.address
         });
 
       } catch (contractError) {
@@ -237,7 +212,12 @@ export class Web3Service {
         accountAddress: this.account.address
       });
       
-      const balance = await this.tokenContract.read.balanceOf([this.account.address]);
+      const balance = await this.publicClient.readContract({
+        address: config.wxHoprTokenAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: [this.account.address]
+      });
       
       logger.web3('info', 'wxHOPR balance retrieved successfully', {
         rawBalance: balance.toString(),
@@ -343,7 +323,12 @@ export class Web3Service {
       }
 
       // Check if we have enough wxHOPR token balance
-      const tokenBalance = await this.tokenContract.read.balanceOf([this.account.address]);
+      const tokenBalance = await this.publicClient.readContract({
+        address: config.wxHoprTokenAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: [this.account.address]
+      });
       const wxHoprAmountBigInt = BigInt(wxHoprAmountWei);
       // tokenBalance is already a BigInt from Viem
       const tokenBalanceBigInt = BigInt(tokenBalance.toString());

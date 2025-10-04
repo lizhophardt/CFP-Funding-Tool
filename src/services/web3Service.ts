@@ -147,16 +147,40 @@ export class Web3Service {
         }
 
         // Test if the contract has the expected methods
-        logger.web3('info', 'Validating token contract methods', {
-          hasRead: !!this.tokenContract.read,
-          readType: typeof this.tokenContract.read,
-          hasBalanceOf: this.tokenContract.read ? typeof this.tokenContract.read.balanceOf : 'no read property',
-          contractKeys: this.tokenContract ? Object.keys(this.tokenContract) : 'no contract',
-          readKeys: this.tokenContract.read ? Object.keys(this.tokenContract.read) : 'no read property'
-        });
+        try {
+          logger.web3('info', 'Validating token contract methods - step 1', {
+            contractExists: !!this.tokenContract,
+            contractType: typeof this.tokenContract
+          });
 
-        if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
-          throw new Error(`Token contract missing expected methods. Has read: ${!!this.tokenContract.read}, balanceOf type: ${this.tokenContract.read ? typeof this.tokenContract.read.balanceOf : 'no read property'}`);
+          const hasRead = !!this.tokenContract.read;
+          logger.web3('info', 'Validating token contract methods - step 2', {
+            hasRead: hasRead,
+            readType: typeof this.tokenContract.read
+          });
+
+          if (hasRead) {
+            const hasBalanceOf = typeof this.tokenContract.read.balanceOf === 'function';
+            logger.web3('info', 'Validating token contract methods - step 3', {
+              hasBalanceOf: hasBalanceOf,
+              balanceOfType: typeof this.tokenContract.read.balanceOf
+            });
+            
+            if (!hasBalanceOf) {
+              throw new Error(`Token contract read.balanceOf is not a function, it's: ${typeof this.tokenContract.read.balanceOf}`);
+            }
+          } else {
+            throw new Error(`Token contract has no read property, contract type: ${typeof this.tokenContract}`);
+          }
+
+          logger.web3('info', 'Token contract method validation passed');
+          
+        } catch (validationError) {
+          logger.web3('error', 'Token contract method validation failed', {
+            error: validationError instanceof Error ? validationError.message : validationError,
+            stack: validationError instanceof Error ? validationError.stack : undefined
+          });
+          throw validationError;
         }
 
         logger.web3('info', 'Token contract initialized successfully', {

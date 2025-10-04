@@ -53,8 +53,12 @@ router.get('/debug', async (req, res) => {
       config: {
         wxHoprTokenAddress: process.env.WXHOPR_TOKEN_ADDRESS || 'NOT_SET',
         hasPrivateKey: !!process.env.PRIVATE_KEY || !!process.env.ENCRYPTED_PRIVATE_KEY,
+        privateKeyLength: process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.length : 0,
+        encryptedKeyExists: !!process.env.ENCRYPTED_PRIVATE_KEY,
+        encryptionPasswordExists: !!process.env.ENCRYPTION_PASSWORD,
         nodeEnv: process.env.NODE_ENV,
-        gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'NOT_SET'
+        gnosisRpcUrl: process.env.GNOSIS_RPC_URL || 'NOT_SET',
+        fallbackRpcUrls: process.env.GNOSIS_FALLBACK_RPC_URLS || 'NOT_SET'
       }
     };
     

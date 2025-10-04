@@ -385,19 +385,8 @@ export class Web3Service {
         gasPrice: adjustedGasPrice
       });
 
-      logger.web3('info', 'Waiting for wxHOPR transaction receipt', {
+      logger.web3('info', 'wxHOPR transaction sent', {
         transactionHash: tokenHash,
-        recipient: validatedAddress
-      });
-
-      const tokenReceipt = await this.publicClient.waitForTransactionReceipt({
-        hash: tokenHash,
-        timeout: 120_000, // 2 minutes timeout for Gnosis Chain
-        retryCount: 3,
-        retryDelay: 2_000 // 2 second delay between retries
-      });
-      logger.web3('info', 'wxHOPR token transfer successful', {
-        transactionHash: tokenReceipt.transactionHash,
         recipient: validatedAddress,
         amount: wxHoprAmountWei
       });
@@ -410,26 +399,76 @@ export class Web3Service {
         gasPrice: adjustedGasPrice
       });
 
-      logger.web3('info', 'Waiting for xDai transaction receipt', {
+      logger.web3('info', 'xDai transaction sent', {
         transactionHash: xDaiHash,
-        recipient: validatedAddress
-      });
-
-      const xDaiReceipt = await this.publicClient.waitForTransactionReceipt({
-        hash: xDaiHash,
-        timeout: 120_000, // 2 minutes timeout for Gnosis Chain
-        retryCount: 3,
-        retryDelay: 2_000 // 2 second delay between retries
-      });
-      logger.web3('info', 'xDai transfer successful', {
-        transactionHash: xDaiReceipt.transactionHash,
         recipient: validatedAddress,
         amount: xDaiAmountWei
       });
 
+      // Try to wait for receipts, but don't fail if they timeout
+      let tokenReceiptSuccess = false;
+      let xDaiReceiptSuccess = false;
+
+      try {
+        logger.web3('info', 'Waiting for wxHOPR transaction receipt', {
+          transactionHash: tokenHash
+        });
+        
+        const tokenReceipt = await this.publicClient.waitForTransactionReceipt({
+          hash: tokenHash,
+          timeout: 60_000, // 1 minute timeout - reduced for better UX
+          retryCount: 2,
+          retryDelay: 2_000
+        });
+        
+        logger.web3('info', 'wxHOPR token transfer confirmed', {
+          transactionHash: tokenReceipt.transactionHash,
+          blockNumber: tokenReceipt.blockNumber
+        });
+        tokenReceiptSuccess = true;
+      } catch (receiptError) {
+        logger.web3('warn', 'wxHOPR transaction receipt timeout - transaction likely still processing', {
+          transactionHash: tokenHash,
+          error: receiptError instanceof Error ? receiptError.message : receiptError
+        });
+      }
+
+      try {
+        logger.web3('info', 'Waiting for xDai transaction receipt', {
+          transactionHash: xDaiHash
+        });
+        
+        const xDaiReceipt = await this.publicClient.waitForTransactionReceipt({
+          hash: xDaiHash,
+          timeout: 60_000, // 1 minute timeout - reduced for better UX
+          retryCount: 2,
+          retryDelay: 2_000
+        });
+        
+        logger.web3('info', 'xDai transfer confirmed', {
+          transactionHash: xDaiReceipt.transactionHash,
+          blockNumber: xDaiReceipt.blockNumber
+        });
+        xDaiReceiptSuccess = true;
+      } catch (receiptError) {
+        logger.web3('warn', 'xDai transaction receipt timeout - transaction likely still processing', {
+          transactionHash: xDaiHash,
+          error: receiptError instanceof Error ? receiptError.message : receiptError
+        });
+      }
+
+      // Always return the transaction hashes, even if receipt confirmation timed out
+      logger.web3('info', 'Dual transaction completed', {
+        tokenHash,
+        xDaiHash,
+        tokenReceiptConfirmed: tokenReceiptSuccess,
+        xDaiReceiptConfirmed: xDaiReceiptSuccess,
+        note: 'Transactions sent successfully - confirmations may still be pending'
+      });
+
       return {
-        wxHoprTxHash: tokenReceipt.transactionHash,
-        xDaiTxHash: xDaiReceipt.transactionHash
+        wxHoprTxHash: tokenHash,
+        xDaiTxHash: xDaiHash
       };
     } catch (error) {
       // If it's already a secure error, re-throw it
@@ -441,21 +480,12 @@ export class Web3Service {
         throw error;
       }
       
-      // Handle specific transaction receipt errors
+      // Log the error for debugging
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('could not be found') || errorMessage.includes('Transaction may not be processed')) {
-        logger.web3('warn', 'Transaction receipt timeout - transaction may still be processing', {
-          error: errorMessage,
-          note: 'Transaction was likely sent but confirmation timed out'
-        });
-        
-        SecurityErrorHandler.throwSecureError(
-          ErrorType.TRANSACTION_FAILED,
-          `Transaction confirmation timeout: ${errorMessage}`,
-          'Transaction was sent but confirmation timed out. Please check the blockchain explorer.'
-        );
-      }
+      logger.web3('error', 'Dual transaction failed', {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
       // Otherwise, wrap it in a secure error with more detail
       SecurityErrorHandler.throwSecureError(

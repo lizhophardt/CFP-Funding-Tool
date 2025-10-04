@@ -332,11 +332,12 @@ export class Web3Service {
         throw error;
       }
       
-      // Otherwise, wrap it in a secure error
+      // Otherwise, wrap it in a secure error with more detail
+      const errorMessage = error instanceof Error ? error.message : String(error);
       SecurityErrorHandler.throwSecureError(
         ErrorType.TRANSACTION_FAILED,
-        `Failed to send dual transaction: ${error}`,
-        'Transaction processing failed'
+        `Failed to send dual transaction: ${errorMessage}`,
+        `Transaction failed: ${errorMessage}`
       );
     }
   }

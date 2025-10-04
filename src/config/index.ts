@@ -21,12 +21,29 @@ function createConfig(): Config {
   
   if (encryptedKey && encryptionPassword) {
     try {
+      logger.config('info', 'Attempting to decrypt private key', {
+        encryptedKeyLength: encryptedKey.length,
+        passwordLength: encryptionPassword.length,
+        encryptedKeyFormat: encryptedKey.includes(':') ? 'valid_format' : 'invalid_format'
+      });
+      
       const KeyManager = require('../utils/keyManager').KeyManager;
-      logger.config('info', 'Using encrypted private key');
       privateKey = KeyManager.decryptPrivateKey(encryptedKey, encryptionPassword);
+      
+      if (!privateKey || privateKey.length === 0) {
+        throw new Error('Decryption succeeded but resulted in empty private key');
+      }
+      
+      logger.config('info', 'Private key decrypted successfully', {
+        decryptedKeyLength: privateKey.length,
+        startsWithHex: privateKey.startsWith('0x') ? 'yes' : 'no'
+      });
     } catch (error) {
       logger.config('error', 'Failed to decrypt private key', {
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        encryptedKeyExists: !!encryptedKey,
+        passwordExists: !!encryptionPassword
       });
       throw new Error(`Failed to decrypt private key: ${error}`);
     }

@@ -147,8 +147,16 @@ export class Web3Service {
         }
 
         // Test if the contract has the expected methods
+        logger.web3('info', 'Validating token contract methods', {
+          hasRead: !!this.tokenContract.read,
+          readType: typeof this.tokenContract.read,
+          hasBalanceOf: this.tokenContract.read ? typeof this.tokenContract.read.balanceOf : 'no read property',
+          contractKeys: this.tokenContract ? Object.keys(this.tokenContract) : 'no contract',
+          readKeys: this.tokenContract.read ? Object.keys(this.tokenContract.read) : 'no read property'
+        });
+
         if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
-          throw new Error('Token contract missing expected methods');
+          throw new Error(`Token contract missing expected methods. Has read: ${!!this.tokenContract.read}, balanceOf type: ${this.tokenContract.read ? typeof this.tokenContract.read.balanceOf : 'no read property'}`);
         }
 
         logger.web3('info', 'Token contract initialized successfully', {

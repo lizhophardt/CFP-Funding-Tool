@@ -109,11 +109,22 @@ export class DIContainer {
           logger.config('info', 'Web3Service created and initialized successfully');
           return web3Service;
         } catch (error) {
-          logger.config('error', 'Failed to create Web3Service', {
+          logger.config('error', 'Failed to create Web3Service, creating fallback stub', {
             error: error instanceof Error ? error.message : error,
             stack: error instanceof Error ? error.stack : undefined
           });
-          throw error;
+          
+          // Create a stub Web3Service that provides clear error messages
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return {
+            isConnected: (): Promise<boolean> => Promise.resolve(false),
+            getAccountAddress: (): string => '',
+            getBalance: (): Promise<string> => Promise.reject(new Error(`Web3Service initialization failed: ${errorMessage}`)),
+            getXDaiBalance: (): Promise<string> => Promise.reject(new Error(`Web3Service initialization failed: ${errorMessage}`)),
+            sendDualTransaction: (): Promise<{wxHoprTxHash: string, xDaiTxHash: string}> => Promise.reject(new Error(`Web3Service initialization failed: ${errorMessage}`)),
+            sendTransaction: (): Promise<string> => Promise.reject(new Error(`Web3Service initialization failed: ${errorMessage}`)),
+            isInitialized: (): boolean => false
+          };
         }
       });
 

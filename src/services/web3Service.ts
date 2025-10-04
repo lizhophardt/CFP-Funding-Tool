@@ -122,15 +122,38 @@ export class Web3Service {
         throw new Error(`Invalid wxHOPR token address: ${config.wxHoprTokenAddress}`);
       }
 
-      this.tokenContract = getContract({
-        address: config.wxHoprTokenAddress as `0x${string}`,
-        abi: ERC20_ABI,
-        client: this.publicClient
-      });
+      try {
+        this.tokenContract = getContract({
+          address: config.wxHoprTokenAddress as `0x${string}`,
+          abi: ERC20_ABI,
+          client: this.publicClient
+        });
 
-      // Validate that the contract was created successfully
-      if (!this.tokenContract) {
-        throw new Error('Failed to create token contract instance');
+        // Validate that the contract was created successfully
+        if (!this.tokenContract) {
+          throw new Error('getContract returned null/undefined');
+        }
+
+        // Test if the contract has the expected methods
+        if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
+          throw new Error('Token contract missing expected methods');
+        }
+
+        logger.web3('info', 'Token contract initialized successfully', {
+          tokenAddress: config.wxHoprTokenAddress,
+          hasReadMethods: !!this.tokenContract.read,
+          hasBalanceOf: typeof this.tokenContract.read.balanceOf === 'function'
+        });
+
+      } catch (contractError) {
+        logger.web3('error', 'Failed to initialize token contract', {
+          error: contractError instanceof Error ? contractError.message : contractError,
+          tokenAddress: config.wxHoprTokenAddress,
+          publicClientExists: !!this.publicClient
+        });
+        // Set tokenContract to null to make the failure explicit
+        this.tokenContract = null;
+        throw new Error(`Token contract initialization failed: ${contractError instanceof Error ? contractError.message : contractError}`);
       }
 
       logger.web3('info', 'Web3Service initialized successfully', {
@@ -153,7 +176,11 @@ export class Web3Service {
     try {
       // Defensive check for tokenContract
       if (!this.tokenContract) {
-        throw new Error('Token contract not initialized. Web3Service may have failed to initialize properly.');
+        throw new Error('Token contract not initialized. Web3Service constructor failed to create the contract instance.');
+      }
+      
+      if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
+        throw new Error('Token contract is missing required methods. The contract may not be properly initialized.');
       }
 
       logger.web3('info', 'Attempting to get wxHOPR balance', {
@@ -259,7 +286,11 @@ export class Web3Service {
 
       // Defensive check for tokenContract
       if (!this.tokenContract) {
-        throw new Error('Token contract not initialized. Web3Service may have failed to initialize properly.');
+        throw new Error('Token contract not initialized. Web3Service constructor failed to create the contract instance.');
+      }
+      
+      if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
+        throw new Error('Token contract is missing required methods. The contract may not be properly initialized.');
       }
 
       // Check if we have enough wxHOPR token balance

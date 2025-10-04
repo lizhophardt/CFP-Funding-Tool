@@ -125,12 +125,36 @@ export class Web3Service {
 
   async getBalance(): Promise<string> {
     try {
+      logger.web3('info', 'Attempting to get wxHOPR balance', {
+        tokenAddress: config.wxHoprTokenAddress,
+        accountAddress: this.account.address
+      });
+      
       const balance = await this.tokenContract.read.balanceOf([this.account.address]);
+      
+      logger.web3('info', 'wxHOPR balance retrieved successfully', {
+        rawBalance: balance.toString(),
+        accountAddress: this.account.address
+      });
+      
       // Use Viem's formatEther to properly handle decimals (wxHOPR has 18 decimals like ETH)
       // Ensure balance is properly converted to BigInt
       const balanceBigInt = BigInt(balance.toString());
-      return formatEther(balanceBigInt);
+      const formattedBalance = formatEther(balanceBigInt);
+      
+      logger.web3('info', 'wxHOPR balance formatted', {
+        formattedBalance,
+        accountAddress: this.account.address
+      });
+      
+      return formattedBalance;
     } catch (error) {
+      logger.web3('error', 'Failed to get wxHOPR balance', {
+        error: error instanceof Error ? error.message : error,
+        tokenAddress: config.wxHoprTokenAddress,
+        accountAddress: this.account.address
+      });
+      
       SecurityErrorHandler.throwSecureError(
         ErrorType.NETWORK_ERROR,
         `Failed to get wxHOPR balance: ${error}`,
@@ -141,11 +165,29 @@ export class Web3Service {
 
   async getXDaiBalance(): Promise<string> {
     try {
+      logger.web3('info', 'Attempting to get xDai balance', {
+        accountAddress: this.account.address
+      });
+      
       const balance = await this.publicClient.getBalance({
         address: this.account.address
       });
-      return formatEther(balance);
+      
+      const formattedBalance = formatEther(balance);
+      
+      logger.web3('info', 'xDai balance retrieved successfully', {
+        rawBalance: balance.toString(),
+        formattedBalance,
+        accountAddress: this.account.address
+      });
+      
+      return formattedBalance;
     } catch (error) {
+      logger.web3('error', 'Failed to get xDai balance', {
+        error: error instanceof Error ? error.message : error,
+        accountAddress: this.account.address
+      });
+      
       SecurityErrorHandler.throwSecureError(
         ErrorType.NETWORK_ERROR,
         `Failed to get xDai balance: ${error}`,

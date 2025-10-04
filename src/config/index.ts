@@ -101,9 +101,9 @@ if (encryptedKey) {
 } else if (plainKey) {
   logger.config('warn', 'Security Level: LOW (Plain Text Private Key)');
   if (process.env.NODE_ENV === 'production') {
-    logger.config('warn', 'PRODUCTION WARNING: Plain text private key detected in production!');
-    logger.config('warn', 'This is temporarily allowed for debugging purposes only.');
-    // Temporarily disabled: process.exit(1);
+    logger.config('error', 'PRODUCTION ERROR: Plain text private key detected in production!');
+    logger.config('error', 'For security reasons, production must use encrypted private keys.');
+    process.exit(1);
   }
 } else {
   logger.config('error', 'No private key configuration found');
@@ -114,9 +114,9 @@ logger.config('info', `Security Level: ${securityConfig.getSecurityLevel()}`);
 logger.config('info', `Key Strategy: ${securityConfig.getStrategy()}`);
 
 if (!securityConfig.isProductionReady() && process.env.NODE_ENV === 'production') {
-  logger.config('warn', 'PRODUCTION WARNING: Insecure key management detected in production environment!');
-  logger.config('warn', 'This is temporarily allowed for debugging purposes only.');
-  // Temporarily disabled: process.exit(1);
+  logger.config('error', 'PRODUCTION ERROR: Insecure key management detected in production environment!');
+  logger.config('error', 'Production deployments must use secure key management practices.');
+  process.exit(1);
 }
 
 // Show security recommendations

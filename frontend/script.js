@@ -333,7 +333,7 @@ const handlers = {
             // Make API request
             const result = await api.claimAirdrop(recipientAddress, secretCode);
 
-            if (result.success && result.data.success) {
+            if (result.success) {
                 // Success case
                 let details = '';
                 
@@ -386,7 +386,7 @@ const handlers = {
                 
             } else {
                 // API returned error
-                const errorMessage = result.data?.message || result.error || 'Unknown error occurred';
+                const errorMessage = result.error || result.data?.message || 'Unknown error occurred';
                 ui.showResult(
                     false, 
                     '❌ Claim Failed', 

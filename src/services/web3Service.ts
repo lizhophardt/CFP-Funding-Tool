@@ -123,40 +123,12 @@ export class Web3Service {
       }
 
       try {
-        logger.web3('info', 'Creating token contract', {
-          tokenAddress: config.wxHoprTokenAddress,
-          publicClientType: typeof this.publicClient,
-          abiLength: ERC20_ABI.length,
-          chainId: 100
-        });
-
-        this.tokenContract = getContract({
-          address: config.wxHoprTokenAddress as `0x${string}`,
-          abi: ERC20_ABI,
-          client: this.publicClient
-        });
-
-        logger.web3('info', 'Token contract created, validating...', {
-          contractExists: !!this.tokenContract,
-          contractType: typeof this.tokenContract
-        });
-
-        // Validate that the contract was created successfully
-        if (!this.tokenContract) {
-          throw new Error('getContract returned null/undefined');
-        }
-
         // Store the contract info for direct publicClient usage
         this.tokenContract = {
           address: config.wxHoprTokenAddress,
           abi: ERC20_ABI,
           publicClient: this.publicClient
         };
-
-        logger.web3('info', 'Token contract initialized with direct publicClient approach', {
-          tokenAddress: config.wxHoprTokenAddress,
-          hasPublicClient: !!this.publicClient
-        });
 
         logger.web3('info', 'Token contract initialized successfully', {
           tokenAddress: config.wxHoprTokenAddress,
@@ -457,13 +429,11 @@ export class Web3Service {
         });
       }
 
-      // Always return the transaction hashes, even if receipt confirmation timed out
+      // Log transaction completion
       logger.web3('info', 'Dual transaction completed', {
         tokenHash,
         xDaiHash,
-        tokenReceiptConfirmed: tokenReceiptSuccess,
-        xDaiReceiptConfirmed: xDaiReceiptSuccess,
-        note: 'Transactions sent successfully - confirmations may still be pending'
+        confirmationsReceived: tokenReceiptSuccess && xDaiReceiptSuccess
       });
 
       return {
@@ -530,28 +500,16 @@ export class Web3Service {
    */
   isInitialized(): boolean {
     try {
-      const result = !!(
+      return !!(
         this.account &&
         this.publicClient &&
         this.walletClient &&
         this.tokenContract &&
         this.tokenContract.publicClient
       );
-      
-      logger.web3('info', 'Web3Service initialization check', {
-        hasAccount: !!this.account,
-        hasPublicClient: !!this.publicClient,
-        hasWalletClient: !!this.walletClient,
-        hasTokenContract: !!this.tokenContract,
-        hasTokenPublicClient: !!(this.tokenContract && this.tokenContract.publicClient),
-        overallResult: result
-      });
-      
-      return result;
     } catch (error) {
       logger.web3('error', 'Error checking Web3Service initialization', {
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined
+        error: error instanceof Error ? error.message : error
       });
       return false;
     }

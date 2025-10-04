@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Response Handling</title>
+</head>
+<body>
+    <h1>API Response Handling Test</h1>
+    <button id="test-success">Test Success Response</button>
+    <button id="test-error">Test Error Response</button>
+    <div id="results"></div>
+
+    <script>
+        // Copy the fixed API code from frontend/script.js
+        const api = {
+            async request(endpoint, options = {}) {
+                try {
+                    const url = `http://localhost:3000/api/airdrop${endpoint}`;
+                    const response = await fetch(url, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        ...options
+                    });
+
+                    // Always try to parse JSON response, even for 4xx errors
+                    const data = await response.json();
+                    
+                    // Check if the API response has its own success field, otherwise use HTTP status
+                    const isSuccess = data.hasOwnProperty('success') ? data.success : response.ok;
+                    
+                    if (isSuccess) {
+                        return { success: true, data };
+                    } else {
+                        // API returned an error in JSON format
+                        return { 
+                            success: false, 
+                            error: data.error || data.message || `HTTP ${response.status}: ${response.statusText}` 
+                        };
+                    }
+                    
+                } catch (error) {
+                    console.error('API Request failed:', error);
+                    return { 
+                        success: false, 
+                        error: error.message || 'Network request failed' 
+                    };
+                }
+            }
+        };
+
+        // Test success response
+        document.getElementById('test-success').addEventListener('click', async () => {
+            console.log('Testing success response...');
+            const result = await api.request('/health');
+            document.getElementById('results').innerHTML += 
+                `<p><strong>Health Check:</strong> ${JSON.stringify(result)}</p>`;
+            console.log('Health check result:', result);
+        });
+
+        // Test error response  
+        document.getElementById('test-error').addEventListener('click', async () => {
+            console.log('Testing error response...');
+            const result = await api.request('/claim', {
+                method: 'POST',
+                body: JSON.stringify({ secretCode: '', recipientAddress: '' })
+            });
+            document.getElementById('results').innerHTML += 
+                `<p><strong>Invalid Claim:</strong> ${JSON.stringify(result)}</p>`;
+            console.log('Invalid claim result:', result);
+        });
+    </script>
+</body>
+</html>

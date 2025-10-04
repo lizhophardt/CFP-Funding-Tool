@@ -78,53 +78,84 @@ export class Web3Service {
    * - Creates wallet and public clients with automatic RPC failover
    */
   constructor() {
-    // Ensure private key has correct format (remove 0x if present, then add it back)
-    const cleanPrivateKey = config.privateKey.replace(/^0x/, '');
-    this.account = privateKeyToAccount(`0x${cleanPrivateKey}` as `0x${string}`);
-    
-    // Log account initialization
-    logger.web3('info', 'Web3Service account initialized', {
-      accountAddress: this.account.address,
-      privateKeyLength: cleanPrivateKey.length
-    });
-    
-    // Log the RPC endpoints being used
-    logger.web3('info', 'Initializing Web3Service with fallback RPC endpoints', {
-      primaryRpc: config.gnosisRpcUrl,
-      totalEndpoints: config.gnosisRpcUrls.length,
-      endpoints: config.gnosisRpcUrls
-    });
-    
-    // Create fallback transport with multiple RPC endpoints
-    const fallbackTransport = fallback(
-      config.gnosisRpcUrls.map(url => http(url)),
-      {
-        rank: true, // Enable automatic ranking based on latency and stability
-        retryCount: 3, // Retry failed requests up to 3 times
-        retryDelay: 150 // 150ms delay between retries
+    try {
+      // Ensure private key has correct format (remove 0x if present, then add it back)
+      const cleanPrivateKey = config.privateKey.replace(/^0x/, '');
+      this.account = privateKeyToAccount(`0x${cleanPrivateKey}` as `0x${string}`);
+      
+      // Log account initialization
+      logger.web3('info', 'Web3Service account initialized', {
+        accountAddress: this.account.address,
+        privateKeyLength: cleanPrivateKey.length
+      });
+      
+      // Log the RPC endpoints being used
+      logger.web3('info', 'Initializing Web3Service with fallback RPC endpoints', {
+        primaryRpc: config.gnosisRpcUrl,
+        totalEndpoints: config.gnosisRpcUrls.length,
+        endpoints: config.gnosisRpcUrls
+      });
+      
+      // Create fallback transport with multiple RPC endpoints
+      const fallbackTransport = fallback(
+        config.gnosisRpcUrls.map(url => http(url)),
+        {
+          rank: true, // Enable automatic ranking based on latency and stability
+          retryCount: 3, // Retry failed requests up to 3 times
+          retryDelay: 150 // 150ms delay between retries
+        }
+      );
+      
+      this.publicClient = createPublicClient({
+        chain: gnosis,
+        transport: fallbackTransport
+      });
+
+      this.walletClient = createWalletClient({
+        chain: gnosis,
+        transport: fallbackTransport,
+        account: this.account
+      });
+
+      // Validate token address before creating contract
+      if (!config.wxHoprTokenAddress || !config.wxHoprTokenAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+        throw new Error(`Invalid wxHOPR token address: ${config.wxHoprTokenAddress}`);
       }
-    );
-    
-    this.publicClient = createPublicClient({
-      chain: gnosis,
-      transport: fallbackTransport
-    });
 
-    this.walletClient = createWalletClient({
-      chain: gnosis,
-      transport: fallbackTransport,
-      account: this.account
-    });
+      this.tokenContract = getContract({
+        address: config.wxHoprTokenAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        client: this.publicClient
+      });
 
-    this.tokenContract = getContract({
-      address: config.wxHoprTokenAddress as `0x${string}`,
-      abi: ERC20_ABI,
-      client: this.publicClient
-    });
+      // Validate that the contract was created successfully
+      if (!this.tokenContract) {
+        throw new Error('Failed to create token contract instance');
+      }
+
+      logger.web3('info', 'Web3Service initialized successfully', {
+        tokenAddress: config.wxHoprTokenAddress,
+        accountAddress: this.account.address
+      });
+
+    } catch (error) {
+      logger.web3('error', 'Failed to initialize Web3Service', {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        tokenAddress: config.wxHoprTokenAddress,
+        privateKeyProvided: !!config.privateKey
+      });
+      throw error;
+    }
   }
 
   async getBalance(): Promise<string> {
     try {
+      // Defensive check for tokenContract
+      if (!this.tokenContract) {
+        throw new Error('Token contract not initialized. Web3Service may have failed to initialize properly.');
+      }
+
       logger.web3('info', 'Attempting to get wxHOPR balance', {
         tokenAddress: config.wxHoprTokenAddress,
         accountAddress: this.account.address
@@ -225,6 +256,11 @@ export class Web3Service {
         checksummed: validatedAddress,
         securityLevel: addressValidation.securityLevel
       });
+
+      // Defensive check for tokenContract
+      if (!this.tokenContract) {
+        throw new Error('Token contract not initialized. Web3Service may have failed to initialize properly.');
+      }
 
       // Check if we have enough wxHOPR token balance
       const tokenBalance = await this.tokenContract.read.balanceOf([this.account.address]);

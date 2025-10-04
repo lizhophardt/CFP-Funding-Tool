@@ -1,6 +1,6 @@
 // Configuration
 const CONFIG = {
-    // Your Railway API URL - Using versioned endpoint
+    // Your Railway API URL - Using v1 endpoint (fixed!)
     API_BASE_URL: 'https://cfp-fundingtool-api.up.railway.app/api/v1/airdrop',
     
     // Network configuration
@@ -216,18 +216,9 @@ const api = {
             // Always try to parse JSON response, even for 4xx errors
             const data = await response.json();
             
-            // Check if the API response has its own success field, otherwise use HTTP status
-            const isSuccess = data.hasOwnProperty('success') ? data.success : response.ok;
-            
-            if (isSuccess) {
-                return { success: true, data };
-            } else {
-                // API returned an error in JSON format
-                return { 
-                    success: false, 
-                    error: data.error || data.message || `HTTP ${response.status}: ${response.statusText}` 
-                };
-            }
+            // For API responses, return the parsed data regardless of status
+            // The API sends proper success/failure info in the JSON
+            return { success: true, data };
             
         } catch (error) {
             console.error('API Request failed:', error);

@@ -100,7 +100,13 @@ export class DIContainer {
         try {
           logger.config('info', 'Creating Web3Service instance...');
           const web3Service = new Web3Service();
-          logger.config('info', 'Web3Service created successfully');
+          
+          // Verify the service is properly initialized
+          if (!web3Service.isInitialized()) {
+            throw new Error('Web3Service created but not properly initialized');
+          }
+          
+          logger.config('info', 'Web3Service created and initialized successfully');
           return web3Service;
         } catch (error) {
           logger.config('error', 'Failed to create Web3Service', {

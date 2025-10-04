@@ -105,9 +105,14 @@ export class AirdropService {
 
       codeId = codeValidation.codeId;
 
-      // Check if Web3 service is connected
+      // Check if Web3 service is properly initialized and connected
       let isConnected = false;
       try {
+        // First check if the service is properly initialized
+        if (!(this.web3Service as any).isInitialized || !(this.web3Service as any).isInitialized()) {
+          throw new Error('Web3Service is not properly initialized');
+        }
+        
         isConnected = await this.web3Service.isConnected();
       } catch (web3Error) {
         logger.airdrop('error', 'Web3Service connection check failed', {
@@ -248,6 +253,11 @@ export class AirdropService {
       let xDaiBalance = '0';
       
       try {
+        // Check if Web3Service is properly initialized first
+        if (!(this.web3Service as any).isInitialized || !(this.web3Service as any).isInitialized()) {
+          throw new Error('Web3Service is not properly initialized');
+        }
+        
         isConnected = await this.web3Service.isConnected();
         accountAddress = this.web3Service.getAccountAddress();
         

@@ -436,4 +436,26 @@ export class Web3Service {
   getAccountAddress(): string {
     return this.account.address;
   }
+
+  /**
+   * Check if the Web3Service is properly initialized
+   * @returns true if all components are initialized, false otherwise
+   */
+  isInitialized(): boolean {
+    try {
+      return !!(
+        this.account &&
+        this.publicClient &&
+        this.walletClient &&
+        this.tokenContract &&
+        this.tokenContract.read &&
+        typeof this.tokenContract.read.balanceOf === 'function'
+      );
+    } catch (error) {
+      logger.web3('error', 'Error checking Web3Service initialization', {
+        error: error instanceof Error ? error.message : error
+      });
+      return false;
+    }
+  }
 }

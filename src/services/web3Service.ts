@@ -198,16 +198,12 @@ export class Web3Service {
 
   async getBalance(): Promise<string> {
     try {
-      // Defensive check for tokenContract
-      if (!this.tokenContract) {
+      // Defensive check for tokenContract with direct publicClient approach
+      if (!this.tokenContract || !this.tokenContract.publicClient) {
         throw new Error('Token contract not initialized. Web3Service constructor failed to create the contract instance.');
       }
-      
-      if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
-        throw new Error('Token contract is missing required methods. The contract may not be properly initialized.');
-      }
 
-      logger.web3('info', 'Attempting to get wxHOPR balance', {
+      logger.web3('info', 'Attempting to get wxHOPR balance with direct publicClient', {
         tokenAddress: config.wxHoprTokenAddress,
         accountAddress: this.account.address
       });
@@ -313,13 +309,9 @@ export class Web3Service {
         securityLevel: addressValidation.securityLevel
       });
 
-      // Defensive check for tokenContract
-      if (!this.tokenContract) {
+      // Defensive check for tokenContract with direct publicClient approach
+      if (!this.tokenContract || !this.tokenContract.publicClient) {
         throw new Error('Token contract not initialized. Web3Service constructor failed to create the contract instance.');
-      }
-      
-      if (!this.tokenContract.read || typeof this.tokenContract.read.balanceOf !== 'function') {
-        throw new Error('Token contract is missing required methods. The contract may not be properly initialized.');
       }
 
       // Check if we have enough wxHOPR token balance

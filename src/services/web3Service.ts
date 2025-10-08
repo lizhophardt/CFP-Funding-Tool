@@ -388,9 +388,9 @@ export class Web3Service {
         
         const tokenReceipt = await this.publicClient.waitForTransactionReceipt({
           hash: tokenHash,
-          timeout: 60_000, // 1 minute timeout - reduced for better UX
-          retryCount: 2,
-          retryDelay: 2_000
+          timeout: 30_000, // 30 second timeout for better UX
+          retryCount: 1,
+          retryDelay: 1_000
         });
         
         logger.web3('info', 'wxHOPR token transfer confirmed', {
@@ -412,9 +412,9 @@ export class Web3Service {
         
         const xDaiReceipt = await this.publicClient.waitForTransactionReceipt({
           hash: xDaiHash,
-          timeout: 60_000, // 1 minute timeout - reduced for better UX
-          retryCount: 2,
-          retryDelay: 2_000
+          timeout: 30_000, // 30 second timeout for better UX
+          retryCount: 1,
+          retryDelay: 1_000
         });
         
         logger.web3('info', 'xDai transfer confirmed', {

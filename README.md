@@ -12,6 +12,7 @@ A secure, TypeScript-based REST API service for distributing wxHOPR tokens on Gn
 - 🧪 **Development Tools**: Test secret code generation and comprehensive testing suite
 - 📝 **Professional Logging**: Winston-based logging with rotation and structured output
 - 🐳 **Docker Ready**: Secure containerized deployment with hardened configuration
+- 🔄 **RPC Failover**: Automatic failover between multiple RPC endpoints for high availability
 
 ## 🌐 RPC Reliability & Failover
 
@@ -235,8 +236,8 @@ The application implements multiple layers of security:
 - **50+ malicious patterns** detected and blocked automatically
 
 ### Private Key Security
-- **Encrypted Storage**: Support for encrypted private key storage
-- **Multiple Security Levels**: From basic encryption to enterprise Vault/KMS
+- **Encrypted Storage**: Support for encrypted private key storage using AES-256-CBC
+- **Quick Encryption**: Use `npm run quick-encrypt` for secure key generation
 - **Key Rotation**: Automated key management capabilities
 - **Hardware Security Modules**: AWS KMS and HashiCorp Vault support
 
@@ -251,61 +252,6 @@ The application implements multiple layers of security:
 - **Minimal capabilities**: Dropped privileges and minimal access
 - **Resource limits**: CPU and memory constraints
 - **Network isolation**: Localhost binding in production
-
-## 🚀 Deployment
-
-### Railway (Production - Recommended)
-
-Railway provides managed PostgreSQL, automatic scaling, and zero-downtime deployments:
-
-```bash
-# 1. Connect your repository to Railway
-# 2. Add PostgreSQL service
-# 3. Configure environment variables
-# 4. Automatic deployment from main branch
-```
-
-**Features:**
-- 🔄 **Automatic Deployments**: Push to main branch triggers deployment
-- 🗄️ **Managed PostgreSQL**: Database provided and managed automatically  
-- 📈 **Auto Scaling**: Based on CPU/memory usage
-- 🔒 **HTTPS by Default**: SSL certificates managed automatically
-- 📊 **Built-in Monitoring**: Logs, metrics, and health checks
-
-### Docker Compose (Development)
-
-Complete development environment with hot reloading:
-
-```bash
-# Start development environment
-docker-compose up -d
-
-# Start with database admin interface
-docker-compose --profile admin up -d
-
-# View logs
-docker-compose logs -f api
-```
-
-**Features:**
-- 🔄 **Hot Reloading**: Code changes trigger automatic restart
-- 🗄️ **PostgreSQL**: Local database with migrations
-- 🔧 **pgAdmin**: Database management interface
-- 🐛 **Debug Support**: Debug port exposed for IDE attachment
-
-### Local Docker (Simple)
-
-Quick local deployment for testing:
-
-```bash
-# Development mode
-./deploy.sh --dev
-
-# Production mode  
-./deploy.sh
-```
-
-For detailed deployment instructions, see [`docs/deployment.md`](docs/deployment.md).
 
 ## 🧪 Testing
 
@@ -350,15 +296,6 @@ npm run test:watch
 - Security events and blocked attacks
 - Token balance monitoring
 
-## 📖 Documentation
-
-For detailed information on specific topics:
-
-| Topic | Document | Description |
-|-------|----------|-------------|
-| **Deployment** | [`docs/deployment.md`](docs/deployment.md) | Comprehensive deployment guide |
-| **Security** | [`docs/security.md`](docs/security.md) | Security setup and best practices |
-
 ## 🐛 Debugging
 
 ### VS Code Debugging
@@ -380,6 +317,13 @@ For detailed information on specific topics:
 2. Open Chrome and navigate to: `chrome://inspect`
 3. Click "Open dedicated DevTools for Node"
 4. The debugger will connect to `localhost:9229`
+
+## 📖 Documentation
+
+For detailed guides on specific topics, see the [`docs/`](docs/) directory:
+
+- **[Deployment Guide](docs/deployment.md)** - Comprehensive deployment instructions for Railway, Docker, and local environments
+- **[Security Setup](docs/security.md)** - Security configuration and best practices
 
 ## 🤝 Contributing
 
@@ -403,7 +347,7 @@ MIT License
 ## ⚠️ Security Notice
 
 - Never commit private keys to version control
-- Use encrypted private keys in production
+- Use encrypted private keys in production (`npm run quick-encrypt`)
 - Regularly rotate secret codes
 - Monitor security logs for threats
 - Keep dependencies updated
@@ -414,4 +358,4 @@ MIT License
 - Check the [`docs/`](docs/) directory for detailed guides
 - Review the API documentation for endpoint details
 - Run security validation scripts for troubleshooting
-- Open an issue for bugs or feature requests# Force Railway redeploy
+- Open an issue for bugs or feature requests

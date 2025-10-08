@@ -28,9 +28,9 @@ The service implements robust RPC failover using Viem's fallback transport mecha
 ### Default Fallback Endpoints
 ```
 https://rpc.gnosischain.com          # Primary
-https://rpc.ankr.com/gnosis          # Fallback 1
-https://gnosis-mainnet.public.blastapi.io  # Fallback 2
-https://gnosis.blockpi.network/v1/rpc/public  # Fallback 3
+https://gnosis-mainnet.public.blastapi.io  # Fallback 1
+https://rpc.gnosis.gateway.fm        # Fallback 2
+https://gnosis.drpc.org              # Fallback 3
 ```
 
 ### Configuration
@@ -39,7 +39,7 @@ https://gnosis.blockpi.network/v1/rpc/public  # Fallback 3
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
 
 # Fallback endpoints (optional, comma-separated)
-GNOSIS_FALLBACK_RPC_URLS=https://rpc.ankr.com/gnosis,https://gnosis-mainnet.public.blastapi.io
+GNOSIS_FALLBACK_RPC_URLS=https://gnosis-mainnet.public.blastapi.io,https://rpc.gnosis.gateway.fm,https://gnosis.drpc.org
 ```
 
 **Benefits:**
@@ -133,7 +133,7 @@ Required environment variables:
 # Gnosis Chain Configuration
 GNOSIS_RPC_URL=https://rpc.gnosischain.com
 # Optional fallback RPC endpoints for improved reliability (comma-separated)
-GNOSIS_FALLBACK_RPC_URLS=https://rpc.ankr.com/gnosis,https://gnosis-mainnet.public.blastapi.io
+GNOSIS_FALLBACK_RPC_URLS=https://gnosis-mainnet.public.blastapi.io,https://rpc.gnosis.gateway.fm,https://gnosis.drpc.org
 WXHOPR_TOKEN_ADDRESS=0xD4fdec44DB9D44B8f2b6d529620f9C0C7066A2c1
 
 # Security (choose one method)

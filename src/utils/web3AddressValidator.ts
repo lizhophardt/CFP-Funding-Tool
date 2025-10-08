@@ -1,9 +1,9 @@
 /**
- * Enhanced Web3 Address Validation Utility
- * Provides comprehensive Ethereum address validation with checksum support
+ * Simplified Address Validation Utility using Viem
+ * Uses Viem's isAddress with additional security pattern checks
  */
 
-import { isAddress, getAddress, isHex } from 'viem';
+import { isAddress, getAddress } from 'viem';
 
 export interface AddressValidationResult {
   isValid: boolean;
@@ -16,11 +16,9 @@ export interface AddressValidationResult {
 
 export class Web3AddressValidator {
   /**
-   * Comprehensive Ethereum address validation
+   * Simplified address validation using Viem's isAddress
    */
   static validateAddress(address: string): AddressValidationResult {
-    const warnings: string[] = [];
-    
     try {
       // Basic null/undefined check
       if (!address || typeof address !== 'string') {
@@ -30,34 +28,9 @@ export class Web3AddressValidator {
         };
       }
 
-      // Trim whitespace
       const trimmedAddress = address.trim();
-      
-      // Length check
-      if (trimmedAddress.length !== 42) {
-        return {
-          isValid: false,
-          error: `Invalid address length: expected 42 characters, got ${trimmedAddress.length}`
-        };
-      }
 
-      // Must start with 0x
-      if (!trimmedAddress.startsWith('0x')) {
-        return {
-          isValid: false,
-          error: 'Address must start with 0x'
-        };
-      }
-
-      // Check if it's a valid hex string
-      if (!isHex(trimmedAddress)) {
-        return {
-          isValid: false,
-          error: 'Address contains invalid hexadecimal characters'
-        };
-      }
-
-      // Use Viem's isAddress function for comprehensive validation
+      // Use Viem's isAddress - it handles all format validation internally
       if (!isAddress(trimmedAddress)) {
         return {
           isValid: false,
@@ -65,24 +38,20 @@ export class Web3AddressValidator {
         };
       }
 
-      // Check for suspicious patterns
+      // Check for suspicious patterns (security feature)
       const suspiciousCheck = this.checkSuspiciousPatterns(trimmedAddress);
       if (!suspiciousCheck.isValid) {
         return suspiciousCheck;
       }
 
-      // Generate checksum address
+      // Generate checksum address and check if input was checksummed
       const checksumAddress = getAddress(trimmedAddress);
       const normalizedAddress = trimmedAddress.toLowerCase();
-
-      // Check if the provided address has correct checksum (if mixed case)
-      let isChecksum = false;
-      if (trimmedAddress !== normalizedAddress && trimmedAddress !== trimmedAddress.toUpperCase()) {
-        // Mixed case - check if it matches checksum
-        isChecksum = trimmedAddress === checksumAddress;
-        if (!isChecksum) {
-          warnings.push('Address checksum is incorrect but format is valid');
-        }
+      const isChecksum = trimmedAddress === checksumAddress;
+      
+      const warnings: string[] = [];
+      if (trimmedAddress !== normalizedAddress && !isChecksum) {
+        warnings.push('Address checksum is incorrect but format is valid');
       }
 
       return {
@@ -148,78 +117,30 @@ export class Web3AddressValidator {
     if (zeroCount > 30) {
       return {
         isValid: false,
-        error: 'Address has too many zeros (potential vanity address abuse)'
+        error: 'Address has too many zeros, potential vanity address abuse'
       };
     }
-
+    
     if (uniqueChars < 4) {
       return {
         isValid: false,
-        error: 'Address has too few unique characters (suspicious pattern)'
+        error: 'Address has too few unique characters, suspicious pattern'
       };
     }
 
-    return { isValid: true };
-  }
-
-  /**
-   * Validate multiple addresses at once
-   */
-  static validateAddresses(addresses: string[]): { [address: string]: AddressValidationResult } {
-    const results: { [address: string]: AddressValidationResult } = {};
-    
-    for (const address of addresses) {
-      results[address] = this.validateAddress(address);
-    }
-    
-    return results;
-  }
-
-  /**
-   * Get a normalized (lowercase) version of a valid address
-   */
-  static normalizeAddress(address: string): string | null {
-    const validation = this.validateAddress(address);
-    return validation.isValid ? validation.normalizedAddress! : null;
-  }
-
-  /**
-   * Get a checksummed version of a valid address
-   */
-  static checksumAddress(address: string): string | null {
-    const validation = this.validateAddress(address);
-    return validation.isValid ? validation.checksumAddress! : null;
-  }
-
-  /**
-   * Check if two addresses are the same (case-insensitive)
-   */
-  static addressesEqual(address1: string, address2: string): boolean {
-    const norm1 = this.normalizeAddress(address1);
-    const norm2 = this.normalizeAddress(address2);
-    
-    return norm1 !== null && norm2 !== null && norm1 === norm2;
-  }
-
-  /**
-   * Validate and format address for display
-   */
-  static formatAddressForDisplay(address: string): { formatted: string; isValid: boolean; warnings?: string[] } {
-    const validation = this.validateAddress(address);
-    
-    if (!validation.isValid) {
-      return {
-        formatted: address,
-        isValid: false
-      };
-    }
-
-    // Return checksummed address for display
     return {
-      formatted: validation.checksumAddress!,
-      isValid: true,
-      warnings: validation.warnings
+      isValid: true
     };
+  }
+
+  /**
+   * Simple validation - just uses Viem's isAddress
+   */
+  static isValidAddress(address: string): boolean {
+    if (!address || typeof address !== 'string') {
+      return false;
+    }
+    return isAddress(address.trim());
   }
 
   /**

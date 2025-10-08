@@ -1,7 +1,9 @@
 // Configuration
 const CONFIG = {
-    // Your Railway API URL - Using versioned endpoint
-    API_BASE_URL: 'https://cfp-fundingtool-api.up.railway.app/api/v1/airdrop',
+    // Detect if running locally and use appropriate API URL
+    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000/api/airdrop'  // Local development
+        : 'https://cfp-fundingtool-api.up.railway.app/api/v1/airdrop',  // Production
     
     // Network configuration
     NETWORK: {

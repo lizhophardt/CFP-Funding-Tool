@@ -68,6 +68,8 @@ app.use(cors({
     'https://funding.lizhophardt.eth',
     'https://funding.lizhophardt.eth.limo',
     'https://funding.lizhophardt.eth.link',
+    'https://funding.lizhophart.eth.limo',
+    'https://funding.lizhophart.eth.link',
     'https://bafybeigcvasvqsodkijgat5s2zxgaf32n37qtf2j3syr6ljraphmsqiusy.ipfs.dweb.link',
     'https://bafybeigcvasvqsodkijgat5s2zxgaf32n37qtf2j3syr6ljraphmsqiusy.ipfs.cf-ipfs.com',
     'https://ipfs.io'
